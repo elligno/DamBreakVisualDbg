@@ -18,6 +18,9 @@ HEADERS += \
 FORMS += \
     mainwindow.ui
 
+INCLUDEPATH += $$PWD/../QCustomPlot
+LIBS += -L$$PWD/bin/ -lqcustomplotd2
+
 TRANSLATIONS += \
     DamBreakVisualDbg_en_US.ts
 CONFIG += lrelease
