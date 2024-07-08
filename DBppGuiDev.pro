@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    DBppGuiAppl15
+    DBppGuiAppl15 \
+    DamBreakAPI
