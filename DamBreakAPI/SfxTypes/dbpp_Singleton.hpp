@@ -4,17 +4,13 @@
 // C++ includes
 #include <cstddef>
 #include <iostream>
-// boost include
-#include <boost/noncopyable.hpp>
 
 namespace dbpp {
 /** Brief CRTP James Coplien (Curious Recursive Template Pattern).
  *   This is a model of CRTP to define Global instance of the application
  *   Specialize a base class using the derived class as a template argument.
  */
-template <class T>
-class Singleton //: boost::noncopyable private copy and
-{               // assignment ctor
+template <class T> class Singleton {
 public:
   Singleton(const Singleton &) = delete;
   Singleton &operator=(const Singleton &) = delete;

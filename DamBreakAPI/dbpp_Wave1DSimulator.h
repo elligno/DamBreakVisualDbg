@@ -9,12 +9,10 @@
 #include <list>
 // boost include
 #include <boost/filesystem.hpp> // boost file system utility
-// BaseNumTypes library includes
-#include "dbpp_TimePrm.h"
-#include "dbpp_WaveFunc.h"
-
-// project include
-#include "../NumericalSchemes/dbpp_HLL_RK2_Algo_Vec.h"
+// library includes
+#include "NumericalSchemes/dbpp_HLL_RK2_Algo_Vec.h"
+#include "SfxTypes/dbpp_TimePrm.h"
+#include "SfxTypes/dbpp_WaveFunc.h"
 
 // BaseNumTypes library (deprecated)
 using wavfuncptr = std::shared_ptr<dbpp::WaveFunc>;
@@ -28,6 +26,7 @@ class Observer;
 class ListSectFlow;
 class SemiDiscreteModel;
 } // namespace dbpp
+
 namespace dbpp {
 //
 // Testing GUI development with a simple case
@@ -93,7 +92,7 @@ public:
   /**
    *  destructor
    */
-  ~Wave1DSimulator();
+  virtual ~Wave1DSimulator();
 
   /**
    *   main loop (implemented from base class)
@@ -245,29 +244,7 @@ public:
   //  when this function will be called from GUI, it setup
   //  the initial condition mainly: water depth, then IC
   //  and time stepping parameters to be used for this.
-  void initializeGuiMode() {
-    // just testing some new functionalities of the shared pointer
-    // this is a new functionality of the C++11
-    std::shared_ptr<Step1D> w_Hstep = std::dynamic_pointer_cast<Step1D>(m_H);
-    if (nullptr != w_Hstep) {
-      if (w_Hstep->getPhi1() != m_Phi1) {
-        // we have a valid cast
-        w_Hstep->setPhi1(m_Phi1);
-      }
-      if (w_Hstep->getPhi0() != m_Phi0) {
-        // we have a valid cast
-        w_Hstep->setPhi0(m_Phi0);
-      }
-      if (w_Hstep->getShockLocation() != m_shockLoc) {
-        w_Hstep->setShockLocation(m_shockLoc);
-      }
-    }
-
-    // Initialize simulation before we start
-    setH();
-    setIC();
-    initTime();
-  }
+  void initializeGuiMode();
 
   /** Courant-Friedrich-Number*/
   void setCFL(const double aCFl) { m_CFL = aCFl; }

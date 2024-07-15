@@ -32,9 +32,6 @@ namespace dbpp {
  */
 class BaseNumTreatmemt {
 public:
-  BaseNumTreatmemt();
-  ~BaseNumTreatmemt();
-
   /** Numerical algorithm to calculate the pressure term.
    *
    * @param PF2 ...
@@ -126,6 +123,7 @@ public:
                         const std::vector<double> &U1,
                         const std::vector<double> &U2, const double B = 1.);
 
+#if 0  // piece of crap!!
 protected:
   /** Numerical algorithm to calculate the pressure term.
    *
@@ -145,5 +143,6 @@ protected:
                std::vector<double> &H);
 
 private:
+#endif // 0
 };
 } // namespace dbpp

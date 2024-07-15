@@ -9,7 +9,7 @@
 #include <boost/range/iterator_range.hpp>
 // project includes
 #include "../Discretization/dbpp_HydroTerms.h"
-#include "../Numerics/dbpp_TimeStepCriteria.hpp"
+//#include "../Numerics/dbpp_TimeStepCriteria.hpp"
 #include "../Utility/dbpp_EMcNeilUtils.h"
 #include "dbpp_EmcilNumTreatment.h"
 // ...
@@ -18,13 +18,6 @@
 #include "../SfxTypes/dbpp_PhyConstant.h"
 
 namespace dbpp {
-BaseNumTreatmemt::~BaseNumTreatmemt() {
-  std::cout << "We are in the default BaseNumTreatment ctor\n";
-}
-
-BaseNumTreatmemt::BaseNumTreatmemt() {
-  std::cout << "We are in the BaseNumTreatment dtor\n";
-}
 
 void BaseNumTreatmemt::TraitementTermeP(std::vector<double> &PF2,
                                         std::vector<double> &P2,
@@ -293,6 +286,7 @@ void BaseNumTreatmemt::CalculFF(std::vector<double> &FF1,
   }
 }
 
+#if 0
 // compute boundary condition according to characteristic equation
 void BaseNumTreatmemt::computeBC(std::vector<double> &U1,
                                  std::vector<double> &U2,
@@ -317,8 +311,8 @@ void BaseNumTreatmemt::setAmont(std::vector<double> &U1,
   // dam-break data for the simulation
   DamBreakData w_dbData(DamBreakData::DiscrTypes::emcneil);
   //		const double S0am=w_dbData.getS0am();
-  const double S0av = w_dbData.getS0av(); // some
-  const double B = w_dbData.getWidth();   // section width
+  const auto S0av = w_dbData.getS0av(); // some
+  const auto B = w_dbData.getWidth();   // section width
 
   // REMARK (Jean Belanger)
   // shall use the concept the GlobalDiscretization to retrieve
@@ -328,9 +322,10 @@ void BaseNumTreatmemt::setAmont(std::vector<double> &U1,
   //             boost::ptr_vector<Nodal_Value>&
   //             w_aqh=GlobalDiscretization::instance().Uh();
   // 			// need to retrieve the A,Q of the Nodal_Value
-  // 			auto beg_iterA = boost::make_transform_iterator( w_aqh.begin(),
-  // emcil::GetA()); 			auto end_iterA = boost::make_transform_iterator(
-  // w_aqh.end(), emcil::GetA()); 			std::vector<double> w_U1; 			const double dt =
+  // 			auto beg_iterA = boost::make_transform_iterator(
+  // w_aqh.begin(), emcil::GetA()); 			auto end_iterA =
+  // boost::make_transform_iterator( w_aqh.end(), emcil::GetA());
+  // std::vector<double> w_U1; 			const double dt =
   // TimeStepCriteria::timeStep( std::vector<double>(beg_iterA,end_iterA),
   // 				                                          std::vector<double>(beg_iterQ,end_iterQ));
   // // A,Q
@@ -431,4 +426,5 @@ void BaseNumTreatmemt::setAval(std::vector<double> &U1, std::vector<double> &U2,
 
   //		return std::make_tuple(U1av,U2av,Hav);
 }
+#endif // 0
 } // namespace dbpp

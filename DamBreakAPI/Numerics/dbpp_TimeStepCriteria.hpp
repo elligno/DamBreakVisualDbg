@@ -40,8 +40,8 @@ public:
   //}
 
   /** return the time step criteria according to ...*/
-  static double timeStep(const std::vector<double> &aU1,
-                         const std::vector<double> &aU2);
+  //  static double timeStep(const std::vector<double> &aU1,
+  //                         const std::vector<double> &aU2);
 
 private:
   double m_bigNumber;

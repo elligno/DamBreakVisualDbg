@@ -22,7 +22,9 @@ private:
 };
 #endif // 0
 
-// namespace dbpp { class Wave1DSimulator; }
+namespace dbpp {
+class Wave1DSimulator;
+}
 
 /** Brief By default we inherit from QGuiApplication.
  * DamBreak app is a GUI to manage the simulation
@@ -79,7 +81,7 @@ private:
   QStringList m_listAlgo;
   /**< list of algorithm name*/
 
-  // dbpp::Wave1DSimulator* m_waveSim;
+  dbpp::Wave1DSimulator *m_waveSim;
   /**< Simulator instance*/
 
   //	std::unique_ptr<jb::TimePrm> m_tprm;

@@ -22,10 +22,10 @@
 #include "../SfxTypes/dbpp_Simulation.h"
 #include "../Utility/dbpp_Hydro1DLogger.h"
 #include "../Utility/dbpp_TestLogger.h"
+//#include "SfxTypes/dbpp_TimePrm.h"
+//#include "SfxTypes/dbpp_WaveFunc.h"
 
-/** Design Note: jb namespace is deprecated, a refactoring is about to occcur.
- *
- */
+/** Design Note: jb namespace is deprecated*/
 
 namespace dbpp {
 /** Recursively find the location of a file on a given directory
@@ -1122,5 +1122,29 @@ void Wave1DSimulator::createListSections() {
 
   auto *w_msg = "Created list of sections successfully";
   dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+}
+
+void Wave1DSimulator::initializeGuiMode() {
+  // just testing some new functionalities of the shared pointer
+  // this is a new functionality of the C++11
+  std::shared_ptr<Step1D> w_Hstep = std::dynamic_pointer_cast<Step1D>(m_H);
+  if (nullptr != w_Hstep) {
+    if (w_Hstep->getPhi1() != m_Phi1) {
+      // we have a valid cast
+      w_Hstep->setPhi1(m_Phi1);
+    }
+    if (w_Hstep->getPhi0() != m_Phi0) {
+      // we have a valid cast
+      w_Hstep->setPhi0(m_Phi0);
+    }
+    if (w_Hstep->getShockLocation() != m_shockLoc) {
+      w_Hstep->setShockLocation(m_shockLoc);
+    }
+  }
+
+  // Initialize simulation before we start
+  setH();
+  setIC();
+  initTime();
 }
 } // namespace dbpp

@@ -25,9 +25,9 @@ DBppGuiAppl15::~DBppGuiAppl15()
 #include <QSettings>
 #include <QTextEdit>
 // Library includes
-//#include "Utility/dbpp_TestLogger.h"
+#include "Utility/dbpp_TestLogger.h"
 //#include "Utility/dbpp_Hydro1DLogger.h"
-//#include "SfxTypes/dbpp_Wave1DSimulator.h"
+#include "dbpp_Wave1DSimulator.h"
 //#include "SfxTypes/dbpp_Simulation.h"
 //#include "Discretization/dbpp_GlobalDiscretization.h"
 
@@ -44,8 +44,8 @@ void testThreadCall() {
 }
 
 DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::DBppGuiAppl15) // ..
-// m_waveSim{ new dbpp::Wave1DSimulator }   // create the simulator
+    : QMainWindow(parent), ui(new Ui::DBppGuiAppl15), // ..
+      m_waveSim{new dbpp::Wave1DSimulator}            // create the simulator
 {
   // Organization name
   qApp->setOrganizationName(QString("Elligno Inc"));
@@ -105,14 +105,20 @@ DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
   // setup GUI functionality
   ui->setupUi(this);
 
-  // take default value (E. McNeil data)
-  //  m_waveSim->setPhi1(ui->_phi1->value());  //10.
-  //  m_waveSim->setPhi0(ui->_phi0->value());  //1.
-  //  m_waveSim->setShockLocation(ui->_shockloc->value()); //500.
-  //  m_waveSim->setIterationNumberMax(ui->iterations->value()); // default is 1
+  // rad default value (E. McNeil data)
+  m_waveSim->setPhi1(ui->_phi1->value());                    // 10.
+  m_waveSim->setPhi0(ui->_phi0->value());                    // 1.
+  m_waveSim->setShockLocation(ui->_shockloc->value());       // 500.
+  m_waveSim->setIterationNumberMax(ui->iterations->value()); // default is 1
+
+  // NOTE not too sure about this one, not calling the slot "setUpstream()"
+  // use lambda expression for the SLOT (could do that from QtDesigner)
+  // mechanism for calling overload method (default value is E. McNeil data)
+  connect(ui->_phi1, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          [=](double aNewValue) { ui->_phi1->setValue(aNewValue); });
 
   // NOTE
-  //  GUI development we use QtDesigner for proityping.
+  //  GUI development we use QtDesigner for prototyping.
   //  For some reasons, i cannot connect with slot in the action editor
   //  i have to write it here, since this project is just a prototype for
   //  the first version of DamBreak++, it doesn't really matter.
@@ -157,7 +163,7 @@ DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
 
 DBppGuiAppl15::~DBppGuiAppl15() {
   delete ui;
-  //  delete m_waveSim;
+  delete m_waveSim;
 
   // release all resources
   // dbpp::GlobalDiscretization::instance()->release();
