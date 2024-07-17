@@ -2,4 +2,5 @@
 *.obj
 *.pdb
 *.ilk
+*.user
 \bin
