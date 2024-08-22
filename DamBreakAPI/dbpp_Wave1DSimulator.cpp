@@ -354,28 +354,28 @@ void Wave1DSimulator::scan() {
 
   m_lambda.reset(new scalarField(m_grid, "lambda_H"));
 
-  // the wave-function can be specified on the command line
-  // 1: Gaussian function
-  // 2: ...
-  int func = CmdLineArgs::read("-func", 1);
+  //   the wave-function can be specified on the command line
+  //   1: Gaussian function
+  //   2: ...
+  //    int func = CmdLineArgs::read("-func", 1);
 
   // select the appropriate initial functions
   // describing the seabed and surface.
-  if (func == 1) {
-    m_H.reset(new GaussianBell('H'));
-    m_I.reset(new GaussianBell('U'));
-    auto *w_msg = "We set DamBreak GaussianBell function";
-    Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
-  } else                     // in the current version of the Simulator
-  {                          // func = 0 in cmd line argument of the project
-    m_I.reset(new Flat{});   // we consider flat bed bathymetry
-    m_H.reset(new Step1D{}); // we set DamBreak step function
+  // if (func == 1) {
+  //   m_H.reset(new GaussianBell('H'));
+  //   m_I.reset(new GaussianBell('U'));
+  //   auto *w_msg = "We set DamBreak GaussianBell function";
+  //   Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+  // } else                     // in the current version of the Simulator
+  // {                          // func = 0 in cmd line argument of the project
+  m_I.reset(new Flat{});   // we consider flat bed bathymetry
+  m_H.reset(new Step1D{}); // we set DamBreak step function
 
-    auto *w_msg = "We are considering flat bed topography";
-    Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
-    auto *w_msg1 = "We set DamBreak step function";
-    Logger::instance()->OutputSuccess(const_cast<char *>(w_msg1));
-  }
+  auto *w_msgee = "We are considering flat bed topography";
+  Logger::instance()->OutputSuccess(const_cast<char *>(w_msgee));
+  auto *w_msg1 = "We set DamBreak step function";
+  Logger::instance()->OutputSuccess(const_cast<char *>(w_msg1));
+  // }
 
   // initialize the parameters in the functions.
   // Design Note: these parameters could be read from
@@ -384,13 +384,13 @@ void Wave1DSimulator::scan() {
   m_I->scan(); // initial surface (bed), which is flat bed
 
   // simulation time parameters
-  m_tip.reset(new TimePrm(
-      0, 0.,                                      // initial dt (time step)
-      CmdLineArgs::read("-tstop", m_finalTime))); // fixed time step as default
+  m_tip.reset(new TimePrm(0, 0., m_finalTime));
+  // 0, 0.,                                       initial dt (time step)
+  // CmdLineArgs::read("-tstop", m_finalTime)));  fixed time step as default
 
-  auto *w_msg1 = "Final simulation time is: %f";
+  auto *w_msg111 = "Final simulation time is: %f";
   auto *w_msg2 = "Wave1DSimulator::scan initialization completed";
-  Logger::instance()->OutputSuccess(const_cast<char *>(w_msg1), m_finalTime);
+  Logger::instance()->OutputSuccess(const_cast<char *>(w_msg111), m_finalTime);
   Logger::instance()->OutputSuccess(const_cast<char *>(w_msg2));
 }
 

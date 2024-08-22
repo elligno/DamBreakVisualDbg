@@ -58,7 +58,7 @@ std::string &Flat::formula() { return formula_str; }
 void Flat::scan() {
   // read something to specify that we are in a flat topography
   // flag or something ...
-  m_z = CmdLineArgs::read("-z", 0.);
+  m_z = 0.; // CmdLineArgs::read("-z", 0.);
 }
 
 //
@@ -73,10 +73,10 @@ void Flat::scan() {
 void Step1D::scan() {
   // water level each side of the wall (in this project we are using E McNeil)
   // values and they are set in the cmd arg line (loaded at the startup).
-  m_Phi1 = CmdLineArgs::read("-phi1", 1.); // E. McNeil = 10.
-  m_Phi0 = CmdLineArgs::read("-phi0", 1.); // E. McNeil = 1.
+  m_Phi1 = 10.; // CmdLineArgs::read("-phi1", 1.);  E. McNeil = 10.
+  m_Phi0 = 1.;  // CmdLineArgs::read("-phi0", 1.);  E. McNeil = 1.
   // shock position (default value is set)
-  m_shockPos = CmdLineArgs::read("-shock", 5.); // E. McNeil = 500.
+  m_shockPos = 500.; // CmdLineArgs::read("-shock", 5.);  E. McNeil = 500.
 }
 
 // Step function for dam-break

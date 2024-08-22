@@ -31,16 +31,16 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 # original config done by Qt Creator, link error couldn't find library
-#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../DamBreakAPI/release/ -lDamBreakAPI
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../DamBreakAPI/debug/ -lDamBreakAPI
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../DamBreakAPI/release/ -lDamBreakAPI
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../DamBreakAPI/debug/ -lDamBreakAPI
 
 # added by Jean Belanger (see comment above). I think the problem comes from tool Kits that we select
 # in the settings project tab (yeah, projects tab, then setting build and run, can switch between different
 # tool kits or configuration e.g. desktop, LLVM clang, ...) create a folder with prefix "build" where
 # intermediate files are saved. Config was done initialy with desktop config (not too sure) need to
 # investigate a little bit more
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../build-DBppGuiDev-Desktop_Qt_5_12_12_MSVC2017_64bit-Debug/DamBreakAPI/release/ -lDamBreakAPI
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../build-DBppGuiDev-Desktop_Qt_5_12_12_MSVC2017_64bit-Debug/DamBreakAPI/debug/ -lDamBreakAPI
+#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../build-DBppGuiDev-Desktop_Qt_5_12_12_MSVC2017_64bit-Debug/DamBreakAPI/release/ -lDamBreakAPI
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../build-DBppGuiDev-Desktop_Qt_5_12_12_MSVC2017_64bit-Debug/DamBreakAPI/debug/ -lDamBreakAPI
 
 INCLUDEPATH += $$PWD/../DamBreakAPI
 DEPENDPATH += $$PWD/../../DamBreakAPI

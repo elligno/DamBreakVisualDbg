@@ -27,8 +27,8 @@ DBppGuiAppl15::~DBppGuiAppl15()
 // Library includes
 #include "Utility/dbpp_TestLogger.h"
 //#include "Utility/dbpp_Hydro1DLogger.h"
+#include "SfxTypes/dbpp_Simulation.h"
 #include "dbpp_Wave1DSimulator.h"
-//#include "SfxTypes/dbpp_Simulation.h"
 //#include "Discretization/dbpp_GlobalDiscretization.h"
 
 // test stuff
@@ -226,29 +226,30 @@ void DBppGuiAppl15::runStepbyStep() {
 // call activeAlgo. Since default algo name is set at initialization, if user
 // don't change it, file name is set to default.
 void DBppGuiAppl15::initSim() {
-#if 0
   auto w_currDiscrData = ui->discrdata_combo->currentText();
   auto w_data = dbpp::DamBreakData::DiscrTypes::emcneil;
-  if( w_currDiscrData == QString{ "emcneil" })
+  if (w_currDiscrData == QString{"emcneil"}) {
+    dbpp::Simulation::instance()->setActiveDiscretization(
+        dbpp::DamBreakData::DiscrTypes::emcneil);
+  } else // current version support those 2 type of dambreak data
   {
-    dbpp::Simulation::instance()->setActiveDiscretization(dbpp::DamBreakData::DiscrTypes::emcneil);
-  }
-  else // current version support those 2 type of dambreak data
-  {
-    dbpp::Simulation::instance()->setActiveDiscretization(dbpp::DamBreakData::DiscrTypes::hudson);
+    dbpp::Simulation::instance()->setActiveDiscretization(
+        dbpp::DamBreakData::DiscrTypes::hudson);
   }
 
   // set simulation active numerical method
-  dbpp::Simulation::instance()->setAlgorithmName(m_waveSim->getActiveAlgorithm());
+  dbpp::Simulation::instance()->setAlgorithmName(
+      m_waveSim->getActiveAlgorithm());
 
   // DESIGN NOTE we need to initialize the simulation bean first
   // Read data from file or from the GUI
-  // dbpp::Simulation::instance()->setCFL(m_waveSim->getCFL()); // hard coded for debugging
+  // dbpp::Simulation::instance()->setCFL(m_waveSim->getCFL()); // hard coded
+  // for debugging
 
   // initialize the simulator
   m_waveSim->setSimulatorMode(dbpp::Wave1DSimulator::eSimulationMode::guiMode);
   m_waveSim->scan(); // we set some parameters of the simulation
-
+#if 0
   // basically set water level and state variables init values
   // Also create list of sections and numerical scheme/method
   // NOTE no sense to create those things inside
