@@ -39,13 +39,13 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 # tool kits or configuration e.g. desktop, LLVM clang, ...) create a folder with prefix "build" where
 # intermediate files are saved. Config was done initialy with desktop config (not too sure) need to
 # investigate a little bit more
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../build-DBppGuiDev-Desktop_Qt_5_12_12_MSVC2017_64bit-Debug/DamBreakAPI/release/ -lDamBreakAPI
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../build-DBppGuiDev-Desktop_Qt_5_12_12_MSVC2017_64bit-Debug/DamBreakAPI/debug/ -lDamBreakAPI
+#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../DamBreakAPI/release/ -lDamBreakAPI
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/..//DamBreakAPI/debug/ -lDamBreakAPI
 
-INCLUDEPATH += $$PWD/../DamBreakAPI
-DEPENDPATH += $$PWD/../../DamBreakAPI
+#INCLUDEPATH += $$PWD/../DamBreakAPI
+#DEPENDPATH += $$PWD/../../DamBreakAPI
 
-win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../DamBreakAPI/release/libDamBreakAPI.a
-else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../DamBreakAPI/debug/libDamBreakAPI.a
-else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../DamBreakAPI/release/DamBreakAPI.lib
-else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../DamBreakAPI/debug/DamBreakAPI.lib
+#win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../DamBreakAPI/release/libDamBreakAPI.a
+#else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../DamBreakAPI/debug/libDamBreakAPI.a
+#else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../DamBreakAPI/release/DamBreakAPI.lib
+#else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../DamBreakAPI/debug/DamBreakAPI.lib

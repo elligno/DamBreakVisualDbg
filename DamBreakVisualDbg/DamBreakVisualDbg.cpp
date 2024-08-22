@@ -283,8 +283,9 @@ void DamBreakVisualDbg::readFullResultFile(QFile &aFile2read) {
       continue; // go to next line
     }
     auto w_lineTrimmed = line.trimmed();
-    auto dbgBool = w_lineTrimmed.contains('X');
-    auto w_firstChar = line.at(0); // front
+    //    auto dbgBool = w_lineTrimmed.contains('X');
+    //    auto w_firstChar = line.at(0); // front
+
     if (!w_lineTrimmed.contains('X') && w_bStartReadVal == false) {
       // Time: 0.0019 sec.   (file format)
       if (w_lineTrimmed.contains("Time")) {

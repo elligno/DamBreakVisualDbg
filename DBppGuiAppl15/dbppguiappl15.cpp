@@ -16,7 +16,7 @@ DBppGuiAppl15::~DBppGuiAppl15()
 #endif // 0
 
 // C++ include
-#include <thread>
+//#include <thread>
 // Qt includes
 #include <QBoxLayout>
 #include <QDebug> // debug helper
@@ -24,13 +24,15 @@ DBppGuiAppl15::~DBppGuiAppl15()
 #include <QMessageBox>
 #include <QSettings>
 #include <QTextEdit>
-// Library includes
-#include "Utility/dbpp_TestLogger.h"
-//#include "Utility/dbpp_Hydro1DLogger.h"
-#include "dbpp_Wave1DSimulator.h"
-//#include "SfxTypes/dbpp_Simulation.h"
-//#include "Discretization/dbpp_GlobalDiscretization.h"
 
+#if 0
+// Library includes
+#include "Discretization/dbpp_GlobalDiscretization.h"
+#include "SfxTypes/dbpp_Simulation.h"
+#include "Utility/dbpp_Hydro1DLogger.h"
+#include "Utility/dbpp_TestLogger.h"
+#include "dbpp_Wave1DSimulator.h"
+#endif
 // test stuff
 //#include "Utility/dbpp_Worker.h"
 
@@ -44,9 +46,12 @@ void testThreadCall() {
 }
 
 DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::DBppGuiAppl15), // ..
-      m_waveSim{new dbpp::Wave1DSimulator}            // create the simulator
+    : QMainWindow(parent),
+      ui(new Ui::DBppGuiAppl15) // ..
+                                // m_waveSim{new dbpp::Wave1DSimulator} create
+                                // the simulator
 {
+
   // Organization name
   qApp->setOrganizationName(QString("Elligno Inc"));
 
@@ -55,8 +60,8 @@ DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
 
   // Some sanity check (we shall have 1 window, main)
   // Widget I am not sure, a bunch of them
-  QWindowList w_checkListWin = QApplication::allWindows();
-  Q_ASSERT(w_checkListWin.size() == 0);
+  //  QWindowList w_checkListWin = QApplication::allWindows();
+  //  Q_ASSERT(w_checkListWin.size() == 0);
 
   QWidgetList w_checkListWgt = QApplication::allWidgets();
   Q_ASSERT(w_checkListWgt.size() == 1);
@@ -104,13 +109,13 @@ DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
 
   // setup GUI functionality
   ui->setupUi(this);
-
+#if 0
   // rad default value (E. McNeil data)
   m_waveSim->setPhi1(ui->_phi1->value());                    // 10.
   m_waveSim->setPhi0(ui->_phi0->value());                    // 1.
   m_waveSim->setShockLocation(ui->_shockloc->value());       // 500.
   m_waveSim->setIterationNumberMax(ui->iterations->value()); // default is 1
-
+#endif
   // NOTE not too sure about this one, not calling the slot "setUpstream()"
   // use lambda expression for the SLOT (could do that from QtDesigner)
   // mechanism for calling overload method (default value is E. McNeil data)
@@ -163,7 +168,7 @@ DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
 
 DBppGuiAppl15::~DBppGuiAppl15() {
   delete ui;
-  delete m_waveSim;
+  //  delete m_waveSim;
 
   // release all resources
   // dbpp::GlobalDiscretization::instance()->release();
@@ -228,22 +233,24 @@ void DBppGuiAppl15::runStepbyStep() {
 void DBppGuiAppl15::initSim() {
 #if 0
   auto w_currDiscrData = ui->discrdata_combo->currentText();
-  auto w_data = dbpp::DamBreakData::DiscrTypes::emcneil;
-  if( w_currDiscrData == QString{ "emcneil" })
+  // auto w_data = dbpp::DamBreakData::DiscrTypes::emcneil;  debug purpose
+  if (w_currDiscrData == QString{"emcneil"}) {
+    dbpp::Simulation::instance()->setActiveDiscretization(
+        dbpp::DamBreakData::DiscrTypes::emcneil);
+  } else // current version support those 2 type of dambreak data
   {
-    dbpp::Simulation::instance()->setActiveDiscretization(dbpp::DamBreakData::DiscrTypes::emcneil);
-  }
-  else // current version support those 2 type of dambreak data
-  {
-    dbpp::Simulation::instance()->setActiveDiscretization(dbpp::DamBreakData::DiscrTypes::hudson);
+    dbpp::Simulation::instance()->setActiveDiscretization(
+        dbpp::DamBreakData::DiscrTypes::hudson);
   }
 
   // set simulation active numerical method
-  dbpp::Simulation::instance()->setAlgorithmName(m_waveSim->getActiveAlgorithm());
+  dbpp::Simulation::instance()->setAlgorithmName(
+      m_waveSim->getActiveAlgorithm());
 
   // DESIGN NOTE we need to initialize the simulation bean first
   // Read data from file or from the GUI
-  // dbpp::Simulation::instance()->setCFL(m_waveSim->getCFL()); // hard coded for debugging
+  // dbpp::Simulation::instance()->setCFL(m_waveSim->getCFL()); // hard coded
+  // for debugging
 
   // initialize the simulator
   m_waveSim->setSimulatorMode(dbpp::Wave1DSimulator::eSimulationMode::guiMode);
@@ -262,16 +269,18 @@ void DBppGuiAppl15::initSim() {
   // interface (access point) to component of the global discr.
   //  const dbpp::ListSectFlow* w_test = m_waveSim->getListSectionFlow();
   dbpp::GlobalDiscretization::instance()->init(m_waveSim->getListSectionFlow());
-  dbpp::Logger::instance()->OutputSuccess("Global Discretization initialization completed");
+  auto w_msg1 = "Global Discretization initialization completed";
+  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg1));
 
-  auto check123 = dbpp::Simulation::instance()->getActiveDiscretization();
-  // IMPORTANT!!!!
-  // Call boundary cond. applyBC()? b.c. is used in the numerical scheme
-  // need to set amont/aval nodal values!!! this need to be validated!
+  // auto check123 = dbpp::Simulation::instance()->getActiveDiscretization();
+  // debug purpose IMPORTANT!!!! Call boundary cond. applyBC()? b.c. is used in
+  // the numerical scheme need to set amont/aval nodal values!!! this need to be
+  // validated!
   dbpp::GlobalDiscretization::instance()->gamma().applyBC();
 
   // logging message to file
-  dbpp::Logger::instance()->OutputSuccess("Wave Simulator initialization completed");
+  auto w_msg2 = "Wave Simulator initialization completed";
+  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg2));
 #endif
 
   QMessageBox msgBox;
