@@ -3,4 +3,5 @@
 *.pdb
 *.ilk
 *.user
+*.lib
 \bin

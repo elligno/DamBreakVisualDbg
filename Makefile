@@ -29,6 +29,7 @@ DEL_DIR       = rmdir
 MOVE          = move
 SUBTARGETS    =  \
 		sub-DBppGuiAppl15 \
+		sub-DamBreakAPI \
 		sub-DamBreakVisualDbg
 
 
@@ -65,6 +66,39 @@ sub-DBppGuiAppl15-uninstall_subtargets: FORCE
 	@if not exist DBppGuiAppl15\ mkdir DBppGuiAppl15\ & if not exist DBppGuiAppl15\ exit 1
 	@set MAKEFLAGS=$(MAKEFLAGS)
 	cd DBppGuiAppl15\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DBppGuiAppl15\DBppGuiAppl15.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile uninstall
+sub-DamBreakAPI-qmake_all:  FORCE
+	@if not exist DamBreakAPI\ mkdir DamBreakAPI\ & if not exist DamBreakAPI\ exit 1
+	cd DamBreakAPI\ && $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakAPI\DamBreakAPI.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug"
+	@set MAKEFLAGS=$(MAKEFLAGS)
+	cd DamBreakAPI\ && $(MAKE) -f Makefile qmake_all
+sub-DamBreakAPI: $(MAKEFILE) FORCE
+	@if not exist DamBreakAPI\ mkdir DamBreakAPI\ & if not exist DamBreakAPI\ exit 1
+	@set MAKEFLAGS=$(MAKEFLAGS)
+	cd DamBreakAPI\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakAPI\DamBreakAPI.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile
+sub-DamBreakAPI-make_first: FORCE
+	@if not exist DamBreakAPI\ mkdir DamBreakAPI\ & if not exist DamBreakAPI\ exit 1
+	@set MAKEFLAGS=$(MAKEFLAGS)
+	cd DamBreakAPI\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakAPI\DamBreakAPI.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile 
+sub-DamBreakAPI-all: FORCE
+	@if not exist DamBreakAPI\ mkdir DamBreakAPI\ & if not exist DamBreakAPI\ exit 1
+	@set MAKEFLAGS=$(MAKEFLAGS)
+	cd DamBreakAPI\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakAPI\DamBreakAPI.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile all
+sub-DamBreakAPI-clean: FORCE
+	@if not exist DamBreakAPI\ mkdir DamBreakAPI\ & if not exist DamBreakAPI\ exit 1
+	@set MAKEFLAGS=$(MAKEFLAGS)
+	cd DamBreakAPI\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakAPI\DamBreakAPI.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile clean
+sub-DamBreakAPI-distclean: FORCE
+	@if not exist DamBreakAPI\ mkdir DamBreakAPI\ & if not exist DamBreakAPI\ exit 1
+	@set MAKEFLAGS=$(MAKEFLAGS)
+	cd DamBreakAPI\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakAPI\DamBreakAPI.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile distclean
+sub-DamBreakAPI-install_subtargets: FORCE
+	@if not exist DamBreakAPI\ mkdir DamBreakAPI\ & if not exist DamBreakAPI\ exit 1
+	@set MAKEFLAGS=$(MAKEFLAGS)
+	cd DamBreakAPI\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakAPI\DamBreakAPI.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile install
+sub-DamBreakAPI-uninstall_subtargets: FORCE
+	@if not exist DamBreakAPI\ mkdir DamBreakAPI\ & if not exist DamBreakAPI\ exit 1
+	@set MAKEFLAGS=$(MAKEFLAGS)
+	cd DamBreakAPI\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakAPI\DamBreakAPI.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile uninstall
 sub-DamBreakVisualDbg-qmake_all:  FORCE
 	@if not exist DamBreakVisualDbg\ mkdir DamBreakVisualDbg\ & if not exist DamBreakVisualDbg\ exit 1
 	cd DamBreakVisualDbg\ && $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakVisualDbg\DamBreakVisualDbg.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug"
@@ -467,56 +501,72 @@ DBppGuiDev.pro:
 qmake: FORCE
 	@$(QMAKE) -o Makefile DBppGuiDev.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug"
 
-qmake_all: sub-DBppGuiAppl15-qmake_all sub-DamBreakVisualDbg-qmake_all FORCE
+qmake_all: sub-DBppGuiAppl15-qmake_all sub-DamBreakAPI-qmake_all sub-DamBreakVisualDbg-qmake_all FORCE
 
-make_first: sub-DBppGuiAppl15-make_first sub-DamBreakVisualDbg-make_first  FORCE
-all: sub-DBppGuiAppl15-all sub-DamBreakVisualDbg-all  FORCE
-clean: sub-DBppGuiAppl15-clean sub-DamBreakVisualDbg-clean  FORCE
-distclean: sub-DBppGuiAppl15-distclean sub-DamBreakVisualDbg-distclean  FORCE
+make_first: sub-DBppGuiAppl15-make_first sub-DamBreakAPI-make_first sub-DamBreakVisualDbg-make_first  FORCE
+all: sub-DBppGuiAppl15-all sub-DamBreakAPI-all sub-DamBreakVisualDbg-all  FORCE
+clean: sub-DBppGuiAppl15-clean sub-DamBreakAPI-clean sub-DamBreakVisualDbg-clean  FORCE
+distclean: sub-DBppGuiAppl15-distclean sub-DamBreakAPI-distclean sub-DamBreakVisualDbg-distclean  FORCE
 	-$(DEL_FILE) Makefile
 	-$(DEL_FILE) .qmake.stash
-install_subtargets: sub-DBppGuiAppl15-install_subtargets sub-DamBreakVisualDbg-install_subtargets FORCE
-uninstall_subtargets: sub-DBppGuiAppl15-uninstall_subtargets sub-DamBreakVisualDbg-uninstall_subtargets FORCE
+install_subtargets: sub-DBppGuiAppl15-install_subtargets sub-DamBreakAPI-install_subtargets sub-DamBreakVisualDbg-install_subtargets FORCE
+uninstall_subtargets: sub-DBppGuiAppl15-uninstall_subtargets sub-DamBreakAPI-uninstall_subtargets sub-DamBreakVisualDbg-uninstall_subtargets FORCE
 
 sub-DBppGuiAppl15-debug:
 	@if not exist DBppGuiAppl15\ mkdir DBppGuiAppl15\ & if not exist DBppGuiAppl15\ exit 1
 	@set MAKEFLAGS=$(MAKEFLAGS)
 	cd DBppGuiAppl15\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DBppGuiAppl15\DBppGuiAppl15.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile debug
+sub-DamBreakAPI-debug:
+	@if not exist DamBreakAPI\ mkdir DamBreakAPI\ & if not exist DamBreakAPI\ exit 1
+	@set MAKEFLAGS=$(MAKEFLAGS)
+	cd DamBreakAPI\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakAPI\DamBreakAPI.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile debug
 sub-DamBreakVisualDbg-debug:
 	@if not exist DamBreakVisualDbg\ mkdir DamBreakVisualDbg\ & if not exist DamBreakVisualDbg\ exit 1
 	@set MAKEFLAGS=$(MAKEFLAGS)
 	cd DamBreakVisualDbg\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakVisualDbg\DamBreakVisualDbg.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile debug
-debug: sub-DBppGuiAppl15-debug sub-DamBreakVisualDbg-debug
+debug: sub-DBppGuiAppl15-debug sub-DamBreakAPI-debug sub-DamBreakVisualDbg-debug
 
 sub-DBppGuiAppl15-release:
 	@if not exist DBppGuiAppl15\ mkdir DBppGuiAppl15\ & if not exist DBppGuiAppl15\ exit 1
 	@set MAKEFLAGS=$(MAKEFLAGS)
 	cd DBppGuiAppl15\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DBppGuiAppl15\DBppGuiAppl15.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile release
+sub-DamBreakAPI-release:
+	@if not exist DamBreakAPI\ mkdir DamBreakAPI\ & if not exist DamBreakAPI\ exit 1
+	@set MAKEFLAGS=$(MAKEFLAGS)
+	cd DamBreakAPI\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakAPI\DamBreakAPI.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile release
 sub-DamBreakVisualDbg-release:
 	@if not exist DamBreakVisualDbg\ mkdir DamBreakVisualDbg\ & if not exist DamBreakVisualDbg\ exit 1
 	@set MAKEFLAGS=$(MAKEFLAGS)
 	cd DamBreakVisualDbg\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakVisualDbg\DamBreakVisualDbg.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile release
-release: sub-DBppGuiAppl15-release sub-DamBreakVisualDbg-release
+release: sub-DBppGuiAppl15-release sub-DamBreakAPI-release sub-DamBreakVisualDbg-release
 
 sub-DBppGuiAppl15-check:
 	@if not exist DBppGuiAppl15\ mkdir DBppGuiAppl15\ & if not exist DBppGuiAppl15\ exit 1
 	@set MAKEFLAGS=$(MAKEFLAGS)
 	cd DBppGuiAppl15\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DBppGuiAppl15\DBppGuiAppl15.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile check
+sub-DamBreakAPI-check:
+	@if not exist DamBreakAPI\ mkdir DamBreakAPI\ & if not exist DamBreakAPI\ exit 1
+	@set MAKEFLAGS=$(MAKEFLAGS)
+	cd DamBreakAPI\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakAPI\DamBreakAPI.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile check
 sub-DamBreakVisualDbg-check:
 	@if not exist DamBreakVisualDbg\ mkdir DamBreakVisualDbg\ & if not exist DamBreakVisualDbg\ exit 1
 	@set MAKEFLAGS=$(MAKEFLAGS)
 	cd DamBreakVisualDbg\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakVisualDbg\DamBreakVisualDbg.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile check
-check: sub-DBppGuiAppl15-check sub-DamBreakVisualDbg-check
+check: sub-DBppGuiAppl15-check sub-DamBreakAPI-check sub-DamBreakVisualDbg-check
 
 sub-DBppGuiAppl15-benchmark:
 	@if not exist DBppGuiAppl15\ mkdir DBppGuiAppl15\ & if not exist DBppGuiAppl15\ exit 1
 	@set MAKEFLAGS=$(MAKEFLAGS)
 	cd DBppGuiAppl15\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DBppGuiAppl15\DBppGuiAppl15.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile benchmark
+sub-DamBreakAPI-benchmark:
+	@if not exist DamBreakAPI\ mkdir DamBreakAPI\ & if not exist DamBreakAPI\ exit 1
+	@set MAKEFLAGS=$(MAKEFLAGS)
+	cd DamBreakAPI\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakAPI\DamBreakAPI.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile benchmark
 sub-DamBreakVisualDbg-benchmark:
 	@if not exist DamBreakVisualDbg\ mkdir DamBreakVisualDbg\ & if not exist DamBreakVisualDbg\ exit 1
 	@set MAKEFLAGS=$(MAKEFLAGS)
 	cd DamBreakVisualDbg\ && ( if not exist Makefile $(QMAKE) -o Makefile E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakVisualDbg\DamBreakVisualDbg.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug" ) && $(MAKE) -f Makefile benchmark
-benchmark: sub-DBppGuiAppl15-benchmark sub-DamBreakVisualDbg-benchmark
+benchmark: sub-DBppGuiAppl15-benchmark sub-DamBreakAPI-benchmark sub-DamBreakVisualDbg-benchmark
 install:install_subtargets  FORCE
 
 uninstall: uninstall_subtargets FORCE
