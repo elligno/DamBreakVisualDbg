@@ -25,7 +25,7 @@ DBppGuiAppl15::~DBppGuiAppl15()
 #include <QSettings>
 #include <QTextEdit>
 
-#if 0
+#if 1
 // Library includes
 #include "Discretization/dbpp_GlobalDiscretization.h"
 #include "SfxTypes/dbpp_Simulation.h"
@@ -33,6 +33,7 @@ DBppGuiAppl15::~DBppGuiAppl15()
 #include "Utility/dbpp_TestLogger.h"
 #include "dbpp_Wave1DSimulator.h"
 #endif
+
 // test stuff
 //#include "Utility/dbpp_Worker.h"
 
@@ -46,10 +47,8 @@ void testThreadCall() {
 }
 
 DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
-    : QMainWindow(parent),
-      ui(new Ui::DBppGuiAppl15) // ..
-                                // m_waveSim{new dbpp::Wave1DSimulator} create
-                                // the simulator
+    : QMainWindow(parent), ui(new Ui::DBppGuiAppl15), // ..
+      m_waveSim{new dbpp::Wave1DSimulator}            // create the simulator
 {
 
   // Organization name
@@ -231,7 +230,6 @@ void DBppGuiAppl15::runStepbyStep() {
 // call activeAlgo. Since default algo name is set at initialization, if user
 // don't change it, file name is set to default.
 void DBppGuiAppl15::initSim() {
-#if 0
   auto w_currDiscrData = ui->discrdata_combo->currentText();
   // auto w_data = dbpp::DamBreakData::DiscrTypes::emcneil;  debug purpose
   if (w_currDiscrData == QString{"emcneil"}) {
@@ -262,6 +260,7 @@ void DBppGuiAppl15::initSim() {
   // shall let user create it
   m_waveSim->initialize();
 
+#if 1
   // Create the global discretization for this simulation
   // IMPORTANT in  the current version we create discretization
   // based on E. McNeil code (C-version), but it make no sense
