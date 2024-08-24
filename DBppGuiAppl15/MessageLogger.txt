@@ -17,3 +17,8 @@
 <-> We set DamBreak step function
 <-> Final simulation time is: 22.500000
 <-> Wave1DSimulator::scan initialization completed
+<-> Wave1DSimulator::scan initialization started
+<-> We are considering flat bed topography
+<-> We set DamBreak step function
+<-> Final simulation time is: 22.500000
+<-> Wave1DSimulator::scan initialization completed
