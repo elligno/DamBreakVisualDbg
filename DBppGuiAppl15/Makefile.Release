@@ -531,13 +531,8 @@ release\dbppguiappl15.obj: dbppguiappl15.cpp dbppguiappl15.h \
 		..\..\..\..\Qt5\5.12.12\msvc2017_64\include\QtGui\qtextcursor.h \
 		..\..\..\..\Qt5\5.12.12\msvc2017_64\include\QtGui\qtextformat.h \
 		..\..\..\..\Qt5\5.12.12\msvc2017_64\include\QtGui\qpen.h \
-		..\DamBreakAPI\Utility\dbpp_TestLogger.h \
-		..\DamBreakAPI\SfxTypes\dbpp_Singleton.hpp \
-		..\DamBreakAPI\SfxTypes\dbpp_Simulation.h \
-		..\DamBreakAPI\SfxTypes\dbpp_DamBreakData.h \
-		..\DamBreakAPI\dbpp_Wave1DSimulator.h \
-		$(BOOST_ROOT)\boost\filesystem.hpp \
-		$(BOOST_ROOT)\boost\filesystem\config.hpp \
+		..\DamBreakAPI\Discretization\dbpp_GlobalDiscretization.h \
+		$(BOOST_ROOT)\boost\iterator\transform_iterator.hpp \
 		$(BOOST_ROOT)\boost\config.hpp \
 		$(BOOST_ROOT)\boost\config\user.hpp \
 		$(BOOST_ROOT)\boost\config\detail\select_compiler_config.hpp \
@@ -604,121 +599,90 @@ release\dbppguiappl15.obj: dbppguiappl15.cpp dbppguiappl15.h \
 		$(BOOST_ROOT)\boost\config\platform\vms.hpp \
 		$(BOOST_ROOT)\boost\config\detail\suffix.hpp \
 		$(BOOST_ROOT)\boost\config\detail\cxx_composite.hpp \
-		$(BOOST_ROOT)\boost\system\api_config.hpp \
-		$(BOOST_ROOT)\boost\detail\workaround.hpp \
 		$(BOOST_ROOT)\boost\config\workaround.hpp \
-		$(BOOST_ROOT)\boost\config\auto_link.hpp \
+		$(BOOST_ROOT)\boost\iterator\detail\enable_if.hpp \
+		$(BOOST_ROOT)\boost\iterator\detail\config_def.hpp \
+		$(BOOST_ROOT)\boost\detail\workaround.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_convertible.hpp \
+		$(BOOST_ROOT)\boost\type_traits\intrinsics.hpp \
+		$(BOOST_ROOT)\boost\type_traits\detail\config.hpp \
 		$(BOOST_ROOT)\boost\version.hpp \
-		$(BOOST_ROOT)\boost\filesystem\path.hpp \
-		$(BOOST_ROOT)\boost\assert.hpp \
-		$(BOOST_ROOT)\boost\current_function.hpp \
-		$(BOOST_ROOT)\boost\filesystem\detail\path_traits.hpp \
-		$(BOOST_ROOT)\boost\system\error_category.hpp \
-		$(BOOST_ROOT)\boost\system\detail\error_category.hpp \
-		$(BOOST_ROOT)\boost\system\detail\config.hpp \
-		$(BOOST_ROOT)\boost\system\detail\requires_cxx11.hpp \
-		$(BOOST_ROOT)\boost\cstdint.hpp \
-		$(BOOST_ROOT)\boost\limits.hpp \
-		$(BOOST_ROOT)\boost\system\detail\error_category_impl.hpp \
-		$(BOOST_ROOT)\boost\system\detail\error_condition.hpp \
-		$(BOOST_ROOT)\boost\system\detail\generic_category.hpp \
-		$(BOOST_ROOT)\boost\system\detail\generic_category_message.hpp \
-		$(BOOST_ROOT)\boost\system\detail\enable_if.hpp \
-		$(BOOST_ROOT)\boost\system\detail\is_same.hpp \
-		$(BOOST_ROOT)\boost\system\detail\errc.hpp \
-		$(BOOST_ROOT)\boost\system\is_error_condition_enum.hpp \
-		$(BOOST_ROOT)\boost\system\detail\cerrno.hpp \
-		$(BOOST_ROOT)\boost\system\detail\append_int.hpp \
-		$(BOOST_ROOT)\boost\system\detail\snprintf.hpp \
-		$(BOOST_ROOT)\boost\system\detail\error_code.hpp \
-		$(BOOST_ROOT)\boost\system\is_error_code_enum.hpp \
-		$(BOOST_ROOT)\boost\system\detail\system_category.hpp \
-		$(BOOST_ROOT)\boost\system\detail\system_category_impl.hpp \
-		$(BOOST_ROOT)\boost\system\detail\system_category_message.hpp \
-		$(BOOST_ROOT)\boost\system\detail\system_category_message_win32.hpp \
-		$(BOOST_ROOT)\boost\winapi\error_handling.hpp \
-		$(BOOST_ROOT)\boost\winapi\basic_types.hpp \
-		$(BOOST_ROOT)\boost\winapi\config.hpp \
-		$(BOOST_ROOT)\boost\predef\version_number.h \
-		$(BOOST_ROOT)\boost\predef\platform.h \
-		$(BOOST_ROOT)\boost\predef\platform\android.h \
-		$(BOOST_ROOT)\boost\predef\make.h \
-		$(BOOST_ROOT)\boost\predef\detail\test.h \
-		$(BOOST_ROOT)\boost\predef\detail\platform_detected.h \
-		$(BOOST_ROOT)\boost\predef\platform\cloudabi.h \
-		$(BOOST_ROOT)\boost\predef\platform\mingw.h \
-		$(BOOST_ROOT)\boost\predef\platform\mingw32.h \
-		$(BOOST_ROOT)\boost\predef\platform\mingw64.h \
-		$(BOOST_ROOT)\boost\predef\platform\windows_uwp.h \
-		$(BOOST_ROOT)\boost\predef\os\windows.h \
-		$(BOOST_ROOT)\boost\predef\detail\os_detected.h \
-		$(BOOST_ROOT)\boost\predef\platform\windows_desktop.h \
-		$(BOOST_ROOT)\boost\predef\platform\windows_phone.h \
-		$(BOOST_ROOT)\boost\predef\platform\windows_server.h \
-		$(BOOST_ROOT)\boost\predef\platform\windows_store.h \
-		$(BOOST_ROOT)\boost\predef\platform\windows_system.h \
-		$(BOOST_ROOT)\boost\predef\platform\windows_runtime.h \
-		$(BOOST_ROOT)\boost\predef\platform\ios.h \
-		$(BOOST_ROOT)\boost\predef\os\ios.h \
-		$(BOOST_ROOT)\boost\winapi\detail\header.hpp \
-		$(BOOST_ROOT)\boost\winapi\detail\footer.hpp \
-		$(BOOST_ROOT)\boost\winapi\get_last_error.hpp \
-		$(BOOST_ROOT)\boost\winapi\character_code_conversion.hpp \
-		$(BOOST_ROOT)\boost\winapi\local_memory.hpp \
-		$(BOOST_ROOT)\boost\system\detail\system_category_condition_win32.hpp \
-		$(BOOST_ROOT)\boost\winapi\error_codes.hpp \
-		$(BOOST_ROOT)\boost\system\detail\interop_category.hpp \
-		$(BOOST_ROOT)\boost\system\detail\std_category.hpp \
-		$(BOOST_ROOT)\boost\assert\source_location.hpp \
-		$(BOOST_ROOT)\boost\system\detail\std_category_impl.hpp \
-		$(BOOST_ROOT)\boost\system\detail\mutex.hpp \
-		$(BOOST_ROOT)\boost\type_traits\declval.hpp \
-		$(BOOST_ROOT)\boost\type_traits\add_rvalue_reference.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_void.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_same.hpp \
 		$(BOOST_ROOT)\boost\type_traits\integral_constant.hpp \
 		$(BOOST_ROOT)\boost\type_traits\is_reference.hpp \
 		$(BOOST_ROOT)\boost\type_traits\is_lvalue_reference.hpp \
 		$(BOOST_ROOT)\boost\type_traits\is_rvalue_reference.hpp \
 		$(BOOST_ROOT)\boost\type_traits\detail\is_rvalue_reference_msvc10_fix.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_volatile.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_void.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_complete.hpp \
+		$(BOOST_ROOT)\boost\type_traits\declval.hpp \
+		$(BOOST_ROOT)\boost\type_traits\add_rvalue_reference.hpp \
+		$(BOOST_ROOT)\boost\type_traits\remove_reference.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_function.hpp \
+		$(BOOST_ROOT)\boost\type_traits\detail\is_function_cxx_11.hpp \
+		$(BOOST_ROOT)\boost\type_traits\detail\is_function_cxx_03.hpp \
+		$(BOOST_ROOT)\boost\type_traits\detail\is_function_ptr_helper.hpp \
+		$(BOOST_ROOT)\boost\type_traits\detail\is_function_ptr_tester.hpp \
+		$(BOOST_ROOT)\boost\type_traits\detail\yes_no_type.hpp \
+		$(BOOST_ROOT)\boost\type_traits\detail\is_function_msvc10_fix.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_array.hpp \
+		$(BOOST_ROOT)\boost\static_assert.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_arithmetic.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_integral.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_floating_point.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_abstract.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_class.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_union.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_scalar.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_enum.hpp \
+		$(BOOST_ROOT)\boost\type_traits\add_reference.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_pointer.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_member_pointer.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_member_function_pointer.hpp \
+		$(BOOST_ROOT)\boost\type_traits\detail\is_member_function_pointer_cxx_11.hpp \
+		$(BOOST_ROOT)\boost\type_traits\detail\is_member_function_pointer_cxx_03.hpp \
+		$(BOOST_ROOT)\boost\type_traits\detail\is_mem_fun_pointer_impl.hpp \
 		$(BOOST_ROOT)\boost\type_traits\remove_cv.hpp \
-		$(BOOST_ROOT)\boost\type_traits\disjunction.hpp \
-		$(BOOST_ROOT)\boost\type_traits\conditional.hpp \
-		$(BOOST_ROOT)\boost\core\enable_if.hpp \
-		$(BOOST_ROOT)\boost\filesystem\detail\header.hpp \
-		$(BOOST_ROOT)\boost\config\abi_prefix.hpp \
-		$(BOOST_ROOT)\boost\filesystem\detail\footer.hpp \
-		$(BOOST_ROOT)\boost\config\abi_suffix.hpp \
-		$(BOOST_ROOT)\boost\iterator\iterator_facade.hpp \
-		$(BOOST_ROOT)\boost\iterator\interoperable.hpp \
-		$(BOOST_ROOT)\boost\mpl\bool.hpp \
-		$(BOOST_ROOT)\boost\mpl\bool_fwd.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\adl_barrier.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\config\adl.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\config\msvc.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\config\intel.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\config\gcc.hpp \
+		$(BOOST_ROOT)\boost\type_traits\detail\is_mem_fun_pointer_tester.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_polymorphic.hpp \
+		$(BOOST_ROOT)\boost\type_traits\add_lvalue_reference.hpp \
+		$(BOOST_ROOT)\boost\type_traits\type_identity.hpp \
+		$(BOOST_ROOT)\boost\iterator\detail\config_undef.hpp \
+		$(BOOST_ROOT)\boost\iterator\iterator_adaptor.hpp \
+		$(BOOST_ROOT)\boost\core\use_default.hpp \
+		$(BOOST_ROOT)\boost\iterator\iterator_categories.hpp \
+		$(BOOST_ROOT)\boost\mpl\eval_if.hpp \
+		$(BOOST_ROOT)\boost\mpl\if.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\value_wknd.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\static_cast.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\config\workaround.hpp \
-		$(BOOST_ROOT)\boost\mpl\integral_c_tag.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\config\static_constant.hpp \
-		$(BOOST_ROOT)\boost\mpl\or.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\config\use_preprocessed.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\nested_type_wknd.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\na_spec.hpp \
-		$(BOOST_ROOT)\boost\mpl\lambda_fwd.hpp \
-		$(BOOST_ROOT)\boost\mpl\void_fwd.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\na.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\na_fwd.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\config\ctps.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\config\lambda.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\config\ttp.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\config\integral.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\config\msvc.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\config\eti.hpp \
 		$(BOOST_ROOT)\boost\mpl\int.hpp \
 		$(BOOST_ROOT)\boost\mpl\int_fwd.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\adl_barrier.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\config\adl.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\config\intel.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\config\gcc.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\nttp_decl.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\config\nttp.hpp \
 		$(BOOST_ROOT)\boost\preprocessor\cat.hpp \
 		$(BOOST_ROOT)\boost\preprocessor\config\config.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\integral_wrapper.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\static_cast.hpp \
+		$(BOOST_ROOT)\boost\mpl\integral_c_tag.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\config\static_constant.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\na_spec.hpp \
+		$(BOOST_ROOT)\boost\mpl\lambda_fwd.hpp \
+		$(BOOST_ROOT)\boost\mpl\void_fwd.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\na.hpp \
+		$(BOOST_ROOT)\boost\mpl\bool.hpp \
+		$(BOOST_ROOT)\boost\mpl\bool_fwd.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\na_fwd.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\config\ctps.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\config\lambda.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\config\ttp.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\lambda_arity_param.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\template_arity_fwd.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\arity.hpp \
@@ -845,7 +809,6 @@ release\dbppguiappl15.obj: dbppguiappl15.cpp dbppguiappl15.h \
 		$(BOOST_ROOT)\boost\preprocessor\arithmetic\detail\is_minimum_number.hpp \
 		$(BOOST_ROOT)\boost\preprocessor\logical\not.hpp \
 		$(BOOST_ROOT)\boost\preprocessor\arithmetic\add.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\config\eti.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\config\overload_resolution.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\lambda_support.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\yes_no.hpp \
@@ -869,54 +832,6 @@ release\dbppguiappl15.obj: dbppguiappl15.cpp dbppguiappl15.h \
 		$(BOOST_ROOT)\boost\preprocessor\repetition\limits\for_256.hpp \
 		$(BOOST_ROOT)\boost\preprocessor\repetition\limits\for_512.hpp \
 		$(BOOST_ROOT)\boost\preprocessor\repetition\limits\for_1024.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\include_preprocessed.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\config\compiler.hpp \
-		$(BOOST_ROOT)\boost\preprocessor\stringize.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\logical_op.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\preprocessor\ext_params.hpp \
-		$(BOOST_ROOT)\boost\preprocessor\dec.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_convertible.hpp \
-		$(BOOST_ROOT)\boost\type_traits\intrinsics.hpp \
-		$(BOOST_ROOT)\boost\type_traits\detail\config.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_same.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_volatile.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_complete.hpp \
-		$(BOOST_ROOT)\boost\type_traits\remove_reference.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_function.hpp \
-		$(BOOST_ROOT)\boost\type_traits\detail\is_function_cxx_11.hpp \
-		$(BOOST_ROOT)\boost\type_traits\detail\is_function_cxx_03.hpp \
-		$(BOOST_ROOT)\boost\type_traits\detail\is_function_ptr_helper.hpp \
-		$(BOOST_ROOT)\boost\type_traits\detail\is_function_ptr_tester.hpp \
-		$(BOOST_ROOT)\boost\type_traits\detail\yes_no_type.hpp \
-		$(BOOST_ROOT)\boost\type_traits\detail\is_function_msvc10_fix.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_array.hpp \
-		$(BOOST_ROOT)\boost\static_assert.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_arithmetic.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_integral.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_floating_point.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_abstract.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_class.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_union.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_scalar.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_enum.hpp \
-		$(BOOST_ROOT)\boost\type_traits\add_reference.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_pointer.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_member_pointer.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_member_function_pointer.hpp \
-		$(BOOST_ROOT)\boost\type_traits\detail\is_member_function_pointer_cxx_11.hpp \
-		$(BOOST_ROOT)\boost\type_traits\detail\is_member_function_pointer_cxx_03.hpp \
-		$(BOOST_ROOT)\boost\type_traits\detail\is_mem_fun_pointer_impl.hpp \
-		$(BOOST_ROOT)\boost\type_traits\detail\is_mem_fun_pointer_tester.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_polymorphic.hpp \
-		$(BOOST_ROOT)\boost\type_traits\add_lvalue_reference.hpp \
-		$(BOOST_ROOT)\boost\iterator\detail\config_def.hpp \
-		$(BOOST_ROOT)\boost\iterator\detail\config_undef.hpp \
-		$(BOOST_ROOT)\boost\iterator\iterator_traits.hpp \
-		$(BOOST_ROOT)\boost\iterator\iterator_categories.hpp \
-		$(BOOST_ROOT)\boost\mpl\eval_if.hpp \
-		$(BOOST_ROOT)\boost\mpl\if.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\value_wknd.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\config\integral.hpp \
 		$(BOOST_ROOT)\boost\mpl\identity.hpp \
 		$(BOOST_ROOT)\boost\mpl\placeholders.hpp \
 		$(BOOST_ROOT)\boost\mpl\arg.hpp \
@@ -924,10 +839,15 @@ release\dbppguiappl15.obj: dbppguiappl15.cpp dbppguiappl15.h \
 		$(BOOST_ROOT)\boost\mpl\aux_\na_assert.hpp \
 		$(BOOST_ROOT)\boost\mpl\assert.hpp \
 		$(BOOST_ROOT)\boost\mpl\not.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\nested_type_wknd.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\config\gpu.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\config\pp_counter.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\arity_spec.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\arg_typedef.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\config\use_preprocessed.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\include_preprocessed.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\config\compiler.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\stringize.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\preprocessor\default_params.hpp \
 		$(BOOST_ROOT)\boost\preprocessor\iterate.hpp \
 		$(BOOST_ROOT)\boost\preprocessor\iteration\iterate.hpp \
@@ -936,15 +856,19 @@ release\dbppguiappl15.obj: dbppguiappl15.cpp dbppguiappl15.h \
 		$(BOOST_ROOT)\boost\preprocessor\array\size.hpp \
 		$(BOOST_ROOT)\boost\preprocessor\slot\slot.hpp \
 		$(BOOST_ROOT)\boost\preprocessor\slot\detail\def.hpp \
+		$(BOOST_ROOT)\boost\iterator\iterator_facade.hpp \
+		$(BOOST_ROOT)\boost\iterator\interoperable.hpp \
+		$(BOOST_ROOT)\boost\mpl\or.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\logical_op.hpp \
+		$(BOOST_ROOT)\boost\mpl\aux_\preprocessor\ext_params.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\dec.hpp \
+		$(BOOST_ROOT)\boost\iterator\iterator_traits.hpp \
 		$(BOOST_ROOT)\boost\iterator\detail\facade_iterator_category.hpp \
-		$(BOOST_ROOT)\boost\core\use_default.hpp \
 		$(BOOST_ROOT)\boost\mpl\and.hpp \
 		$(BOOST_ROOT)\boost\type_traits\is_const.hpp \
 		$(BOOST_ROOT)\boost\detail\indirect_traits.hpp \
 		$(BOOST_ROOT)\boost\type_traits\remove_pointer.hpp \
 		$(BOOST_ROOT)\boost\detail\select_type.hpp \
-		$(BOOST_ROOT)\boost\iterator\detail\enable_if.hpp \
-		$(BOOST_ROOT)\boost\type_traits\type_identity.hpp \
 		$(BOOST_ROOT)\boost\core\addressof.hpp \
 		$(BOOST_ROOT)\boost\type_traits\add_const.hpp \
 		$(BOOST_ROOT)\boost\type_traits\add_pointer.hpp \
@@ -1013,6 +937,218 @@ release\dbppguiappl15.obj: dbppguiappl15.cpp dbppguiappl15.h \
 		$(BOOST_ROOT)\boost\preprocessor\seq\limits\fold_left_1024.hpp \
 		$(BOOST_ROOT)\boost\mpl\aux_\lambda_no_ctps.hpp \
 		$(BOOST_ROOT)\boost\mpl\is_placeholder.hpp \
+		$(BOOST_ROOT)\boost\type_traits\function_traits.hpp \
+		$(BOOST_ROOT)\boost\utility\result_of.hpp \
+		$(BOOST_ROOT)\boost\type_traits\conditional.hpp \
+		$(BOOST_ROOT)\boost\core\enable_if.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\repetition\enum_binary_params.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\facilities\intercept.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\facilities\limits\intercept_256.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\facilities\limits\intercept_512.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\facilities\limits\intercept_1024.hpp \
+		$(BOOST_ROOT)\boost\utility\detail\result_of_variadic.hpp \
+		$(BOOST_ROOT)\boost\utility\detail\result_of_iterate.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_base_and_derived.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\ptr_vector.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\ptr_sequence_adapter.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\detail\reversible_ptr_container.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\detail\throw_exception.hpp \
+		$(BOOST_ROOT)\boost\assert.hpp \
+		$(BOOST_ROOT)\boost\current_function.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\detail\scoped_deleter.hpp \
+		$(BOOST_ROOT)\boost\scoped_array.hpp \
+		$(BOOST_ROOT)\boost\smart_ptr\scoped_array.hpp \
+		$(BOOST_ROOT)\boost\smart_ptr\detail\requires_cxx11.hpp \
+		$(BOOST_ROOT)\boost\core\checked_delete.hpp \
+		$(BOOST_ROOT)\boost\smart_ptr\detail\sp_nullptr_t.hpp \
+		$(BOOST_ROOT)\boost\smart_ptr\detail\sp_noexcept.hpp \
+		$(BOOST_ROOT)\boost\smart_ptr\detail\operator_bool.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\detail\static_move_ptr.hpp \
+		$(BOOST_ROOT)\boost\compressed_pair.hpp \
+		$(BOOST_ROOT)\boost\detail\compressed_pair.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_empty.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_final.hpp \
+		$(BOOST_ROOT)\boost\call_traits.hpp \
+		$(BOOST_ROOT)\boost\detail\call_traits.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\detail\default_deleter.hpp \
+		$(BOOST_ROOT)\boost\checked_delete.hpp \
+		$(BOOST_ROOT)\boost\type_traits\remove_bounds.hpp \
+		$(BOOST_ROOT)\boost\type_traits\remove_extent.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\detail\is_convertible.hpp \
+		$(BOOST_ROOT)\boost\utility\enable_if.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\detail\move.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\detail\ptr_container_disable_deprecated.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\exception.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\clone_allocator.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\nullable.hpp \
+		$(BOOST_ROOT)\boost\range\functions.hpp \
+		$(BOOST_ROOT)\boost\range\begin.hpp \
+		$(BOOST_ROOT)\boost\range\config.hpp \
+		$(BOOST_ROOT)\boost\range\iterator.hpp \
+		$(BOOST_ROOT)\boost\range\range_fwd.hpp \
+		$(BOOST_ROOT)\boost\range\mutable_iterator.hpp \
+		$(BOOST_ROOT)\boost\range\detail\extract_optional_type.hpp \
+		$(BOOST_ROOT)\boost\range\detail\msvc_has_iterator_workaround.hpp \
+		$(BOOST_ROOT)\boost\range\const_iterator.hpp \
+		$(BOOST_ROOT)\boost\range\end.hpp \
+		$(BOOST_ROOT)\boost\range\detail\implementation_help.hpp \
+		$(BOOST_ROOT)\boost\range\detail\common.hpp \
+		$(BOOST_ROOT)\boost\range\detail\sfinae.hpp \
+		$(BOOST_ROOT)\boost\range\size.hpp \
+		$(BOOST_ROOT)\boost\range\size_type.hpp \
+		$(BOOST_ROOT)\boost\range\difference_type.hpp \
+		$(BOOST_ROOT)\boost\range\has_range_iterator.hpp \
+		$(BOOST_ROOT)\boost\range\concepts.hpp \
+		$(BOOST_ROOT)\boost\concept_check.hpp \
+		$(BOOST_ROOT)\boost\concept\assert.hpp \
+		$(BOOST_ROOT)\boost\concept\detail\msvc.hpp \
+		$(BOOST_ROOT)\boost\concept\detail\backward_compatibility.hpp \
+		$(BOOST_ROOT)\boost\concept\detail\has_constraints.hpp \
+		$(BOOST_ROOT)\boost\concept\detail\borland.hpp \
+		$(BOOST_ROOT)\boost\concept\detail\general.hpp \
+		$(BOOST_ROOT)\boost\type_traits\conversion_traits.hpp \
+		$(BOOST_ROOT)\boost\concept\usage.hpp \
+		$(BOOST_ROOT)\boost\concept\detail\concept_def.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\seq\for_each_i.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\seq\enum.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\seq\limits\enum_256.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\seq\limits\enum_512.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\seq\limits\enum_1024.hpp \
+		$(BOOST_ROOT)\boost\concept\detail\concept_undef.hpp \
+		$(BOOST_ROOT)\boost\iterator\iterator_concepts.hpp \
+		$(BOOST_ROOT)\boost\limits.hpp \
+		$(BOOST_ROOT)\boost\range\value_type.hpp \
+		$(BOOST_ROOT)\boost\range\detail\misc_concept.hpp \
+		$(BOOST_ROOT)\boost\type_traits\make_unsigned.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_signed.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_unsigned.hpp \
+		$(BOOST_ROOT)\boost\type_traits\add_volatile.hpp \
+		$(BOOST_ROOT)\boost\range\detail\has_member_size.hpp \
+		$(BOOST_ROOT)\boost\cstdint.hpp \
+		$(BOOST_ROOT)\boost\utility.hpp \
+		$(BOOST_ROOT)\boost\utility\base_from_member.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\repetition\repeat_from_to.hpp \
+		$(BOOST_ROOT)\boost\utility\binary.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\control\deduce_d.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\seq\cat.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\seq\transform.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\arithmetic\mod.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\arithmetic\detail\div_base.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\comparison\less_equal.hpp \
+		$(BOOST_ROOT)\boost\preprocessor\arithmetic\detail\is_1_number.hpp \
+		$(BOOST_ROOT)\boost\utility\identity_type.hpp \
+		$(BOOST_ROOT)\boost\core\noncopyable.hpp \
+		$(BOOST_ROOT)\boost\range\distance.hpp \
+		$(BOOST_ROOT)\boost\iterator\distance.hpp \
+		$(BOOST_ROOT)\boost\range\empty.hpp \
+		$(BOOST_ROOT)\boost\range\rbegin.hpp \
+		$(BOOST_ROOT)\boost\range\reverse_iterator.hpp \
+		$(BOOST_ROOT)\boost\iterator\reverse_iterator.hpp \
+		$(BOOST_ROOT)\boost\range\rend.hpp \
+		$(BOOST_ROOT)\boost\swap.hpp \
+		$(BOOST_ROOT)\boost\core\swap.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\indirect_fun.hpp \
+		$(BOOST_ROOT)\boost\pointee.hpp \
+		$(BOOST_ROOT)\boost\detail\is_incrementable.hpp \
+		$(BOOST_ROOT)\boost\type_traits\detail\bool_trait_undef.hpp \
+		$(BOOST_ROOT)\boost\ptr_container\detail\void_ptr_iterator.hpp \
+		$(BOOST_ROOT)\boost\next_prior.hpp \
+		$(BOOST_ROOT)\boost\type_traits\has_plus.hpp \
+		$(BOOST_ROOT)\boost\type_traits\detail\has_binary_operator.hpp \
+		$(BOOST_ROOT)\boost\type_traits\make_void.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_base_of.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_fundamental.hpp \
+		$(BOOST_ROOT)\boost\type_traits\detail\is_likely_lambda.hpp \
+		$(BOOST_ROOT)\boost\type_traits\enable_if.hpp \
+		$(BOOST_ROOT)\boost\type_traits\has_plus_assign.hpp \
+		$(BOOST_ROOT)\boost\type_traits\has_minus.hpp \
+		$(BOOST_ROOT)\boost\type_traits\has_minus_assign.hpp \
+		$(BOOST_ROOT)\boost\iterator\advance.hpp \
+		$(BOOST_ROOT)\boost\range\iterator_range.hpp \
+		$(BOOST_ROOT)\boost\range\iterator_range_core.hpp \
+		$(BOOST_ROOT)\boost\range\algorithm\equal.hpp \
+		$(BOOST_ROOT)\boost\range\detail\safe_bool.hpp \
+		$(BOOST_ROOT)\boost\range\iterator_range_io.hpp \
+		..\DamBreakAPI\Discretization\dbpp_EMcnilGamma.h \
+		..\DamBreakAPI\Discretization\dbpp_NodalVariables.h \
+		$(BOOST_ROOT)\boost\operators.hpp \
+		..\..\..\..\Boost\boost_1_82_0\boost\operators_v1.hpp \
+		..\DamBreakAPI\Utility\dbpp_EMcNeilUtils.h \
+		..\DamBreakAPI\SfxTypes\dbpp_ListSectFlow.h \
+		..\DamBreakAPI\SfxTypes\dbpp_Observer.h \
+		..\DamBreakAPI\SfxTypes\dbpp_Singleton.hpp \
+		..\DamBreakAPI\SfxTypes\dbpp_cellFace.h \
+		..\DamBreakAPI\SfxTypes\dbpp_Simulation.h \
+		..\DamBreakAPI\SfxTypes\dbpp_DamBreakData.h \
+		..\DamBreakAPI\Utility\dbpp_Hydro1DLogger.h \
+		$(BOOST_ROOT)\boost\filesystem.hpp \
+		$(BOOST_ROOT)\boost\filesystem\config.hpp \
+		$(BOOST_ROOT)\boost\system\api_config.hpp \
+		$(BOOST_ROOT)\boost\config\auto_link.hpp \
+		$(BOOST_ROOT)\boost\filesystem\path.hpp \
+		$(BOOST_ROOT)\boost\filesystem\detail\path_traits.hpp \
+		$(BOOST_ROOT)\boost\system\error_category.hpp \
+		$(BOOST_ROOT)\boost\system\detail\error_category.hpp \
+		$(BOOST_ROOT)\boost\system\detail\config.hpp \
+		$(BOOST_ROOT)\boost\system\detail\requires_cxx11.hpp \
+		$(BOOST_ROOT)\boost\system\detail\error_category_impl.hpp \
+		$(BOOST_ROOT)\boost\system\detail\error_condition.hpp \
+		$(BOOST_ROOT)\boost\system\detail\generic_category.hpp \
+		$(BOOST_ROOT)\boost\system\detail\generic_category_message.hpp \
+		$(BOOST_ROOT)\boost\system\detail\enable_if.hpp \
+		$(BOOST_ROOT)\boost\system\detail\is_same.hpp \
+		$(BOOST_ROOT)\boost\system\detail\errc.hpp \
+		$(BOOST_ROOT)\boost\system\is_error_condition_enum.hpp \
+		$(BOOST_ROOT)\boost\system\detail\cerrno.hpp \
+		$(BOOST_ROOT)\boost\system\detail\append_int.hpp \
+		$(BOOST_ROOT)\boost\system\detail\snprintf.hpp \
+		$(BOOST_ROOT)\boost\system\detail\error_code.hpp \
+		$(BOOST_ROOT)\boost\system\is_error_code_enum.hpp \
+		$(BOOST_ROOT)\boost\system\detail\system_category.hpp \
+		$(BOOST_ROOT)\boost\system\detail\system_category_impl.hpp \
+		$(BOOST_ROOT)\boost\system\detail\system_category_message.hpp \
+		$(BOOST_ROOT)\boost\system\detail\system_category_message_win32.hpp \
+		$(BOOST_ROOT)\boost\winapi\error_handling.hpp \
+		$(BOOST_ROOT)\boost\winapi\basic_types.hpp \
+		$(BOOST_ROOT)\boost\winapi\config.hpp \
+		$(BOOST_ROOT)\boost\predef\version_number.h \
+		$(BOOST_ROOT)\boost\predef\platform.h \
+		$(BOOST_ROOT)\boost\predef\platform\android.h \
+		$(BOOST_ROOT)\boost\predef\make.h \
+		$(BOOST_ROOT)\boost\predef\detail\test.h \
+		$(BOOST_ROOT)\boost\predef\detail\platform_detected.h \
+		$(BOOST_ROOT)\boost\predef\platform\cloudabi.h \
+		$(BOOST_ROOT)\boost\predef\platform\mingw.h \
+		$(BOOST_ROOT)\boost\predef\platform\mingw32.h \
+		$(BOOST_ROOT)\boost\predef\platform\mingw64.h \
+		$(BOOST_ROOT)\boost\predef\platform\windows_uwp.h \
+		$(BOOST_ROOT)\boost\predef\os\windows.h \
+		$(BOOST_ROOT)\boost\predef\detail\os_detected.h \
+		$(BOOST_ROOT)\boost\predef\platform\windows_desktop.h \
+		$(BOOST_ROOT)\boost\predef\platform\windows_phone.h \
+		$(BOOST_ROOT)\boost\predef\platform\windows_server.h \
+		$(BOOST_ROOT)\boost\predef\platform\windows_store.h \
+		$(BOOST_ROOT)\boost\predef\platform\windows_system.h \
+		$(BOOST_ROOT)\boost\predef\platform\windows_runtime.h \
+		$(BOOST_ROOT)\boost\predef\platform\ios.h \
+		$(BOOST_ROOT)\boost\predef\os\ios.h \
+		$(BOOST_ROOT)\boost\winapi\detail\header.hpp \
+		$(BOOST_ROOT)\boost\winapi\detail\footer.hpp \
+		$(BOOST_ROOT)\boost\winapi\get_last_error.hpp \
+		$(BOOST_ROOT)\boost\winapi\character_code_conversion.hpp \
+		$(BOOST_ROOT)\boost\winapi\local_memory.hpp \
+		$(BOOST_ROOT)\boost\system\detail\system_category_condition_win32.hpp \
+		$(BOOST_ROOT)\boost\winapi\error_codes.hpp \
+		$(BOOST_ROOT)\boost\system\detail\interop_category.hpp \
+		$(BOOST_ROOT)\boost\system\detail\std_category.hpp \
+		$(BOOST_ROOT)\boost\assert\source_location.hpp \
+		$(BOOST_ROOT)\boost\system\detail\std_category_impl.hpp \
+		$(BOOST_ROOT)\boost\system\detail\mutex.hpp \
+		$(BOOST_ROOT)\boost\type_traits\disjunction.hpp \
+		$(BOOST_ROOT)\boost\filesystem\detail\header.hpp \
+		$(BOOST_ROOT)\boost\config\abi_prefix.hpp \
+		$(BOOST_ROOT)\boost\filesystem\detail\footer.hpp \
+		$(BOOST_ROOT)\boost\config\abi_suffix.hpp \
 		$(BOOST_ROOT)\boost\io\quoted.hpp \
 		$(BOOST_ROOT)\boost\io\detail\buffer_fill.hpp \
 		$(BOOST_ROOT)\boost\io\detail\ostream_guard.hpp \
@@ -1031,12 +1167,8 @@ release\dbppguiappl15.obj: dbppguiappl15.cpp dbppguiappl15.h \
 		$(BOOST_ROOT)\boost\system\detail\throws.hpp \
 		$(BOOST_ROOT)\boost\system\system_error.hpp \
 		$(BOOST_ROOT)\boost\smart_ptr\intrusive_ptr.hpp \
-		$(BOOST_ROOT)\boost\smart_ptr\detail\requires_cxx11.hpp \
 		$(BOOST_ROOT)\boost\smart_ptr\detail\sp_convertible.hpp \
-		$(BOOST_ROOT)\boost\smart_ptr\detail\sp_nullptr_t.hpp \
-		$(BOOST_ROOT)\boost\smart_ptr\detail\sp_noexcept.hpp \
 		$(BOOST_ROOT)\boost\config\no_tr1\functional.hpp \
-		$(BOOST_ROOT)\boost\smart_ptr\detail\operator_bool.hpp \
 		$(BOOST_ROOT)\boost\smart_ptr\intrusive_ref_counter.hpp \
 		$(BOOST_ROOT)\boost\smart_ptr\detail\atomic_count.hpp \
 		$(BOOST_ROOT)\boost\smart_ptr\detail\sp_has_gcc_intrinsics.hpp \
@@ -1075,10 +1207,9 @@ release\dbppguiappl15.obj: dbppguiappl15.cpp dbppguiappl15.h \
 		$(BOOST_ROOT)\boost\filesystem\string_file.hpp \
 		$(BOOST_ROOT)\boost\config\header_deprecated.hpp \
 		$(BOOST_ROOT)\boost\filesystem\fstream.hpp \
+		..\DamBreakAPI\Utility\dbpp_TestLogger.h \
+		..\DamBreakAPI\dbpp_Wave1DSimulator.h \
 		..\DamBreakAPI\NumericalSchemes\dbpp_HLL_RK2_Algo_Vec.h \
-		..\DamBreakAPI\Utility\dbpp_EMcNeilUtils.h \
-		..\DamBreakAPI\SfxTypes\dbpp_ListSectFlow.h \
-		..\DamBreakAPI\SfxTypes\dbpp_Observer.h \
 		..\DamBreakAPI\Utility\dbpp_HydroCodeDef.h \
 		..\DamBreakAPI\SfxTypes\dbpp_scalarField.h \
 		..\DamBreakAPI\SfxTypes\dbpp_RealNumArray.h \

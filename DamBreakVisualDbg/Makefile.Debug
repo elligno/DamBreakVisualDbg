@@ -846,42 +846,37 @@ debug\TestReadRes.obj: TestReadRes.cpp $(BOOST_ROOT)\boost\filesystem.hpp \
 		$(BOOST_ROOT)\boost\filesystem\string_file.hpp \
 		$(BOOST_ROOT)\boost\config\header_deprecated.hpp \
 		$(BOOST_ROOT)\boost\filesystem\fstream.hpp \
-		$(BOOST_ROOT)\boost\foreach.hpp \
-		$(BOOST_ROOT)\boost\mpl\logical.hpp \
-		$(BOOST_ROOT)\boost\noncopyable.hpp \
-		$(BOOST_ROOT)\boost\core\noncopyable.hpp \
-		$(BOOST_ROOT)\boost\range\end.hpp \
+		$(BOOST_ROOT)\boost\algorithm\string.hpp \
+		$(BOOST_ROOT)\boost\algorithm\string\std_containers_traits.hpp \
+		$(BOOST_ROOT)\boost\algorithm\string\std\string_traits.hpp \
+		$(BOOST_ROOT)\boost\algorithm\string\yes_no_type.hpp \
+		$(BOOST_ROOT)\boost\algorithm\string\sequence_traits.hpp \
+		$(BOOST_ROOT)\boost\algorithm\string\std\list_traits.hpp \
+		$(BOOST_ROOT)\boost\algorithm\string\std\slist_traits.hpp \
+		$(BOOST_ROOT)\boost\algorithm\string\config.hpp \
+		$(BOOST_ROOT)\boost\algorithm\string\trim.hpp \
+		$(BOOST_ROOT)\boost\range\begin.hpp \
 		$(BOOST_ROOT)\boost\range\config.hpp \
-		$(BOOST_ROOT)\boost\range\detail\implementation_help.hpp \
-		$(BOOST_ROOT)\boost\range\detail\common.hpp \
-		$(BOOST_ROOT)\boost\range\detail\sfinae.hpp \
 		$(BOOST_ROOT)\boost\range\iterator.hpp \
 		$(BOOST_ROOT)\boost\range\range_fwd.hpp \
 		$(BOOST_ROOT)\boost\range\mutable_iterator.hpp \
 		$(BOOST_ROOT)\boost\range\detail\extract_optional_type.hpp \
 		$(BOOST_ROOT)\boost\range\detail\msvc_has_iterator_workaround.hpp \
 		$(BOOST_ROOT)\boost\range\const_iterator.hpp \
-		$(BOOST_ROOT)\boost\range\begin.hpp \
-		$(BOOST_ROOT)\boost\range\rend.hpp \
-		$(BOOST_ROOT)\boost\range\reverse_iterator.hpp \
-		$(BOOST_ROOT)\boost\iterator\reverse_iterator.hpp \
-		$(BOOST_ROOT)\boost\iterator\iterator_adaptor.hpp \
-		$(BOOST_ROOT)\boost\range\rbegin.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_base_and_derived.hpp \
-		$(BOOST_ROOT)\boost\utility\addressof.hpp \
-		$(BOOST_ROOT)\boost\foreach_fwd.hpp \
-		$(BOOST_ROOT)\boost\aligned_storage.hpp \
-		$(BOOST_ROOT)\boost\type_traits\aligned_storage.hpp \
-		$(BOOST_ROOT)\boost\type_traits\alignment_of.hpp \
-		$(BOOST_ROOT)\boost\type_traits\type_with_alignment.hpp \
-		$(BOOST_ROOT)\boost\utility\enable_if.hpp \
-		$(BOOST_ROOT)\boost\lexical_cast.hpp \
+		$(BOOST_ROOT)\boost\range\end.hpp \
+		$(BOOST_ROOT)\boost\range\detail\implementation_help.hpp \
+		$(BOOST_ROOT)\boost\range\detail\common.hpp \
+		$(BOOST_ROOT)\boost\range\detail\sfinae.hpp \
+		$(BOOST_ROOT)\boost\range\as_literal.hpp \
+		$(BOOST_ROOT)\boost\range\iterator_range.hpp \
 		$(BOOST_ROOT)\boost\range\iterator_range_core.hpp \
+		$(BOOST_ROOT)\boost\type_traits\is_base_and_derived.hpp \
 		$(BOOST_ROOT)\boost\range\functions.hpp \
 		$(BOOST_ROOT)\boost\range\size.hpp \
 		$(BOOST_ROOT)\boost\range\size_type.hpp \
 		$(BOOST_ROOT)\boost\range\difference_type.hpp \
 		$(BOOST_ROOT)\boost\range\has_range_iterator.hpp \
+		$(BOOST_ROOT)\boost\utility\enable_if.hpp \
 		$(BOOST_ROOT)\boost\range\concepts.hpp \
 		$(BOOST_ROOT)\boost\concept_check.hpp \
 		$(BOOST_ROOT)\boost\concept\assert.hpp \
@@ -922,9 +917,15 @@ debug\TestReadRes.obj: TestReadRes.cpp $(BOOST_ROOT)\boost\filesystem.hpp \
 		$(BOOST_ROOT)\boost\utility\identity_type.hpp \
 		$(BOOST_ROOT)\boost\type_traits\function_traits.hpp \
 		$(BOOST_ROOT)\boost\core\checked_delete.hpp \
+		$(BOOST_ROOT)\boost\core\noncopyable.hpp \
 		$(BOOST_ROOT)\boost\range\distance.hpp \
 		$(BOOST_ROOT)\boost\iterator\distance.hpp \
 		$(BOOST_ROOT)\boost\range\empty.hpp \
+		$(BOOST_ROOT)\boost\range\rbegin.hpp \
+		$(BOOST_ROOT)\boost\range\reverse_iterator.hpp \
+		$(BOOST_ROOT)\boost\iterator\reverse_iterator.hpp \
+		$(BOOST_ROOT)\boost\iterator\iterator_adaptor.hpp \
+		$(BOOST_ROOT)\boost\range\rend.hpp \
 		$(BOOST_ROOT)\boost\range\algorithm\equal.hpp \
 		$(BOOST_ROOT)\boost\range\detail\safe_bool.hpp \
 		$(BOOST_ROOT)\boost\next_prior.hpp \
@@ -939,86 +940,6 @@ debug\TestReadRes.obj: TestReadRes.cpp $(BOOST_ROOT)\boost\filesystem.hpp \
 		$(BOOST_ROOT)\boost\type_traits\has_minus.hpp \
 		$(BOOST_ROOT)\boost\type_traits\has_minus_assign.hpp \
 		$(BOOST_ROOT)\boost\iterator\advance.hpp \
-		$(BOOST_ROOT)\boost\lexical_cast\bad_lexical_cast.hpp \
-		$(BOOST_ROOT)\boost\throw_exception.hpp \
-		$(BOOST_ROOT)\boost\exception\exception.hpp \
-		$(BOOST_ROOT)\boost\lexical_cast\try_lexical_convert.hpp \
-		$(BOOST_ROOT)\boost\lexical_cast\detail\is_character.hpp \
-		$(BOOST_ROOT)\boost\lexical_cast\detail\converter_numeric.hpp \
-		$(BOOST_ROOT)\boost\type_traits\is_float.hpp \
-		$(BOOST_ROOT)\boost\type_traits\remove_volatile.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\cast.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\detail\old_numeric_cast.hpp \
-		$(BOOST_ROOT)\boost\type.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\converter_policies.hpp \
-		$(BOOST_ROOT)\boost\config\no_tr1\cmath.hpp \
-		$(BOOST_ROOT)\boost\mpl\integral_c.hpp \
-		$(BOOST_ROOT)\boost\mpl\integral_c_fwd.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\converter.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\conversion_traits.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\detail\conversion_traits.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\detail\meta.hpp \
-		$(BOOST_ROOT)\boost\mpl\equal_to.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\comparison_op.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\numeric_op.hpp \
-		$(BOOST_ROOT)\boost\mpl\numeric_cast.hpp \
-		$(BOOST_ROOT)\boost\mpl\tag.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\has_tag.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\numeric_cast_utils.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\config\forwarding.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\msvc_eti_base.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\is_msvc_eti_arg.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\detail\int_float_mixture.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\int_float_mixture_enum.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\detail\sign_mixture.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\sign_mixture_enum.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\detail\udt_builtin_mixture.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\udt_builtin_mixture_enum.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\detail\is_subranged.hpp \
-		$(BOOST_ROOT)\boost\mpl\multiplies.hpp \
-		$(BOOST_ROOT)\boost\mpl\times.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\arithmetic_op.hpp \
-		$(BOOST_ROOT)\boost\mpl\aux_\largest_int.hpp \
-		$(BOOST_ROOT)\boost\mpl\less.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\detail\converter.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\bounds.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\detail\bounds.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\numeric_cast_traits.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\detail\numeric_cast_traits.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\detail\preprocessed\numeric_cast_traits_common.hpp \
-		$(BOOST_ROOT)\boost\numeric\conversion\detail\preprocessed\numeric_cast_traits_long_long.hpp \
-		$(BOOST_ROOT)\boost\lexical_cast\detail\converter_lexical.hpp \
-		$(BOOST_ROOT)\boost\type_traits\has_left_shift.hpp \
-		$(BOOST_ROOT)\boost\type_traits\has_right_shift.hpp \
-		$(BOOST_ROOT)\boost\detail\lcast_precision.hpp \
-		$(BOOST_ROOT)\boost\integer_traits.hpp \
-		$(BOOST_ROOT)\boost\lexical_cast\detail\widest_char.hpp \
-		$(BOOST_ROOT)\boost\array.hpp \
-		$(BOOST_ROOT)\boost\core\swap.hpp \
-		$(BOOST_ROOT)\boost\container\container_fwd.hpp \
-		$(BOOST_ROOT)\boost\container\detail\std_fwd.hpp \
-		$(BOOST_ROOT)\boost\move\detail\std_ns_begin.hpp \
-		$(BOOST_ROOT)\boost\move\detail\std_ns_end.hpp \
-		$(BOOST_ROOT)\boost\lexical_cast\detail\converter_lexical_streams.hpp \
-		$(BOOST_ROOT)\boost\core\snprintf.hpp \
-		$(BOOST_ROOT)\boost\lexical_cast\detail\lcast_char_constants.hpp \
-		$(BOOST_ROOT)\boost\lexical_cast\detail\lcast_unsigned_converters.hpp \
-		$(BOOST_ROOT)\boost\lexical_cast\detail\inf_nan.hpp \
-		$(BOOST_ROOT)\boost\core\cmath.hpp \
-		$(BOOST_ROOT)\boost\integer.hpp \
-		$(BOOST_ROOT)\boost\integer_fwd.hpp \
-		$(BOOST_ROOT)\boost\detail\basic_pointerbuf.hpp \
-		$(BOOST_ROOT)\boost\algorithm\string.hpp \
-		$(BOOST_ROOT)\boost\algorithm\string\std_containers_traits.hpp \
-		$(BOOST_ROOT)\boost\algorithm\string\std\string_traits.hpp \
-		$(BOOST_ROOT)\boost\algorithm\string\yes_no_type.hpp \
-		$(BOOST_ROOT)\boost\algorithm\string\sequence_traits.hpp \
-		$(BOOST_ROOT)\boost\algorithm\string\std\list_traits.hpp \
-		$(BOOST_ROOT)\boost\algorithm\string\std\slist_traits.hpp \
-		$(BOOST_ROOT)\boost\algorithm\string\config.hpp \
-		$(BOOST_ROOT)\boost\algorithm\string\trim.hpp \
-		$(BOOST_ROOT)\boost\range\as_literal.hpp \
-		$(BOOST_ROOT)\boost\range\iterator_range.hpp \
 		$(BOOST_ROOT)\boost\range\iterator_range_io.hpp \
 		$(BOOST_ROOT)\boost\range\detail\str_types.hpp \
 		$(BOOST_ROOT)\boost\algorithm\string\detail\trim.hpp \
@@ -1050,6 +971,8 @@ debug\TestReadRes.obj: TestReadRes.cpp $(BOOST_ROOT)\boost\filesystem.hpp \
 		$(BOOST_ROOT)\boost\function.hpp \
 		$(BOOST_ROOT)\boost\function\detail\prologue.hpp \
 		$(BOOST_ROOT)\boost\function\detail\requires_cxx11.hpp \
+		$(BOOST_ROOT)\boost\throw_exception.hpp \
+		$(BOOST_ROOT)\boost\exception\exception.hpp \
 		$(BOOST_ROOT)\boost\function\function_base.hpp \
 		$(BOOST_ROOT)\boost\function\function_fwd.hpp \
 		$(BOOST_ROOT)\boost\function_equal.hpp \
@@ -1064,6 +987,7 @@ debug\TestReadRes.obj: TestReadRes.cpp $(BOOST_ROOT)\boost\filesystem.hpp \
 		$(BOOST_ROOT)\boost\type_traits\is_noncopyable.hpp \
 		$(BOOST_ROOT)\boost\type_traits\has_trivial_destructor.hpp \
 		$(BOOST_ROOT)\boost\type_traits\composite_traits.hpp \
+		$(BOOST_ROOT)\boost\type_traits\alignment_of.hpp \
 		$(BOOST_ROOT)\boost\mem_fn.hpp \
 		$(BOOST_ROOT)\boost\bind\mem_fn.hpp \
 		$(BOOST_ROOT)\boost\bind\detail\requires_cxx11.hpp \
@@ -1093,6 +1017,7 @@ debug\TestReadRes.obj: TestReadRes.cpp $(BOOST_ROOT)\boost\filesystem.hpp \
 		$(BOOST_ROOT)\boost\algorithm\string\detail\util.hpp \
 		$(BOOST_ROOT)\boost\algorithm\string\join.hpp \
 		$(BOOST_ROOT)\boost\algorithm\string\detail\sequence.hpp \
+		$(BOOST_ROOT)\boost\mpl\logical.hpp \
 		$(BOOST_ROOT)\boost\algorithm\string\replace.hpp \
 		$(BOOST_ROOT)\boost\algorithm\string\find_format.hpp \
 		$(BOOST_ROOT)\boost\algorithm\string\detail\find_format.hpp \
@@ -1102,7 +1027,6 @@ debug\TestReadRes.obj: TestReadRes.cpp $(BOOST_ROOT)\boost\filesystem.hpp \
 		$(BOOST_ROOT)\boost\algorithm\string\formatter.hpp \
 		$(BOOST_ROOT)\boost\algorithm\string\detail\formatter.hpp \
 		$(BOOST_ROOT)\boost\algorithm\string\erase.hpp \
-		$(BOOST_ROOT)\boost\algorithm\string\trim_all.hpp \
 		..\..\..\..\Qt5\5.12.12\msvc2017_64\include\QtCore\QFile \
 		..\..\..\..\Qt5\5.12.12\msvc2017_64\include\QtCore\qfile.h \
 		..\..\..\..\Qt5\5.12.12\msvc2017_64\include\QtCore\qfiledevice.h \

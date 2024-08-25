@@ -306,7 +306,7 @@ void GlobalDiscretization::init(const ListSectFlow *aListSections) {
   // DIM+1 (global spatial)
   H[aListSections->getList().size()] = H[aListSections->getList().size() - 1];
 
-  for (j = 0; j < NbSections; j++) // wetted area
+  for (unsigned j = 0; j < NbSections; j++) // wetted area
     U1[j] = HydroUtils::Evaluation_A_fonction_H(H[j], Z[j], 1. /*B*/);
 
 #if 0
@@ -389,9 +389,8 @@ void GlobalDiscretization::createPairFaces() {
   using namespace std;
   using namespace boost;
   using namespace std::placeholders;
-  typedef std::list<cellFace>::iterator list_iter;        // list iterator
-  typedef iterator_range<list_iter> iter_cellface;        // iterator list range
-  typedef range_iterator<iter_cellface>::type range_iter; // range iterator type
+  typedef std::list<cellFace>::iterator list_iter; // list iterator
+  typedef iterator_range<list_iter> iter_cellface; // iterator list range
   typedef range_difference<iter_cellface>::type diff_type; // range difference
 
   // Creating 2 range with offset towards right and left (at both end)

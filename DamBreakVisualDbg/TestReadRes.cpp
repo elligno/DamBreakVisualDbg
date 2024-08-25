@@ -2,19 +2,15 @@
 // C++ includes
 #include <fstream>
 #include <iostream>
+#include <sstream> //istringstream
 // stl include
 #include <map>
 #include <vector>
+//#include <filesystem>  remove boost filesystem
 // boost includes
-//#include <boost/lambda/bind.hpp>
 #include <boost/filesystem.hpp> // boost file system utility
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
 // Boost string algorithm
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/trim_all.hpp>
+#include <boost/algorithm/string.hpp> // contains()
 // Qt includes
 #include <QFile>
 #include <QTextStream>
@@ -27,6 +23,7 @@ using mapValU =
 using mapStrListU =
     std::map<QStringList::size_type, std::pair<QStringList, QStringList>>;
 
+#if 0
 // NOTE use std FileSystem and remove boost FileSystem
 // Recursively find the location of a file on a given directory
 // make use of some of the c++11 features : auto keyword and lambda function
@@ -54,6 +51,7 @@ bool FindFile(
 
   return found;
 }
+
 // Usage: std::remove_if stl algorithm
 bool check4StrEmpty(const std::string &aStr2check) {
   if (aStr2check.empty()) {
@@ -61,6 +59,7 @@ bool check4StrEmpty(const std::string &aStr2check) {
   }
   return false;
 }
+#endif // 0
 
 // output of the simulator:
 // U1p[0]: 10.000000   U2p[0]: 0.000000
@@ -69,8 +68,11 @@ bool check4StrEmpty(const std::string &aStr2check) {
 // when retrieving the values from key, map[0] is not valid!!
 // Simplified version for reading simulation result from file and extract to
 // prepare for visualizing
-void PrepareSimRes2View(mapValU &aMapU12p, mapValU &aMapU12,
-                        const std::string &aFilename) {
+void PrepareSimRes2View(
+    mapValU &aMapU12p, mapValU &aMapU12,
+    const std::string &aFilename) { // shall use std::FileSystem::Path!!!
+                                    // not a string!!! "Easy to use correctly,
+                                    //  Hard to use incorrectly"!!
   using namespace std;
 
   // tested stuff to read from data source file

@@ -422,7 +422,12 @@ void Wave1DSimulator::setH() {
 
   // set reference this way we modify the original values
   auto &w_lambda = m_lambda->values();
+  // initial cnd: 10.|1.
+  assert(100 == w_lambda.size());
+  std::fill_n(w_lambda.begin(), w_lambda.size() / 2, 10.);
+  std::fill_n(std::next(w_lambda.begin(), 50), (w_lambda.size() / 2) - 1, 1.);
 
+#if 0
   // Remember that we are indexing from 1 and not 0
   // this means that if we are comparing with E. McNeil code
   // these number correspond to 0...99, but E. McNeil has
@@ -433,7 +438,6 @@ void Wave1DSimulator::setH() {
                                0.); // x,y=0.,z=0. as default
   }
 
-#if 0
   const real *w_data = w_lambda.getPtr();
   std::vector<real> w_dataCheck;
   w_dataCheck.reserve(w_lambda.size());
@@ -476,7 +480,8 @@ real Wave1DSimulator::calculateDt() {
   // contains minmax macro. Resolve it by surrounding the function with
   // parenthese.
   // real dt = BIG_dt;
-  real dt = (std::numeric_limits<real>::max)();
+
+  auto dt = (std::numeric_limits<real>::max)();
   for (auto j = 2; j <= w_nbPts; j++) // start j=2, i think j=1 is tied node
   {
     auto V = w_U2(j) / w_U1(j);        // ...
@@ -590,12 +595,38 @@ void Wave1DSimulator::setIC() {
   // U1[j] = HydroUtils::Evaluation_A_fonction_H( H[j], Z[j], B);
   // where B section width, since Z=0, A=H in our case
   // wet area A, unit width section
+
+#if 0
+  auto w_x = m_u.first->grid().xMin(1);
+  assert(w_x == 0.);
+
   for (auto i = 1; i <= m_u.first->grid().getMaxI(1); i++) {
     // we assume that each section is unit width, this shall be
     // removed in the future version of the simulator
-    w_U1(i) = m_H->valuePt(m_u.first->grid().getPoint(1, i), 0.) -
-              m_I->valuePt(m_u.first->grid().getPoint(1, i), 0.);
+    //    w_U1(i) = m_H->valuePt(m_u.first->grid().getPoint(1, i), 0.) -
+    //             m_I->valuePt(m_u.first->grid().getPoint(1, i), 0.);
+
+    auto checkPt = m_u.first->grid().getPoint(1, i);
+    auto valu = m_H->valuePt(w_x, 0.);
+
+    w_U1(i) = m_H->valuePt(w_x, 0.) - m_I->valuePt(w_x, 0.);
+    // next grid node
+    w_x += m_u.first->grid().Delta(1);
   }
+#endif
+  // initial cnd: 10.|1.
+  std::fill_n(w_U1.begin(), w_U1.size() / 2, 10.);
+  //  std::fill_n(w_U1.begin(), std::prev(w_U1.end(), 50), 10.);
+  std::fill_n(std::next(w_U1.begin(), 51), (w_U1.size() / 2) - 1, 1.);
+
+  // debugging check
+  assert(w_U1(1) = 10.);
+  assert(w_U1(49) = 10.);
+  assert(w_U1(50) = 1.);
+  assert(w_U1(2) = 10.);
+  assert(w_U1(51) = 1.);
+  assert(w_U1(3) = 10.);
+  assert(w_U1(52) = 1.);
 }
 
 // Design Note: need method with at max 5 lines of code, that's it!!
@@ -1064,6 +1095,12 @@ void Wave1DSimulator::saveResult(const StateVector &aStateVec,
 
   for (auto j = 1; j <= U2.size(1); j++)
     fprintf(FichierResultat, "%8.4lf  ", U2(j) / U1(j));
+
+  // TODO add Froude Number (Fr: sqrt(V^2/gH))
+  //  fprintf(FichierResultat, "\n");
+  //  fprintf(FichierResultat, "Fr:  ");
+  //  for (auto j = 1; j <= U2.size(1); j++)
+  //    fprintf(FichierResultat, "%8.4lf  ", (U2(j) / U1(j)) / H(j));
 
   fprintf(FichierResultat, "\n");
 

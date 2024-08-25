@@ -12963,11 +12963,11 @@ debug\dbpp_Simulation.obj: SfxTypes\dbpp_Simulation.cpp $(BOOST_ROOT)\boost\file
 		$(BOOST_ROOT)\boost\filesystem\string_file.hpp \
 		$(BOOST_ROOT)\boost\config\header_deprecated.hpp \
 		$(BOOST_ROOT)\boost\filesystem\fstream.hpp \
+		SfxTypes\dbpp_ListSectFlow.h \
+		SfxTypes\dbpp_Observer.h \
 		SfxTypes\dbpp_Simulation.h \
 		SfxTypes\dbpp_Singleton.hpp \
 		SfxTypes\dbpp_DamBreakData.h \
-		SfxTypes\dbpp_ListSectFlow.h \
-		SfxTypes\dbpp_Observer.h \
 		Utility\dbpp_EnvVarMgr.h
 
 debug\dbpp_WaveFunc.obj: SfxTypes\dbpp_WaveFunc.cpp Utility\dbpp_CommandLineArgs.h \
