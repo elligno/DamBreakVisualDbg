@@ -4,4 +4,7 @@
 *.ilk
 *.user
 *.lib
+*.txt
+*.Makefile.Debug
+*.Makefile.Release
 \bin
