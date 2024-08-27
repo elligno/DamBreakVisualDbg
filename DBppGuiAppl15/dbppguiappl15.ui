@@ -444,7 +444,72 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>_phi1</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>DBppGuiAppl15</receiver>
+   <slot>setUpstream()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>387</x>
+     <y>148</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>550</x>
+     <y>150</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_phi0</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>DBppGuiAppl15</receiver>
+   <slot>setDownstream()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>393</x>
+     <y>203</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>549</x>
+     <y>212</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_shockloc</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>DBppGuiAppl15</receiver>
+   <slot>setShockLoc()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>378</x>
+     <y>263</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>549</x>
+     <y>257</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>iterations</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>DBppGuiAppl15</receiver>
+   <slot>setNbIterationsMax()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>286</x>
+     <y>189</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>715</x>
+     <y>181</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <slots>
   <slot>runSimulation()</slot>
   <slot>setNbIterationsMax()</slot>

@@ -18,7 +18,7 @@ namespace dbpp {
 Simulation::Simulation()
     : m_dbData{DamBreakData::DiscrTypes::emcneil}, // default,
       m_dbDataType{DamBreakData::DiscrTypes::emcneil}, m_dt{0.}, m_time{0.},
-      m_algoName{"EMcNeil1D"}, m_running{false}, m_iterNumber{0},
+      m_algoName{"EMcNeil1D"}, m_running{false}, m_iterNumber{1},
       m_nbIterMax{1}, m_cfl{0.6}, m_NbSections{101} {
 
   // check if we use of the pre-defined discretization

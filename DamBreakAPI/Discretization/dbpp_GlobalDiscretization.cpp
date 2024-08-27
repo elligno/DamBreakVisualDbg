@@ -305,26 +305,24 @@ void GlobalDiscretization::init(const ListSectFlow *aListSections) {
 
   // DIM+1 (global spatial)
   H[aListSections->getList().size()] = H[aListSections->getList().size() - 1];
-
-  for (j = 0; j < NbSections; j++) // wetted area
+  for (unsigned j = 0; j < NbSections; j++) // wetted area
     U1[j] = HydroUtils::Evaluation_A_fonction_H(H[j], Z[j], 1. /*B*/);
-
-#if 0
-    // debugging purpose (WaveSimulator)
-//     assert( m_grid->getPoint(1,48) == 470.);
-//     assert( m_grid->getPoint(1,49) == 480.);
-//     assert( m_grid->getPoint(1,50) == 490.);
-//     assert( m_grid->getPoint(1,51) == 500.);
-//     assert( w_lambda(50) == 10.); //H,x=490.
-//     assert( w_lambda(51) == 1.);  //H,x=500.
-    // in this case, node index offset by -1
-    assert(X[47] == 470.);
-    assert(X[48] == 480.);
-    assert(X[49] == 490.);
-    assert(X[50] == 500.);
-    assert(X[99] == 990.);
-    assert(H[49] == 10.); // shock location
-    assert(H[50] == 1.);
+#if 1
+  // debugging purpose (WaveSimulator)
+  //     assert( m_grid->getPoint(1,48) == 470.);
+  //     assert( m_grid->getPoint(1,49) == 480.);
+  //     assert( m_grid->getPoint(1,50) == 490.);
+  //     assert( m_grid->getPoint(1,51) == 500.);
+  //     assert( w_lambda(50) == 10.); //H,x=490.
+  //     assert( w_lambda(51) == 1.);  //H,x=500.
+  // in this case, node index offset by -1
+  assert(X[47] == 470.);
+  assert(X[48] == 480.);
+  assert(X[49] == 490.);
+  assert(X[50] == 500.);
+  assert(X[99] == 990.);
+  assert(H[49] == 10.); // shock location
+  assert(H[50] == 1.);
 #endif
 
   // create global variables

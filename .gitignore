@@ -4,4 +4,11 @@
 *.ilk
 *.user
 *.lib
+*.txt
+./DamBreakAPI//Makefile.Debug
+DamBreakAPI/Makefile.Release
+DBppGuiAppl15/Makefile.Debug
+DBppGuiAppl15/Makefile.Release
+*.Makefile.Debug
+*.Makefile.Release
 \bin

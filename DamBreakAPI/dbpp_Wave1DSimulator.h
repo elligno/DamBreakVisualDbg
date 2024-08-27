@@ -88,7 +88,7 @@ public:
   /**
    *  default ctor (these values are E. McNeil code source)
    */
-  Wave1DSimulator(unsigned int aNbIterationsMax = 50, double aCFL = 0.6);
+  Wave1DSimulator(/*unsigned int aNbIterationsMax = 50,*/ double aCFL = 0.6);
   /**
    *  destructor
    */
