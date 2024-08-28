@@ -31,10 +31,10 @@ namespace dbpp
 	{
 	}
 
-	//	Exécution de la phase intermédiaire de calcul:
-	//	schéma d'intégration Runge-Kutta (Nujic, 1995)
+	//	ExÃ©cution de la phase intermÃ©diaire de calcul:
+	//	schÃ©ma d'intÃ©gration Runge-Kutta (Nujic, 1995)
 	//
-	//	Au cours de cette phase, une valeur intermédiaire est déterminée
+	//	Au cours de cette phase, une valeur intermÃ©diaire est dÃ©terminÃ©e
 	//	comme suit:
 	//
 	//	Up = U - dt/dx * (F[j+1/2] - F[j-1/2]) - dt/dx * (P) -dt*S
@@ -107,11 +107,11 @@ namespace dbpp
 		// sanity check
 		assert(H.size() == NbSections);
 
-		//	Amont, spécification de l'élévation de la surface libre
+		//	Amont, spÃ©cification de l'Ã©lÃ©vation de la surface libre
 		H[0] = 10.; // water level
 		U1[0] = HydroUtils::A( B, H[0]-Z[0]); // wetted area
 
-		//	Calcul des caractéristiques à la section située directement en aval
+		//	Calcul des caractÃ©ristiques Ã  la section situÃ©e directement en aval
 		n1 = n[1]; // manning
 		V1 = U2[1]/U1[1]; // velocity
 		R1 = HydroUtils::R(U1[1], B); // hydraulic radius
@@ -160,7 +160,7 @@ namespace dbpp
 		// sanity check
 		assert(H.size() == NbSections);
 
-		//	Aval, spécification du débit
+		//	Aval, spÃ©cification du dÃ©bit
 	//	U2[NbSections-1] = 0.; // because we reserve and set i=0,...,99
 		U2.push_back(0.);      // need to add i=100
 
