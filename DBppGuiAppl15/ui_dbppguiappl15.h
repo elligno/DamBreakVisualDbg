@@ -360,6 +360,10 @@ public:
         menu_Simulation->addAction(action_doOneStep);
 
         retranslateUi(DBppGuiAppl15);
+        QObject::connect(_phi1, SIGNAL(valueChanged(double)), DBppGuiAppl15, SLOT(setUpstream()));
+        QObject::connect(_phi0, SIGNAL(valueChanged(double)), DBppGuiAppl15, SLOT(setDownstream()));
+        QObject::connect(_shockloc, SIGNAL(valueChanged(double)), DBppGuiAppl15, SLOT(setShockLoc()));
+        QObject::connect(iterations, SIGNAL(valueChanged(int)), DBppGuiAppl15, SLOT(setNbIterationsMax()));
 
         convecflux_combo->setCurrentIndex(-1);
 

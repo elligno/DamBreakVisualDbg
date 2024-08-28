@@ -1,9 +1,6 @@
 #pragma once
 
 // C++ includes
-//#include <list>
-//#include <tuple>
-#include <Utility>
 #include <iostream>
 // boost include
 #include <boost/operators.hpp>
@@ -68,28 +65,6 @@ public:
           true,                 // x coord. on both side
       bool aRneighbour = true); // boundary check at both end
 
-  //     cellFace(const std::pair<cellFace,cellFace>& aOther)
-  //     {
-  //       std::cout << "Just testing copy constructible\n";
-  //     }
-
-  // compiler default ctor are probably fine
-  //     cellFace(const cellFace& aOther)
-  //     {
-  //       std::cout << "To be implemented\n";
-  //     }
-  //
-  //     cellFace& operator= (const cellFace& aOther)
-  //     {
-  //       return *this;
-  //     }
-
-  // i don't get it??
-  // cellFace( unsigned aId, unsigned aLeftI, double aLeftx, double aDx);
-
-  // default copy and assignment ctr will do
-  //	~cellFace() { std::cout << "CellFace dtor\n";}
-
   void setLeftNodeI(const unsigned short aLnodeI) { m_leftNodeI = aLnodeI; }
   void setRightNodeI(const unsigned short aRnodeI) { m_rightNodeI = aRnodeI; }
   void setCellFaceI(const unsigned short aCellFI) { m_cellFaceI = aCellFI; }
@@ -133,11 +108,11 @@ private:
   unsigned short m_cellFaceI;  // face index (i=1,100) in this case
   unsigned short m_leftNodeI;  // node index on left
   unsigned short m_rightNodeI; // node index on right
-                               // 		pairvec m_leftVec;       // UL1,UL2
-                               // 		pairvec m_rightVec;      // UR1,UR2
-  bool m_hasLeftNeighbour;     // left node/index ???
-  bool m_hasRightNeigbour;     // right node/index ???
-};                             // class
+                               // 		pairvec m_leftVec;       //
+                               // UL1,UL2 		pairvec m_rightVec;      // UR1,UR2
+  bool m_hasLeftNeighbour; // left node/index ???
+  bool m_hasRightNeigbour; // right node/index ???
+};                         // class
 
 // just a test about a concept of faces variables
 // 	class CellFaceVariables
@@ -147,11 +122,11 @@ private:
 // getter and setter
 // 		void setUL( pairvec aUL) {m_leftVec=aUL;}
 // 		void setUL( unsigned aI) {aI==0 ? std::get<0>(m_leftVec)=aI :
-// std::get<1>(m_leftVec)=aI;} 		void setUR( pairvec aUR) {m_rightVec=aUR;} 		void
-// setUR( unsigned aI) {aI==0 ? std::get<0>(m_rightVec)=aI :
-// std::get<1>(m_rightVec)=aI;} 		pairvec getUL() const    {return m_leftVec;}
-// 		pairvec getUR() const    {return m_rightVec;}
-// 		double getUL( unsigned aI) const
+// std::get<1>(m_leftVec)=aI;} 		void setUR( pairvec aUR)
+// {m_rightVec=aUR;} 		void setUR( unsigned aI) {aI==0 ?
+// std::get<0>(m_rightVec)=aI : std::get<1>(m_rightVec)=aI;}
+// pairvec getUL() const    {return m_leftVec;} 		pairvec getUR() const    {return
+// m_rightVec;} 		double getUL( unsigned aI) const
 // 		{
 // 			return aI==0 ? std::get<0>(m_leftVec) :
 // std::get<1>(m_leftVec);

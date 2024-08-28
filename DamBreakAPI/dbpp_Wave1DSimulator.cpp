@@ -10,7 +10,7 @@
 #include <functional>
 #include <vector>
 // BaseNumTypes include
-#include "../Utility/dbpp_CommandLineArgs.h"
+//#include "../Utility/dbpp_CommandLineArgs.h"
 // src package includes
 #include "../Discretization/dbpp_GlobalDiscretization.h"
 #include "dbpp_EMcNeil1DFactory.h"
@@ -21,6 +21,7 @@
 #include "../SfxTypes/dbpp_PhyConstant.h"
 #include "../SfxTypes/dbpp_Simulation.h"
 #include "../Utility/dbpp_Hydro1DLogger.h"
+#include "../Utility/dbpp_SimulationUtility.h"
 #include "../Utility/dbpp_TestLogger.h"
 //#include "SfxTypes/dbpp_TimePrm.h"
 //#include "SfxTypes/dbpp_WaveFunc.h"
@@ -268,7 +269,7 @@ namespace dbpp {
 #endif
 
 // default ctor (we shall use the ofstream of C++11)
-Wave1DSimulator::Wave1DSimulator(unsigned int aNbIterationsMax /* =50 */,
+Wave1DSimulator::Wave1DSimulator(/*unsigned int aNbIterationsMax  =50 ,*/
                                  double aCFL /* =0.6 */)
     : m_lambda{nullptr}, m_tip{nullptr}, m_H{nullptr}, m_I{nullptr},
       m_ListSectFlow{nullptr},           // Section flow collection
@@ -282,11 +283,11 @@ Wave1DSimulator::Wave1DSimulator(unsigned int aNbIterationsMax /* =50 */,
       m_validationDir{"AlgoValidation"}, // default value
       m_numRep{nullptr},                 // numerical scheme representation
       m_saveResult2File{true},           // default value
-      m_NumberIterationsMax{aNbIterationsMax}, // max number of iteration
-      m_Phi1{},                                // E. McNeil default value
-      m_Phi0{},                                // E. McNeil default value
-      m_shockLoc{},                            // Added by Jean B.
-      m_finalTime{22.5},                       // time loop stop criteria
+      m_NumberIterationsMax{1},          // max number of iteration
+      m_Phi1{},                          // E. McNeil default value
+      m_Phi0{},                          // E. McNeil default value
+      m_shockLoc{},                      // Added by Jean B.
+      m_finalTime{22.5},                 // time loop stop criteria
       m_simulatorMode(Wave1DSimulator::eSimulationMode::guiMode) {
 
   // all supported algorithm for our demo (global variable)
@@ -336,8 +337,8 @@ Wave1DSimulator::~Wave1DSimulator() {
 // create, read simulation parameters
 void Wave1DSimulator::scan() {
   using namespace dbpp;
-  auto *w_msg = "Wave1DSimulator::scan initialization started";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"Wave1DSimulator::scan initialization started"}.data());
 
   DamBreakData w_activeData{Simulation::instance()->getActiveDiscretization()};
   std::string w_gridprms{"d=1 [0,"};
@@ -371,10 +372,10 @@ void Wave1DSimulator::scan() {
   m_I.reset(new Flat{});   // we consider flat bed bathymetry
   m_H.reset(new Step1D{}); // we set DamBreak step function
 
-  auto *w_msgee = "We are considering flat bed topography";
-  Logger::instance()->OutputSuccess(const_cast<char *>(w_msgee));
-  auto *w_msg1 = "We set DamBreak step function";
-  Logger::instance()->OutputSuccess(const_cast<char *>(w_msg1));
+  Logger::instance()->OutputSuccess(
+      std::string{"We are considering flat bed topography"}.data());
+  Logger::instance()->OutputSuccess(
+      std::string{"We set DamBreak step function"}.data());
   // }
 
   // initialize the parameters in the functions.
@@ -388,10 +389,10 @@ void Wave1DSimulator::scan() {
   // 0, 0.,                                       initial dt (time step)
   // CmdLineArgs::read("-tstop", m_finalTime)));  fixed time step as default
 
-  auto *w_msg111 = "Final simulation time is: %f";
-  auto *w_msg2 = "Wave1DSimulator::scan initialization completed";
-  Logger::instance()->OutputSuccess(const_cast<char *>(w_msg111), m_finalTime);
-  Logger::instance()->OutputSuccess(const_cast<char *>(w_msg2));
+  Logger::instance()->OutputSuccess(
+      std::string{"Final simulation time is: %f"}.data(), m_finalTime);
+  Logger::instance()->OutputSuccess(
+      std::string{"Wave1DSimulator::scan initialization completed"}.data());
 }
 
 // load depth function into lambda's array (that will yield faster
@@ -400,59 +401,21 @@ void Wave1DSimulator::scan() {
 void Wave1DSimulator::setH() {
   using namespace dbpp;
 
-  // Design Note
-  //  Problem that we have here, we want to control ... to be completed
-  // This will be removed in the future
-  // just testing some new functionalities of the shared pointer
-  // this is a new functionality of the C++11
-  std::shared_ptr<Step1D> w_checkCast = std::dynamic_pointer_cast<Step1D>(m_H);
-  if (w_checkCast != nullptr) {
-    if (w_checkCast->getPhi1() != m_Phi1) {
-      // we have a valid cast
-      w_checkCast->setPhi1(m_Phi1);
-    }
-    if (w_checkCast->getPhi0() != m_Phi0) {
-      // we have a valid cast
-      w_checkCast->setPhi0(m_Phi0);
-    }
-    if (w_checkCast->getShockLocation() != m_shockLoc) {
-      w_checkCast->setShockLocation(m_shockLoc);
-    }
-  }
+  // debug check (assume that were set by GUI)
+  assert(10. == m_Phi0);
+  assert(1. == m_Phi1);
+  assert(500. == m_shockLoc);
 
   // set reference this way we modify the original values
   auto &w_lambda = m_lambda->values();
-  // initial cnd: 10.|1.
+  // initial cnd: 10.|1. E. McNeil
   assert(100 == w_lambda.size());
-  std::fill_n(w_lambda.begin(), w_lambda.size() / 2, 10.);
-  std::fill_n(std::next(w_lambda.begin(), 50), (w_lambda.size() / 2) - 1, 1.);
+  std::fill_n(w_lambda.begin(), (w_lambda.size() / 2) + 1, m_Phi0);
+  std::fill_n(std::next(w_lambda.begin(), w_lambda.size() / 2),
+              w_lambda.size() / 2, m_Phi1);
 
-#if 0
-  // Remember that we are indexing from 1 and not 0
-  // this means that if we are comparing with E. McNeil code
-  // these number correspond to 0...99, but E. McNeil has
-  // array of 101 values, here we have array of 100 (domain)
-  for (auto i = 1; i <= m_lambda->grid().getMaxI(1); i++) {
-    // in flat topography(z=0), water depth = water level
-    w_lambda(i) = m_H->valuePt(m_lambda->grid().getPoint(1, i),
-                               0.); // x,y=0.,z=0. as default
-  }
-
-  const real *w_data = w_lambda.getPtr();
-  std::vector<real> w_dataCheck;
-  w_dataCheck.reserve(w_lambda.size());
-  std::copy(&w_data[0], w_data + w_lambda.size(),
-            std::ostream_iterator<double>(std::cout, "\n"));
-
-  w_lambda.print1D(std::cout);
-  // std::vector<real> w_checkVec;
-  auto w_checkVec = w_lambda.to_stdVector(/*w_checkVec*/);
-  assert(w_checkVec.size() == m_grid->getMaxI(1));
-  std::cout << "Size are equal\n";
-#endif // 0
-
-  auto *w_msg = "Wave1DSimulator::setH() completed";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"Wave1DSimulator::setH() completed"}.data());
 }
 
 // NOTE: ???  i do not remember
@@ -505,8 +468,8 @@ StateVector Wave1DSimulator::getIC() {
   DamBreakData w_dbData(
       dbpp::Simulation::instance()->getActiveDiscretization());
   if (w_dbData.getDType() == DamBreakData::DiscrTypes::emcneil) {
-    auto *w_msg = "Wave1DSimulator::setIC() done successfully";
-    dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+    dbpp::Logger::instance()->OutputSuccess(
+        std::string{"Wave1DSimulator::setIC() done successfully"}.data());
 
     std::cout << "Active discretization used by GlobalDiscretization is: "
               << std::string("EMcNeil") << "\n";
@@ -533,8 +496,9 @@ StateVector Wave1DSimulator::getIC() {
                   w_U2val.getPtr() + w_U2val.size() /*end range*/,
                   std::bind(std::greater_equal<real>(), std::placeholders::_1,
                             0.)) == true) {
-    auto *w_msg = "Wave1DSimulator::setIC() done successfully";
-    dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+
+    dbpp::Logger::instance()->OutputSuccess(
+        std::string{"Wave1DSimulator::setIC() done successfully"}.data());
   }
 
   for (auto i = 1; i <= w_U1->grid().getNoPoints(); i++) {
@@ -614,36 +578,40 @@ void Wave1DSimulator::setIC() {
     w_x += m_u.first->grid().Delta(1);
   }
 #endif
-  // initial cnd: 10.|1.
-  std::fill_n(w_U1.begin(), w_U1.size() / 2, 10.);
+
+  // initial cnd: 10.|1. E. McNeil
+  std::fill_n(w_U1.begin(), (w_U1.size() / 2) + 1, m_Phi0); // m_Phi0
   //  std::fill_n(w_U1.begin(), std::prev(w_U1.end(), 50), 10.);
-  std::fill_n(std::next(w_U1.begin(), 51), (w_U1.size() / 2) - 1, 1.);
+  std::fill_n(std::next(w_U1.begin(), w_U1.size() / 2), w_U1.size() / 2,
+              m_Phi1); // m_Phi1
 
   // debugging check
-  assert(w_U1(1) = 10.);
-  assert(w_U1(49) = 10.);
-  assert(w_U1(50) = 1.);
-  assert(w_U1(2) = 10.);
-  assert(w_U1(51) = 1.);
-  assert(w_U1(3) = 10.);
-  assert(w_U1(52) = 1.);
+  assert(w_U1(1) == 10.);
+  assert(w_U1(49) == 10.);
+  assert(w_U1(50) == 10.);
+  assert(w_U1(2) == 10.);
+  assert(w_U1(51) == 1.);
+  assert(w_U1(3) == 10.);
+  assert(w_U1(52) == 1.);
+  assert(w_U1(100) == 1.);
 }
 
 // Design Note: need method with at max 5 lines of code, that's it!!
 // just don't know if we really need it!!
 void Wave1DSimulator::solveProblem() {
-  auto *w_msg1 = "Solving the problem";
-  auto *w_msg2 = "Starting time loop";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg1));
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg2));
+
+  // test C++17 string::data() return a char* and not const char*
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"Solving the problem"}.data());
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"Starting time loop"}.data());
 
   // run the algorithm
   timeLoop();
 
-  auto *w_msg3 = "Ending time loop";
-  auto *w_msg4 = "Problem Solved";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg3));
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg4));
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"Ending time loop"}.data());
+  dbpp::Logger::instance()->OutputSuccess(std::string{"Problem Solved"}.data());
 }
 
 // Design Note:
@@ -667,6 +635,7 @@ void Wave1DSimulator::initialize() {
   // Usage:
   //   wavSim->setH(phi0, phi1);
   //    wavSim->setIC();
+
   setH();  // initial depth array
   setIC(); // set initial conditions
 
@@ -691,11 +660,12 @@ void Wave1DSimulator::initialize() {
       // create from user selection
       m_numRep = createEMcNeil1DAlgo(); // algorithm name from user selection
       if (m_numRep != nullptr) {
-        auto *w_msg = "Created Numerical Scheme for GUI mode";
-        dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+        dbpp::Logger::instance()->OutputSuccess(
+            std::string{"Created Numerical Scheme for GUI mode"}.data());
       } else {
-        auto *w_msg = "Could not create Numerical Scheme for GUI mode";
-        dbpp::Logger::instance()->OutputError(const_cast<char *>(w_msg));
+        dbpp::Logger::instance()->OutputError(
+            std::string{"Could not create Numerical Scheme for GUI mode"}
+                .data());
       }
     }
   }
@@ -736,22 +706,22 @@ void Wave1DSimulator::initialize() {
   // dbpp::Logger::instance()->OutputSuccess("Wave Simulator set initial
   // condition");
 
-  // rvalue reference
+  // rvalue reference???
   // Set solver initial condition
   m_numRep->setInitSln(m_u, m_ListSectFlow);
 
 #if 0
-		if( isSaveResult2File())
-		{
-			// create folders and files to save result of the simulation (debug file)
-			createFolderAndFile();
+  if (isSaveResult2File()) {
+    // create folders and files to save result of the simulation (debug file)
+    createDbgFolderWithFile();
 
-			dbpp::Logger::instance()->OutputSuccess("Creating folder and file to save simulation");
-		}
+    dbpp::Logger::instance()->OutputSuccess(
+        std::string{"Creating folder and file to save simulation"}.data());
+  }
 #endif
 
-  auto *w_msg1 = "Initial condition done successfully";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg1));
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"Initial condition done successfully"}.data());
 }
 
 void Wave1DSimulator::doOneStep() {
@@ -820,8 +790,8 @@ void Wave1DSimulator::initTime() {
 
   // according to Eric McNeil result, the initial time step
   // shall be equal to t: 0.6058 (make sure ...)
-  auto w_msg = "Initial time step is: %f";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg), w_dt);
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"Initial time step is: %f"}.data(), w_dt);
 
   // set simulation parameters initialization
   dbpp::Simulation::instance()->setCFL(m_CFL); // hard coded for debugging
@@ -858,13 +828,16 @@ void Wave1DSimulator::timeLoop() // run equivalent
   // Symetry: open/close at same location you write
   // initialize the sole instance of the logger (global instance)
   dbpp::DbgLogger *w_dbgLog = dbpp::DbgLogger::instance();
+  auto w_fileName = Simulation::instance()->getAlgorithmName();
+  w_fileName += ".txt";
   w_dbgLog->open(
+      w_fileName
       /*w_save_file_name*/); // be careful because this is a default arg
                              // which is not valid anymore but still in use
   // sanity check
   if (!w_dbgLog->isOpen()) {
-    auto *w_msg = "Problem to open the debug log file\n";
-    dbpp::Logger::instance()->OutputError(const_cast<char *>(w_msg));
+    dbpp::Logger::instance()->OutputError(
+        std::string{"Problem to open the debug log file\n"}.data());
   }
 
   // for code clarity
@@ -874,15 +847,15 @@ void Wave1DSimulator::timeLoop() // run equivalent
   // int w_currStepNo = m_tip->getTimeStepNo();
 
   // sanity check (debugging purpose)
-  // auto w_nbIter = w_sim->getIterationNumber();
-  // auto w_nbStep = m_tip->getTimeStepNo();
-  assert(w_sim->getIterationNumber() ==
-         static_cast<unsigned int>(m_tip->getTimeStepNo()));
+  auto w_nbIter = w_sim->getIterationNumber();
+  //  auto w_nbStep = m_tip->getTimeStepNo();
+  assert(w_sim->getIterationNumber() == 1);
+  //  static_cast<unsigned int>(m_tip->getTimeStepNo()));
 
   // debugging purpose (correspond to the original number of iteration for 22.5
   // sec)
   // w_sim->setNbIterationMax(1);  temporary fix (set on the GUI side)
-  // assert(1==w_sim->getNbIterationMax());  shall be put in a unit test
+  assert(10 == w_sim->getNbIterationMax()); // shall be put in a unit test
 
   // we are at first iteration and time is time step
   // initial cnd are has been set and we are ready
@@ -909,13 +882,19 @@ void Wave1DSimulator::timeLoop() // run equivalent
     // << m_tip->getTimeStepNo() << "\n"; 			std::cout <<
     // "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
 
-#if 0 // not in use for now
-      dbpp::Logger::instance()->OutputNewline();
-      dbpp::Logger::instance()->OutputSuccess("+++++Simulation parameters for this time step+++++");
-      dbpp::Logger::instance()->OutputSuccess("Time step computed is: %f", m_tip->Delta());
-      dbpp::Logger::instance()->OutputSuccess("Simulation time computed is: %f", m_tip->time());
-      dbpp::Logger::instance()->OutputSuccess("Iteration number is: %f", m_tip->getTimeStepNo());
-      dbpp::Logger::instance()->OutputNewline();
+#if 1
+    dbpp::Logger::instance()->OutputNewline();
+    dbpp::Logger::instance()->OutputSuccess(
+        std::string{"+++++Simulation parameters for this time step+++++"}
+            .data());
+    dbpp::Logger::instance()->OutputSuccess(
+        std::string{"Time step computed is: %f"}.data(), m_tip->Delta());
+    dbpp::Logger::instance()->OutputSuccess(
+        std::string{"Simulation time computed is: %f"}.data(), m_tip->time());
+    dbpp::Logger::instance()->OutputSuccess(
+        std::string{"Iteration number is: %d"}.data(),
+        w_sim->getIterationNumber());
+    dbpp::Logger::instance()->OutputNewline();
 #endif
 
     doOneStep(); // time step (advance numerical algorithm)
@@ -944,7 +923,7 @@ void Wave1DSimulator::timeLoop() // run equivalent
 
     // block execution thread for 3 sec let time to the gui
     // to display info in the editor window
-    std::this_thread::sleep_for(std::chrono::seconds(3));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
   } // while loop (time loop)
 
   // finish writing, close file
@@ -957,10 +936,11 @@ void Wave1DSimulator::timeLoop() // run equivalent
   dbpp::DbgLogger::instance()->close();
 }
 
-shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
+std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
   // shared pointer for algorithm numerical representation (base class)
-  shared_ptr<dbpp::EMcNeil1D> w_num_rep{}; // set to nullptr
+  std::shared_ptr<dbpp::EMcNeil1D> w_num_rep{}; // set to nullptr
 
+#if 0 // dbpp::CmdLineArgs not supported for some reason
   // Check which mode simulator is running (manual/gui)
   if (getSimulatorMode() == eSimulationMode::manualMode) {
     m_activeAlgo = dbpp::CmdLineArgs::read(
@@ -977,6 +957,7 @@ shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
       }
     }
   }
+#endif
 
   // Design Note
   //  Don't need to pass DamBreaData to ctor of the factory
@@ -984,14 +965,16 @@ shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
   dbpp::DamBreakData w_compileTest; // settings of the solver??? what exactly?
   w_num_rep = dbpp::EMcNeil1DFactory::CreateSolver(m_activeAlgo, w_compileTest);
   if (nullptr == w_num_rep) {
-    auto w_msg = "Unable to create solver with name: %f";
-    dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg),
-                                            m_activeAlgo.c_str());
+    dbpp::Logger::instance()->OutputError(
+        std::string{"Unable to create solver with name: %f"}.data(),
+        m_activeAlgo.c_str());
+
     return nullptr; // maybe throw an  exception, i think so!!
   }
-  auto w_msg = "Created Numerical Scheme successfully: %s";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg),
-                                          m_activeAlgo.c_str());
+
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"Created Numerical Scheme successfully: %s"}.data(),
+      m_activeAlgo.c_str());
 
   return w_num_rep;
 }
@@ -1039,8 +1022,8 @@ void Wave1DSimulator::saveResult(const StateVector &aStateVec,
 
     errno_t err = fopen_s(&FichierResultat, NomFichierResultat, "w");
     if (err == 0) {
-      auto *w_msg = "The file 'EMcNeil1D_Result.txt' was opened";
-      Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+      Logger::instance()->OutputSuccess(
+          std::string{"The file 'EMcNeil1D_Result.txt' was opened"}.data());
       //  printf("The file 'EMcNeil1D_mod.out' was opened\n");
       m_opened = true;
     }
@@ -1050,14 +1033,14 @@ void Wave1DSimulator::saveResult(const StateVector &aStateVec,
   } else {
     errno_t err = fopen_s(&FichierResultat, NomFichierResultat, "a");
     if (err == 0) {
-      auto *w_msg = "The file 'EMcNeil1D_Result.txt' was opened";
-      Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+      Logger::instance()->OutputSuccess(
+          std::string{"The file 'EMcNeil1D_Result.txt' was opened"}.data());
       //  printf("The file 'EMcNeil1D_mod.out' was opened\n");
       m_opened = true;
     } else {
-      auto *w_msg = "The file 'EMcNeil1D_Result.txt' was not opened";
       // printf("The file 'DamBreakIC.out' was not opened\n");
-      Logger::instance()->OutputError(const_cast<char *>(w_msg));
+      Logger::instance()->OutputError(
+          std::string{"The file 'EMcNeil1D_Result.txt' was not opened"}.data());
     }
   }
 
@@ -1157,8 +1140,8 @@ void Wave1DSimulator::createListSections() {
                   std::mem_fn(&dbpp::SectFlow::printSectionInfo));
   }
 
-  auto *w_msg = "Created list of sections successfully";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"Created list of sections successfully"}.data());
 }
 
 void Wave1DSimulator::initializeGuiMode() {

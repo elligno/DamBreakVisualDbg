@@ -1,21 +1,22 @@
 #include "dbpp_SimulationUtility.h"
 #include "../Utility/dbpp_TestLogger.h"
+#include <cstdlib> // EXIT_FAILURE
 
 namespace dbpp {
 bool FindFile11(
-    const boost::filesystem::path &directory, /* root directory to start with */
-    boost::filesystem::path &path, /* location path of the searched file */
-    const std::string &filename)   // file name to look for
+    const std::filesystem::path &directory, /* root directory to start with */
+    std::filesystem::path &path, /* location path of the searched file */
+    const std::string &filename) // file name to look for
 {
   bool found = false;
 
-  const boost::filesystem::path file = filename;
-  const boost::filesystem::recursive_directory_iterator end;
-  const boost::filesystem::recursive_directory_iterator dir_iter(directory);
+  const std::filesystem::path file = filename;
+  const std::filesystem::recursive_directory_iterator end;
+  const std::filesystem::recursive_directory_iterator dir_iter(directory);
 
   // use auto and lambda function &file input argument of the lambda
   const auto it = std::find_if(
-      dir_iter, end, [&file](const boost::filesystem::directory_entry &e) {
+      dir_iter, end, [&file](const std::filesystem::directory_entry &e) {
         return e.path().filename() == file;
       });
 
@@ -74,60 +75,72 @@ std::string CreateAlgoWrkFile(const std::string &aCurDirStr /*=""*/) {
   }
 }
 
-std::string setDbgWorkingDir() {
-  namespace bfs = boost::filesystem;
+std::filesystem::path setDbgWorkingDir() {
+  namespace fs = std::filesystem;
 
-  const std::string w_valiadationDir{};
+  // const std::string w_valiadationDir{};
   // retrieve the current date
   auto w_currDate = getDateFormat();
 
   // Debugging purpose: print the string to make sure is what we expect
   std::cout << "Date format is: " << w_currDate << "\n";
 
-  bfs::path currentPath;
-  currentPath = bfs::current_path();
-  std::string w_curDirString;
-  w_curDirString = bfs::canonical(currentPath).string();
-  auto w_msg = "Current path for this simulation is: %s";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg),
-                                          w_curDirString.c_str());
+  auto currentPath = fs::current_path();
+  // currentPath = fs::current_path();
+  // auto w_curDirString = fs::canonical(currentPath).string();
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"Current path for this simulation is: %s"}.data(),
+      currentPath.string().c_str());
 
-  std::string w_dir2look(std::string("\\") + w_valiadationDir);
-  w_curDirString += w_dir2look + std::string("\\Result") + w_currDate;
+  // std::string w_dir2look(std::string("\\") + w_valiadationDir);
+  // w_curDirString += w_dir2look + std::string("\\Result") + w_currDate;
 
-  return w_curDirString;
+  return currentPath; // w_curDirString;
 }
 
-dbpp::bfs::path createDbgFolderWithFile(/*const std::string& aValidationDir*/) {
+dbpp::fs::path createDbgFolderWithFile(/*const std::string& aValidationDir*/) {
   // create a directory
-  namespace bfs = boost::filesystem;
+  namespace fs = std::filesystem;
 
-  auto w_curDirString = setDbgWorkingDir();
+  auto w_curDirPath = setDbgWorkingDir();
 
-  bfs::path DirContainingFile11{}; // store founded file
+  // bfs::path DirContainingFile11{};  store founded file
 
   // corresponding file to simulation result
-  auto w_fileName = CreateAlgoWrkFile(w_curDirString);
+  // auto w_fileName = CreateAlgoWrkFile(w_curDirString);
 
   // directory format is the following "Result2023-10-26"
-  bfs::path w_destination{w_curDirString};
-  const bfs::path file = CreateAlgoWrkFile(w_curDirString);
-  const bfs::directory_iterator end;
-  const bfs::directory_iterator dir_iter(DirContainingFile11 /*directory*/);
+  // fs::path w_destination{w_curDirString};
+  //  const fs::path file = CreateAlgoWrkFile(w_curDirString);
+
+  try {
+    // create directories DBppGuiDev\DBppGuiAppl15\result
+    //    auto w_algoFileName = CreateAlgoWrkFile();
+    //    w_curDirPath /= w_algoFileName;
+    fs::path testDir{w_curDirPath};
+    create_directories(testDir);
+  } catch (const fs::filesystem_error &e) {
+    std::cerr << "EXCEPTION" << e.what() << "\n";
+    std::exit(EXIT_FAILURE); // exit program with failure
+  }
+
+  // const bfs::directory_iterator end;
+  // const bfs::directory_iterator dir_iter(DirContainingFile11 /*directory*/);
   // return number of file in the directory
   // auto dirDist = std::distance(dir_iter, end);
-  auto checkType = *dir_iter;
+  // auto checkType = *dir_iter;
   // auto okHasFileName = checkType.path().has_filename();
 
+#if 0  // temporary fix for debugging
   if (bfs::exists(w_destination)) // check if destination exist?
   {
-#if 0  // temporary fix for debugging
+//#if 0   temporary fix for debugging
     // let's put it in comment for now, one thing i should do
     // refactor the signature of this method with const char*?
     dbpp::Logger::instance()->OutputSuccess(
         "Destination directory: %s %s", w_destination.string().c_str(),
         std::string{" already exists."}.c_str());
-#endif // 0
+//#endif  0
     if (w_destination.empty()) {
       const auto w_save_file_name = CreateAlgoWrkFile(w_curDirString);
       return bfs::path{w_save_file_name};
@@ -165,6 +178,7 @@ dbpp::bfs::path createDbgFolderWithFile(/*const std::string& aValidationDir*/) {
     }
   } // directory exist
   return bfs::path{};
+#endif // 0
 }
 
 } // namespace dbpp
