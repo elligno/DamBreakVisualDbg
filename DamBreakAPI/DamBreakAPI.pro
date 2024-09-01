@@ -27,10 +27,8 @@ SOURCES += \
     NumericalSchemes/dbpp_HLL_RK2_Algo_Vec.cpp \
     NumericalSchemes/dbpp_TestBcSectF.cpp \
     NumericalSchemes/dbpp_TestEMcNeilVec.cpp \
-    NumericalSchemes/dbpp_TestNewAlgo.cpp \
     Numerics/dbpp_TestCalculFF.cpp \
     Numerics/dbpp_TimeStepCriteria.cpp \
-    SfxTypes/dbpp_Access.cpp \
     SfxTypes/dbpp_DamBreakData.cpp \
     SfxTypes/dbpp_EMcNeil1DFactory.cpp \
     SfxTypes/dbpp_ListSectFlow.cpp \
@@ -50,7 +48,6 @@ SOURCES += \
     dbpp_Wave1DSimulator.cpp
 
 HEADERS += \
-    Algorithm/dbpp_IFluxAlgoImpl.h \
     Algorithm/dbpp_SweRhsAlgorithm.h \
     Algorithm/dbpp_TestRhsImpl.h \
     Discretization/dbpp_BCharacteristicSolver.h \
@@ -69,18 +66,15 @@ HEADERS += \
     NumericalSchemes/dbpp_HLL_RK2_Algo_Vec.h \
     NumericalSchemes/dbpp_TestBcSectF.h \
     NumericalSchemes/dbpp_TestEMcNeilVec.h \
-    NumericalSchemes/dbpp_TestNewAlgo.h \
     Numerics/dbpp_TestCalculFF.h \
     Numerics/dbpp_TimeStepCriteria.hpp \
     Numerics/dbpp_UpwindScheme1st.hpp \
-    SfxTypes/dbpp_Access.h \
     SfxTypes/dbpp_BaseMacros.h \
     SfxTypes/dbpp_DamBreakData.h \
     SfxTypes/dbpp_DamBreakStepFunc.hpp \
     SfxTypes/dbpp_DefineTypes.h \
     SfxTypes/dbpp_EMcNeil1DFactory.h \
     SfxTypes/dbpp_ExceptionUtils.h \
-    SfxTypes/dbpp_IAccess.h \
     SfxTypes/dbpp_IRhsDiscretization.h \
     SfxTypes/dbpp_ListSectFlow.h \
     SfxTypes/dbpp_Observer.h \

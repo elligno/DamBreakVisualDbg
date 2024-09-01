@@ -10,9 +10,9 @@
 namespace dbpp {
 class ListSectFlow;
 }
-namespace jb {
-class scalarField;
-}
+// namespace jb {
+// class scalarField;
+//}
 
 namespace dbpp {
 // Design Note
@@ -34,9 +34,9 @@ public:
   virtual void CalculS0() {}
   // source term discretization (... to be completed)
   // in this case, H is provided  by the list of section flow
-  //		virtual void TraitementTermeSource2( vecD& aS, emcil::ListSectFlow*
-  //alistSectF,
-  //			const jb::scalarField* aA, const jb::scalarField* aQ) {}
+  //		virtual void TraitementTermeSource2( vecD& aS,
+  //emcil::ListSectFlow* alistSectF, 			const jb::scalarField* aA, const
+  //jb::scalarField* aQ) {}
   virtual void TraitementTermeP() = 0;
   virtual void TraitementTermeSource() = 0;
 };

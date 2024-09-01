@@ -30,55 +30,18 @@ EMcNeil1d_mod::EMcNeil1d_mod() : EMcNeil1D(), m_amontBC{}, m_avalBC{} {
   m_U12p.second.reset(new dbpp::scalarField(w_grid, std::string("A2p")));
 }
 
-// by doing this disable move semantic
-//	EMcNeil1d_mod::~EMcNeil1d_mod()
-//	{
-//		dbpp::Logger::instance()->OutputSuccess("EMcNeil1d_mod dtor");
-//	}
-
 // user specific implementation (abstract in the base class) to this purpose
 void EMcNeil1d_mod::timeStep() {
   using namespace std;
   using namespace std::placeholders;
 
-  // same algorithm as the base class but using new approach
-  // basic E. McNeil algorithm (Physical Algorithm)
-  // BaseNumPtr m_numTermsAlgo( new BaseNumTreatmemt);
-
-  // set boundary condition (not sure what it is, but still!!)
-  // setBC(); don't think we need  it
-
-  // set boundary value at both end (downstream and upstream)
-  // variable H (water level)
-  // Design Note
-  //  List is initialized? from base class we have the list of Observer
-  //  in the current version the only Observer is the list of section flow!!
-  //  This design need to be reviewed!!
-  // 		m_listSections->getList()[0]->setH(m_amontBC[2]);
-  // 		m_listSections->getList()[m_U12.first->values().size()]->setH(m_avalBC[2]);
-  // // ghost node
-
-  // some parameters of the discretization
-  // 		const double dx = m_U12.first->grid().Delta(1);
-  // 		m_NbSections = U1.size();
-
-  // Open debug log file
-
-  // first step of two-phase algorithm (computational domain: 1,...,99 with 0
-  // tied)
+  // first step of two-phase algorithm
   predictor();
-
-  // write to debug file
-#if 0 // deprecated (older version)
-		std::vector<double> w_U1p; w_U1p.reserve(m_currU.first->values().size()); 
-		m_currU.first->values().to_stdVector(w_U1p);
-		std::vector<double> w_U2p; w_U2p.reserve(m_currU.second->values().size());
-		m_currU.second->values().to_stdVector(w_U2p);
-#endif
 
   auto w_U1p = m_currU.first->values().to_stdVector();
   auto w_U2p = m_currU.second->values().to_stdVector();
   assert(w_U1p.size() == w_U2p.size());
+
   // write state values for debugging purpose
   const auto w_iterNostr =
       std::to_string(Simulation::instance()->getIterationNumber());
@@ -86,17 +49,6 @@ void EMcNeil1d_mod::timeStep() {
       std::string{"++++ Iteration number: "} + w_iterNostr);
   dbpp::DbgLogger::instance()->write2file_p(
       std::make_tuple(static_cast<unsigned>(w_U1p.size()), w_U1p, w_U2p));
-
-  // compute U1p, U2p (computational node except i=0 which is set by B.C.)
-  // set bc for intermediate variables U1p,U2p
-  // setBC();
-
-  // ready for the final phase (Evaluation de F1 et F2)
-  // NOTE: signature of those functions are deprecated
-  // 		m_numTermsAlgo->CalculFF( m_FF1, m_FF2, m_U1p, m_U2p, m_dU1,
-  // m_dU2,
-  // m_NbSections); 		m_numTermsAlgo->TraitementTermeSource2( m_S,
-  // m_U2p, m_U1p, w_H, n, dx, m_NbSections);
 
   // corrector (no need to compute inside dt and H inside the loop)
   // again it's hard to differentiate (wrap it in a method call 'corrector').
@@ -106,10 +58,13 @@ void EMcNeil1d_mod::timeStep() {
   // write to debug file (m_U1p, m_U2p are both vectors)
   w_U1p.clear(); // size set to zero
                  // m_currU.first->values().to_stdVector(w_U1p);
+
   w_U1p = m_currU.first->values().to_stdVector();
   w_U2p.clear();
+
   // m_currU.second->values().to_stdVector(w_U2p);
   w_U2p = m_currU.second->values().to_stdVector();
+
   assert(w_U1p.size() == w_U2p.size());
   dbpp::DbgLogger::instance()->write2file(
       std::make_tuple(static_cast<unsigned>(w_U1p.size()), w_U1p, w_U2p));
@@ -122,19 +77,9 @@ void EMcNeil1d_mod::timeStep() {
   // notify list of section flow and update GlobalDiscretization and
   // BoundaryCondition
   setState();
-
-  // .. to be completed
-  // we really need it since once we have resized our vector
-  // we just overwrite the values of the vector no need to clear
-  // and resize.
-  //		cleanedUp();
-
-  // Close debug log file
 }
 
 void EMcNeil1d_mod::setAmont(vecdbl &aU1, vecdbl &aU2) {
-  // compute the bc
-  //    GlobalDiscretization::instance()->gamma().applyBC();
 
   // retrieve boundary values and set upstream values
   const Gamma &w_bc = GlobalDiscretization::instance()->gamma();
@@ -144,8 +89,6 @@ void EMcNeil1d_mod::setAmont(vecdbl &aU1, vecdbl &aU2) {
 }
 
 void EMcNeil1d_mod::setAval(vecdbl &aU1, vecdbl &aU2) {
-  // compute the bc
-  // GlobalDiscretization::instance()->gamma().applyBC();
 
   // retrieve boundary values and set downstream values
   const Gamma &w_bc = GlobalDiscretization::instance()->gamma();
@@ -177,13 +120,7 @@ void EMcNeil1d_mod::corrector() {
 
 // Design Note: do we really need it? just use the version of the base class
 void EMcNeil1d_mod::predictor(const RhsStruct &aRhs) {
-  // working variable for numerical algorithm
-#if 0 // deprecated (older version)
-		std::vector<double> w_U1; w_U1.reserve( m_U12.first->values().size());
-		std::vector<double> w_U2; w_U2.reserve( m_U12.second->values().size());
-		m_U12.first->values().to_stdVector(w_U1);  // 100 pts!!
-		m_U12.second->values().to_stdVector(w_U2);
-#endif
+
   // set values (move semantic) no copy
   const vecdbl w_U1{m_U12.first->values().to_stdVector()};  // prvalue
   const vecdbl w_U2{m_U12.second->values().to_stdVector()}; // prvalue
@@ -332,10 +269,12 @@ void EMcNeil1d_mod::setH(vecdbl &aH) {
 }
 
 // not clear yet what we do here
+// Design note pass a type DamBreakIC (encapsulate initila cond.)
 void EMcNeil1d_mod::setInitSln(const StateVector &aU,
                                ListSectFlow *aListofSect) {
-  auto w_msg = "EMcNeil1d_mod initial solution";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"EMcNeil1d_mod initial solution"}.data());
 
   // debugging stuff
   //  auto w_ptrCountBef = aU.first.use_count();
@@ -346,8 +285,7 @@ void EMcNeil1d_mod::setInitSln(const StateVector &aU,
 
   // m_U12p = aU; or i should i do the following
   // create a grid with E. mcNeil discretization
-  std::shared_ptr<dbpp::gridLattice>
-      w_grid = // E McNeil discretization as default
+  auto w_grid = // E McNeil discretization as default
       std::make_shared<dbpp::gridLattice>(std::string("d=1 [0,1000] [1:100]"));
 
   // Create a scalar field for mid-time step
@@ -359,7 +297,6 @@ void EMcNeil1d_mod::setInitSln(const StateVector &aU,
   // throw std::exception("Could create initial solution");
 }
 
-// kind of a factory method
 // Could be wrapped in a kind of factory method
 EMcNeil1d_mod::RhsStruct
 EMcNeil1d_mod::createRhsDiscretization(const StateVector &aU) {

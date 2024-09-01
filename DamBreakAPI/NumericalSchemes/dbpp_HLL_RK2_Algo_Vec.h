@@ -62,7 +62,7 @@ public:
   /**
    *  dtor (shall be protected and non-virtual, next version)
    */
-  virtual ~EMcNeil1D();
+  virtual ~EMcNeil1D() = default;
 
   /** this is new version of our new designed algorithm
    * may be the H value shall computed with hydro util, i don't see
@@ -127,17 +127,17 @@ protected:
 private:
   // shall be part of a separate class with the following signature
   // checkGdiscrWithVec(vector<double>&, vector<double>&)
-  void checkGdiscrWithVec();
+  // void checkGdiscrWithVec();
   //		void setGobalDiscrFromVec();
 
-  double t;              /**< deprecated*/
-  int j, NbSections;     /**< deprecated*/
-                         //	double B, dx/*, dtc, dtn, dt*/;  /**< deprecated*/
-                         //	double V, c;                     /**< deprecated*/
-                         //		unsigned NbIterations;
-  errno_t err;           /**< deprecated*/
-  FILE *FichierResultat; /**< deprecated*/
-  char NomFichierResultat[256]; /**< deprecated*/
+  // double t;              /**< deprecated*/
+  // int j, NbSections;     /**< deprecated*/
+  //	double B, dx/*, dtc, dtn, dt*/;  /**< deprecated*/
+  //	double V, c;                     /**< deprecated*/
+  //		unsigned NbIterations;
+  // errno_t err;           /**< deprecated*/
+  // FILE *FichierResultat; /**< deprecated*/
+  // char NomFichierResultat[256]; /**< deprecated*/
 
   // flag for file status (still using this?)
   bool m_opened; // false is default value

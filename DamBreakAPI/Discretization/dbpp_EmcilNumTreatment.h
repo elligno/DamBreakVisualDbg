@@ -40,10 +40,9 @@ public:
    * @param NbSections number of sections
    * @param B width of the section
    */
-  virtual void TraitementTermeP(std::vector<double> &PF2,
-                                std::vector<double> &P2,
-                                const std::vector<double> &U1,
-                                const int NbSections, const double B = 1);
+  void TraitementTermeP(std::vector<double> &PF2, std::vector<double> &P2,
+                        const std::vector<double> &U1, const int NbSections,
+                        const double B = 1);
 
   /** Numerical algorithm to calculate the pressure term.
    *
@@ -52,8 +51,8 @@ public:
    * @param dx state variable for wetted area
    * @param NbSections number of sections
    */
-  virtual void CalculS0(std::vector<double> &S0, const std::vector<double> &Z,
-                        const double dx, const int NbSections);
+  void CalculS0(std::vector<double> &S0, const std::vector<double> &Z,
+                const double dx, const int NbSections);
 
   /** Numerical algorithm to calculate the pressure term.
    *
@@ -66,13 +65,12 @@ public:
    * @param dx state variable for wetted area
    * @param NbSections number of sections
    */
-  virtual void TraitementTermeSource(std::vector<double> &S,
-                                     const std::vector<double> &Q,
-                                     const std::vector<double> &A,
-                                     const std::vector<double> &Z,
-                                     const std::vector<double> &n,
-                                     const double dx, const int NbSections,
-                                     const double B = 1);
+  void TraitementTermeSource(std::vector<double> &S,
+                             const std::vector<double> &Q,
+                             const std::vector<double> &A,
+                             const std::vector<double> &Z,
+                             const std::vector<double> &n, const double dx,
+                             const int NbSections, const double B = 1);
 
   /** Numerical algorithm to calculate the pressure term.
    *
@@ -85,13 +83,12 @@ public:
    * @param dx state variable for wetted area
    * @param NbSections number of sections
    */
-  virtual void TraitementTermeSource2(std::vector<double> &S,
-                                      const std::vector<double> &Q,
-                                      const std::vector<double> &A,
-                                      const std::vector<double> &H,
-                                      const std::vector<double> &n,
-                                      const double dx, const int NbSections,
-                                      const double B = 1.);
+  void TraitementTermeSource2(std::vector<double> &S,
+                              const std::vector<double> &Q,
+                              const std::vector<double> &A,
+                              const std::vector<double> &H,
+                              const std::vector<double> &n, const double dx,
+                              const int NbSections, const double B = 1.);
 
   /** Numerical algorithm to calculate the pressure term.
    *
@@ -105,11 +102,10 @@ public:
    * @param NbSections number of sections
    */
   // deprecated
-  virtual void CalculFF(std::vector<double> &FF1, std::vector<double> &FF2,
-                        const std::vector<double> &U1,
-                        const std::vector<double> &U2, std::vector<double> &dU1,
-                        std::vector<double> &dU2, const int NbSections,
-                        const double B = 1.);
+  void CalculFF(std::vector<double> &FF1, std::vector<double> &FF2,
+                const std::vector<double> &U1, const std::vector<double> &U2,
+                std::vector<double> &dU1, std::vector<double> &dU2,
+                const int NbSections, const double B = 1.);
 
   /** Numerical algorithm to calculate the pressure term.
    *
@@ -119,30 +115,8 @@ public:
    * @param U2 state variable for discharge
    * @param B width of the section
    */
-  virtual void CalculFF(std::vector<double> &FF1, std::vector<double> &FF2,
-                        const std::vector<double> &U1,
-                        const std::vector<double> &U2, const double B = 1.);
-
-#if 0  // piece of crap!!
-protected:
-  /** Numerical algorithm to calculate the pressure term.
-   *
-   * @param U2 state variable discharge
-   * @param U1 state variable for wetted area
-   * @param H water level
-   */
-  virtual void computeBC(std::vector<double> &U1, std::vector<double> &U2,
-                         std::vector<double> &H);
-  //	std::tuple<double,double,double>&
-  // aBcamont,std::tuple<double,double,double>& aBcaval);
-
-  // @deprecated must be removed
-  void setAmont(std::vector<double> &U1, std::vector<double> &U2,
-                std::vector<double> &H);
-  void setAval(std::vector<double> &U1, std::vector<double> &U2,
-               std::vector<double> &H);
-
-private:
-#endif // 0
+  void CalculFF(std::vector<double> &FF1, std::vector<double> &FF2,
+                const std::vector<double> &U1, const std::vector<double> &U2,
+                const double B = 1.);
 };
 } // namespace dbpp

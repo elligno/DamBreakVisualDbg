@@ -50,7 +50,8 @@ public:
     /**
      * default ctor
      */
-    cellFaceVariables() : m_UL(0.), m_UR(0.), m_faceIdx(0), m_order(2) {}
+    cellFaceVariables(double aUL, double aUR, unsigned aFaceIdx = 1)
+        : m_UL{aUL}, m_UR{aUR}, m_faceIdx{aFaceIdx}, m_order{2} {}
 
     /** default copy and assignment ctor will be fine*/
 
@@ -93,20 +94,11 @@ public:
   /**
    *  typedef for code clarity
    */
-  typedef std::map<unsigned, std::pair<cellFaceVariables /*U1LR*/,
-                                       cellFaceVariables /*U2LR*/>>
-      mapofacesvar;
+  using mapofacesvar = // A(U1),Q(U2)
+      std::map<unsigned, std::pair<cellFaceVariables /*U1LR*/,
+                                   cellFaceVariables /*U2LR*/>>;
 
 public:
-  // 		 ReconstrUtil();
-  // 		~ReconstrUtil();
-  // Will be removed in the next version of this file, move in a
-  // separate class which implement different version of the reconstruction
-  // algorithm.
-  // below 3 version of the same function but with different implementation
-  // i would like to compare for efficiency between these functions. I suspect
-  // that the valarray version will be more efficient since
-
   /**
    *  Implementation of the reconstruction procedure algorithm. Use different
    *  container such as std::vector as argument,
@@ -121,11 +113,6 @@ public:
       std::vector<std::pair<double, double>>
           &aVecULR); // face variable reconstructed (UL,UR)
 
-  static void reconstr_rng(
-      const dbpp::scalarField &aField, // field to reconstruct at cell face
-      std::vector<std::pair<double, double>>
-          &aVecULR); // face variable reconstructed
-
   // vector version of the reconstruction procedure
   static void reconstrv_sv(const StateVector &aStateV, vecULR &aULR1,
                            vecULR &aULR2);
@@ -133,94 +120,7 @@ public:
   /** prototyping version of the reconstruction procedure which returns
    * state variables reconstructed at cell face at a given order by MUSCL.
    */
-  static std::map<unsigned, vecULR>
-  reconstr_j12(const GlobalDiscretization *aGdiscr,
-               const dbpp::scalarField &aStateVec);
   static mapofacesvar reconstr_j12(const GlobalDiscretization *aGdiscr,
                                    const StateVector &aStateVector);
-
-  /** this will be removed, because we are using the min function of the std.
-   * MinMod function do more than taking the minimum, it test for some ...
-   * slope limiter function to limit slope of the solution.
-   */
-  static void computeMinModDU(const std::vector<real> &aVecU,
-                              std::vector<double> &aDU);
-
-  /** gradient (this algorithm need to be verified and validated)
-   * there is a lot of comment, but now it's clear in my mind.
-   */
-  template <typename Range> // compute first order, not sure but i think so
-  static Range computeDU(const Range &aRng) {
-    // NOTE: this algorithm is totally wrong, don't need to remove
-    // the first element after adjacent_diffrence, i have made some
-    // test in the "TestCpp11" project see file "TestSTLAlgorithm.cpp"
-    // and the algorithm doesn't add anything to the container, first
-    // element of the adjacent difference is the first element for which
-    // we are taking or applying the algorithm. This first element need to
-    // be overwrite with boundary value (dU[0]=U[1]-U[0]). For a test
-    // implementation see file "TestScientificAlgo.cpp" of TestCpp11.cpp".
-    // Don't need to use deque container because of pop_front() method.
-    // Vector will do!!
-
-    // compute the gradient at first-order using the stl numeric algorithm
-    // computedU(Cont aCont,unsigned aOrder)
-    Range w_tmpdUi(aRng.size()); // i am not sure about this one
-    // w_vDU.resize(w_vecU.size()); // NbSections=101, but return 100
-    std::adjacent_difference(aRng.begin(), aRng.end(),
-                             std::back_inserter(w_tmpdUi));
-
-    // this is not true, it's wrong!!
-    //  because first element is set to 0 by the algo to compute the first diff.
-    // 			typedef iterator_range<typename Range::iterator> cont_irange;
-    // // value that iterator point to
-    // 			// first and second element ()
-    // 			cont_irange w_tmpRng = boost::make_iterator_range(
-    // aRng.begin(), aRng.begin()+1);
-    // boost::range_value<cont_irange>::type w_u0 =
-    // *(w_tmpRng.begin()); 			boost::range_value<cont_irange>::type
-    // w_u1
-    // =
-    // *(w_tmpRng.advance_begin(1)); 			w_tmpdUi[0]=w_u1-w_u0; //
-    // overwrite the first element
-    //
-    // 			// sanity check
-    // 			assert(aRng.size()==w_tmpdUi.size());
-
-    // returning the range of gradient computed
-    // skip first element because it correspond to first element
-    // of the original range (adjacent algorithm work that way)
-    return Range(w_tmpdUi.begin() + 1, w_tmpdUi.end());
-  }
-
-  template <typename Range>
-  Range applyLimiter(const Range &aRofDU) /*, something that i want to try
-         std::function<const typename Range::value_type& (typename const
-         Range::value_type&, typename const Range::value_type&)> aLimiter) */
-  {
-    // when i do that, adjacent diff. will push element
-    // and growth size?
-    // IMPORTANT:
-    Range w_minDU(aRofDU.size() + 1);
-
-    // (just applying the minmod function to some range)
-    std::adjacent_difference(
-        aRofDU.begin(), aRofDU.end(), w_minDU.begin(),
-        std::bind(&std::min<int>, std::placeholders::_1,
-                  std::placeholders::_2)); // for testing purpose
-
-    // treating the boundary node i=0 and i=100 in Eric McNeil code
-    // we overwrite the first element since according to the adjacent
-    // difference algorithm, it's ... to be completed
-    w_minDU[0] =
-        std::min<Range::value_type>(aRofDU[1] - aRofDU[0], 0); // overwrite
-    // last element that ...
-    //	w_minDU.push_back( 0, min(aRofDU[aR2apply.size()-1] -
-    // aRofDU[aR2apply.size()-2]));
-    w_minDU[aRofDU.size()] = std::min<Range::value_type>(
-        0, aRofDU[aRofDU.size() - 1] - aRofDU[aRofDU.size() - 2]);
-
-    // returns the new range
-    return Range(w_minDU.begin(), w_minDU.end());
-  }
 };
 } // namespace dbpp

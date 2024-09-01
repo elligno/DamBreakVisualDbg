@@ -26,28 +26,11 @@ namespace dbpp {
 // 13-feb-17
 //  Implement a POM mechanism (Physics Object Model)
 //
-class TestRhsDiscretization : public Access,
-                              public IRhsDiscretization,
-                              public IUpdateable,
-                              public IDisplayable {
+class TestRhsDiscretization : public IRhsDiscretization {
+
 public:
   TestRhsDiscretization();
-
-  //
-  // Access
-  //
-  void *getInterface(const std::string &aStr2Interface) override final;
-
-  //
-  // IUpdateable
-  //
-  void update() override final;
-
-  //
-  // IDisplayable
-  //
-  void display() override final;
-
+  virtual ~TestRhsDiscretization() = default;
   // Temp fix
   void getNumericalTreatment() override {}
 
@@ -92,7 +75,7 @@ void TestRhsDiscretization::TraitementTermeP(vecdbl &PF2, vecdbl &P2,
                                              const vecdbl &U1,
                                              const int NbSections,
                                              const double B /*=1*/) {
-  //    using namespace basenum;
+  //  using namespace basenum;
 
   int j;
   double I;
@@ -282,49 +265,9 @@ void TestRhsDiscretization::CalculFF(vecdbl &FF1, vecdbl &FF2, const vecdbl &U1,
 
 void TestRhsDiscretization::Release() { delete this; }
 
-TestRhsDiscretization::TestRhsDiscretization()
-    : Access(
-          "IDisplayable IUpdateable") // supported interface for this component
-{
+TestRhsDiscretization::TestRhsDiscretization() {
   std::cout << "TestRhsDiscretization::TestRhsDiscretization(string) ctor\n";
 }
-
-// inherited from Access mechanism interface
-void *TestRhsDiscretization::getInterface(const std::string &aStr2Interface) {
-  std::cout << "getInterface() of inherit\n";
-
-  if (hasInterface()) // support interface
-  {
-    // 			if ( ::strcmp("IDisplayable",aStr2Interface.data())==0)
-    // 			{
-    // 				return static_cast<aa::IDisplayable*>(this);
-    // 			}
-    if (::strcmp("IUpdateable", aStr2Interface.data()) == 0) {
-      return static_cast<IUpdateable *>(this);
-    }
-    // 			else if(
-    // ::strcmp("IConservative",aStr2Interface.data())==0)
-    // 			{
-    // 				return (IConservative*)this;
-    // 			}
-    else if (::strcmp("IDisplayable", aStr2Interface.data()) == 0) {
-      return static_cast<IDisplayable *>(this);
-    } else {
-      return nullptr;
-    }
-  } else {
-    return nullptr;
-  }
-}
-
-void TestRhsDiscretization::update() {
-  std::cout << "Updating BC values at each iteration\n";
-}
-
-void TestRhsDiscretization::display() {
-  std::cout << "Display values of the BC upstream/downstream\n";
-}
-
 } // namespace dbpp
 
 ////////////////////////////////////////////////////////////////////////////////

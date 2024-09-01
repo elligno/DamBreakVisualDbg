@@ -15,17 +15,6 @@ namespace dbpp {
  */
 class TestRhsImpl : public SweRhsAlgorithm {
 public:
-  // what about the ctor?? good question!!
-  // default is ok??
-  // from base numerical discretization
-
-  // shall declare a default ctor?? isn't?
-  //		~TestRhsImpl()
-  //		{
-  //			dbpp::Logger::instance()->OutputSuccess("TestRhsImpl
-  //dtor");
-  //		}
-
   /** an implementation of the algorithm based on Eric McNeil*/
   void calculate(const StateVector &aU) final override;
 
@@ -38,7 +27,7 @@ public:
    *
    * @param scalar field
    */
-  void setH(const dbpp::scalarField &aA) override;
+  void setH(const dbpp::scalarField &aA) override; // no sense!!!!
 
   /** An implementation of the boundary condition (A,Q,H format)
    *  (deprecated but not sure)
