@@ -12,3 +12,4 @@ DBppGuiAppl15/Makefile.Release
 *.Makefile.Debug
 *.Makefile.Release
 \bin
+DamBreakAPI/Makefile.Debug
