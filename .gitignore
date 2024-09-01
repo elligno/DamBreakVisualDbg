@@ -11,4 +11,7 @@ DBppGuiAppl15/Makefile.Release
 *.Makefile.Debug
 *.Makefile.Release
 \bin
-DamBreakAPI/Makefile.Debug
+DamBreakVisualDbg/Makefile.Debug
+DamBreakVisualDbg/Makefile.Release
+DBppGuiAppl15/Makefile.Debug
+DamBreakAPI/debug/DamBreakAPI.lib
