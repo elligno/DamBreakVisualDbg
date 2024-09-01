@@ -1,20 +1,6 @@
 #include "dbppguiappl15.h"
 #include "ui_dbppguiappl15.h"
 
-#if 0  // original code at project creation before merged VS15 stuff
-DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::DBppGuiAppl15)
-{
-    ui->setupUi(this);
-}
-
-DBppGuiAppl15::~DBppGuiAppl15()
-{
-    delete ui;
-}
-#endif // 0
-
 // C++ include
 //#include <thread>
 // Qt includes
@@ -25,14 +11,12 @@ DBppGuiAppl15::~DBppGuiAppl15()
 #include <QSettings>
 #include <QTextEdit>
 
-#if 1
 // Library includes
 #include "Discretization/dbpp_GlobalDiscretization.h"
 #include "SfxTypes/dbpp_Simulation.h"
 #include "Utility/dbpp_Hydro1DLogger.h"
 #include "Utility/dbpp_TestLogger.h"
 #include "dbpp_Wave1DSimulator.h"
-#endif
 
 // test stuff
 //#include "Utility/dbpp_Worker.h"
@@ -74,25 +58,6 @@ DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
   //   file->addAction(quit);
   //
 
-#if 0
-  // i am not too sure about this, but at some point i need
-  // to set the main part of the GUI
-  QDesktopWidget* w_desktop = qApp->desktop();
-  QWidget* w_centralWidget = Q_NULLPTR;  // create Simulation group box
-  QLayout* w_centralLayout = new QHBoxLayout;
-  QGroupBox* m_testGRb = Q_NULLPTR;
-  w_centralLayout->addWidget(m_testGRb);
-  w_centralWidget->setLayout(w_centralLayout);
-  setCentralWidget(w_centralWidget);
-  ui->centralWidget->setLayout(ui->m_simulation);
-
-  ui->m_simulation;
-#endif
-
-  // temporary for now, testing std::thread mechanism
-  // should be a member of the class as it used to be
-  // m_waveSim = new dbpp::Wave1DSimulator;
-
   //
   // DamBreak Application Configuration
   //
@@ -110,12 +75,7 @@ DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
   // setup GUI functionality
   ui->setupUi(this);
 
-  // read default value (E. McNeil data)
-  //  m_waveSim->setPhi1(ui->_phi1->value());                     10.
-  //  m_waveSim->setPhi0(ui->_phi0->value());                     1.
-  //  m_waveSim->setShockLocation(ui->_shockloc->value());        500.
-  // m_waveSim->setIterationNumberMax(ui->iterations->value());  default is 1
-
+  // Still need this?
   // NOTE not too sure about this one, not calling the slot "setUpstream()"
   // use lambda expression for the SLOT (could do that from QtDesigner)
   // mechanism for calling overload method (default value is E. McNeil data)
@@ -133,9 +93,6 @@ DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
   connect(ui->action_doOneStep, SIGNAL(triggered()), this,
           SLOT(runStepbyStep()));
   connect(ui->actioninitialize, SIGNAL(triggered()), this, SLOT(initSim()));
-
-  // connect(ui->_msgText, SIGNAL(textChanged()), this,
-  //         SLOT(writeMsg2Gui(QString)));
 
   // at initialization
   ui->_msgText->setText("Ready to launch the simulation data");

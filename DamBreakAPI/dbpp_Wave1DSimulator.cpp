@@ -20,102 +20,12 @@
 #include "../Numerics/dbpp_TimeStepCriteria.hpp"
 #include "../SfxTypes/dbpp_PhyConstant.h"
 #include "../SfxTypes/dbpp_Simulation.h"
+#include "../Utility/dbpp_CommandLineArgs.h"
 #include "../Utility/dbpp_Hydro1DLogger.h"
 #include "../Utility/dbpp_SimulationUtility.h"
 #include "../Utility/dbpp_TestLogger.h"
-//#include "SfxTypes/dbpp_TimePrm.h"
-//#include "SfxTypes/dbpp_WaveFunc.h"
-
-/** Design Note: jb namespace is deprecated*/
 
 namespace dbpp {
-/** Recursively find the location of a file on a given directory
- * make use of some of the c++11 features : auto keyword and lambda function
- */
-// 	bool FindFile11( const boost::filesystem::path& directory,
-// 		               boost::filesystem::path& path,
-// 		               const std::string& filename)
-// 	{
-// 		bool found = false;
-//
-// 		const boost::filesystem::path file = filename;
-// 		const boost::filesystem::recursive_directory_iterator end;
-// 		const boost::filesystem::recursive_directory_iterator dir_iter(
-// directory);
-//
-// 		// use auto and lambda function &file input argument of the
-// lambda 		const auto it = std::find_if( dir_iter,
-// end,
-// 			[&file]( const boost::filesystem::directory_entry& e )
-// 		{
-// 			return e.path().filename() == file;
-// 		});
-//
-// 		if ( it != end )
-// 		{
-// 			path = it->path();
-// 			found = true;
-// 		}
-//
-// 		return found;
-// 	}
-
-// helper function used for saving (result)
-// Get current date/time, format is YYYY-MM-DD.HH:mm:ss
-// Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
-//   const std::string currentDateTime()
-//   {
-//     time_t     now = time(0);
-//     struct tm  tstruct;
-//     char       buf[80];
-//     localtime_s( &tstruct, &now);
-//
-//     // for more information about date/time format
-//     strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
-//
-//     return std::string(buf);
-//   }
-//
-// 	std::string getDateFormat()
-// 	{
-// 		// retrieve the current date and time for simulation result
-// 		const std::string wDate = currentDateTime();
-// 		// position of the search character, want to strip the time for
-// now 		std::size_t w_Found = wDate.find_first_of(".");
-// std::string
-// w_DateStr(wDate); 		std::string::iterator w_ConstIter =
-// w_DateStr.begin(); 		w_ConstIter += w_Found;
-// 		// erase time part of the string
-// 		w_DateStr.erase( w_ConstIter, w_DateStr.end());
-//
-// 		return w_DateStr;
-// 	}
-
-// 	std::string Wave1DSimulator::CreateAlgoFile( const std::string&
-// aCurDirStr/*=""*/)
-// 	{
-// 		std::cout << "Created the new directory to save file\n";
-// 		//std::string w_activeAlgo("JeanB");
-// 		if( aCurDirStr.empty())
-// 		{
-// 			std::string w_save_file_name = m_activeAlgo;
-// 			w_save_file_name.append("_algo");
-// 			w_save_file_name.append("_");
-// 			w_save_file_name.append("1"); // default
-// 			w_save_file_name += ".txt"; // file extension
-// 			return w_save_file_name;
-// 		}
-// 		else
-// 		{
-// 			std::string w_save_file_name =
-// aCurDirStr+"\\"+m_activeAlgo;
-// w_save_file_name.append("_algo");
-// w_save_file_name.append("_");
-// w_save_file_name.append("1");
-// // default 			w_save_file_name += ".txt"; // file extension
-// return w_save_file_name;
-// 		}
-// 	}
 
 #if 0
 	// design Note: shall return a boolean to specify if
@@ -357,18 +267,18 @@ void Wave1DSimulator::scan() {
 
   //   the wave-function can be specified on the command line
   //   1: Gaussian function
-  //   2: ...
-  //    int func = CmdLineArgs::read("-func", 1);
+  //   2: SWE DamBreak initialization
+  // int func = CmdLineArgs::read("-func", 1);
 
   // select the appropriate initial functions
   // describing the seabed and surface.
   // if (func == 1) {
-  //   m_H.reset(new GaussianBell('H'));
-  //   m_I.reset(new GaussianBell('U'));
+  //  m_H.reset(new GaussianBell('H'));
+  //  m_I.reset(new GaussianBell('U'));
   //   auto *w_msg = "We set DamBreak GaussianBell function";
   //   Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
-  // } else                     // in the current version of the Simulator
-  // {                          // func = 0 in cmd line argument of the project
+  //} else                     // in the current version of the Simulator
+  //{                          // func = 0 in cmd line argument of the project
   m_I.reset(new Flat{});   // we consider flat bed bathymetry
   m_H.reset(new Step1D{}); // we set DamBreak step function
 
@@ -391,6 +301,7 @@ void Wave1DSimulator::scan() {
 
   Logger::instance()->OutputSuccess(
       std::string{"Final simulation time is: %f"}.data(), m_finalTime);
+
   Logger::instance()->OutputSuccess(
       std::string{"Wave1DSimulator::scan initialization completed"}.data());
 }
@@ -530,37 +441,6 @@ void Wave1DSimulator::setIC() {
             w_U2.getPtr() + w_U2.size() /*end range*/, 0. /*value*/);
 
 #if 0
-		// sanity check (make sure everything is zero)
-		if( std::count_if( w_U2.getPtr() /*begin range*/, 
-			w_U2.getPtr() + w_U2.size()  /*end range*/,
-			[](real aReal) -> bool {return aReal!=0.;})!=0)
-		{
-			// check why it's not zero equal as it should be
-			w_U2.print(std::cout);
-		}
-		
-		// This is a new algorithm since C++11 and it check if 
-		// all of the element satisfy a criteria. This algorithm
-		// show more clearly the intent of the programmer than
-		// "count_if()" counterpart. 
-		if( std::all_of( w_U2.getPtr() /*begin range*/, 
-			w_U2.getPtr() + w_U2.size()  /*end range*/,
-			std::bind( std::greater_equal<real>(),
-			     std::placeholders::_1,0.)) == true)
-		{
-			dbpp::Logger::instance()->OutputSuccess("Wave1DSimulator::setIC() done successfully");
-			//std::cout << "Initialization done successfully\n"; 
-		}
-#endif
-
-  // set wet area (in the original version of E. McNeil code)
-  // use the helper function "Evaluation_fonction_xxx()" which take
-  // into account the z variable (bottom topography),
-  // U1[j] = HydroUtils::Evaluation_A_fonction_H( H[j], Z[j], B);
-  // where B section width, since Z=0, A=H in our case
-  // wet area A, unit width section
-
-#if 0
   auto w_x = m_u.first->grid().xMin(1);
   assert(w_x == 0.);
 
@@ -600,7 +480,7 @@ void Wave1DSimulator::setIC() {
 // just don't know if we really need it!!
 void Wave1DSimulator::solveProblem() {
 
-  // test C++17 string::data() return a char* and not const char*
+  // Since C++17 string::data() return a char* and not const char*
   dbpp::Logger::instance()->OutputSuccess(
       std::string{"Solving the problem"}.data());
   dbpp::Logger::instance()->OutputSuccess(
@@ -626,6 +506,7 @@ void Wave1DSimulator::solveProblem() {
 //  it is very handy because sometimes we just want to go one
 //  step at a time and check result of the simulation for some reasons.
 void Wave1DSimulator::initialize() {
+
   // initial condition are set at the scan process
   // startup phase (scan method).
   auto *w_msg = "Initial condition startup phase (scan method)";
@@ -642,33 +523,36 @@ void Wave1DSimulator::initialize() {
   // saveIC2File();          save initial data to file (no need to save that)
   initTime(); // ...
 
+  // NOTE this part is done in the factory method (same test is performed)
   // check in which mode we are in the manual mode or we are using
   // the GUI to manage the simulation
-  if (getSimulatorMode() == Wave1DSimulator::eSimulationMode::manualMode) {
-    // creating our algorithm for this simulation
-    m_numRep = createEMcNeil1DAlgo(); // algorithm name from comd line args
+  //  if (getSimulatorMode() == Wave1DSimulator::eSimulationMode::manualMode) {
+  //    // creating our algorithm for this simulation
+  //    m_numRep = createEMcNeil1DAlgo(); // algorithm name from comd line args
+  //    if (m_numRep != nullptr) {
+  //      auto *w_msg = "Created Numerical Scheme for manual mode";
+  //      dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+  //    } else {
+  //      auto *w_msg = "Could not create Numerical Scheme for manual mode";
+  //      dbpp::Logger::instance()->OutputError(const_cast<char *>(w_msg));
+  //    }
+  //  } else // GUI mode
+  //  {
+  if (nullptr == m_numRep) {
+    // create from user selection
+    m_numRep = createEMcNeil1DAlgo(); // algorithm name from user selection
     if (m_numRep != nullptr) {
-      auto *w_msg = "Created Numerical Scheme for manual mode";
-      dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+      dbpp::Logger::instance()->OutputSuccess(
+          std::string{"Created Numerical Scheme for GUI mode"}.data());
     } else {
-      auto *w_msg = "Could not create Numerical Scheme for manual mode";
-      dbpp::Logger::instance()->OutputError(const_cast<char *>(w_msg));
-    }
-  } else // GUI mode
-  {
-    if (nullptr == m_numRep) {
-      // create from user selection
-      m_numRep = createEMcNeil1DAlgo(); // algorithm name from user selection
-      if (m_numRep != nullptr) {
-        dbpp::Logger::instance()->OutputSuccess(
-            std::string{"Created Numerical Scheme for GUI mode"}.data());
-      } else {
-        dbpp::Logger::instance()->OutputError(
-            std::string{"Could not create Numerical Scheme for GUI mode"}
-                .data());
-      }
+      dbpp::Logger::instance()->OutputError(
+          std::string{"Could not create Numerical Scheme for GUI mode"}.data());
+
+      exit(EXIT_FAILURE); // no numerical method no simulation!!! no point to
+                          // go further
     }
   }
+  //}
 
   // TODO: see Design Note inside and return a list of sections
   // create section flow
@@ -677,6 +561,7 @@ void Wave1DSimulator::initialize() {
     delete m_ListSectFlow;
     m_ListSectFlow = nullptr;
   }
+
   createListSections();
 
   // TODO: ListSectionFlowObserver
@@ -687,8 +572,8 @@ void Wave1DSimulator::initialize() {
 
   // DESIGN NOTE
   // Remove class attributes: m_u, m_up, m_grid don't need that
-  // Shall be something like that m_numRep->setInitSln(getIC()); setIC return a
-  // StateVector!!
+  // Shall be something like that m_numRep->setInitSln(getIC()); setIC return
+  // a StateVector!!
   // ----- Discretize the math equations U_i(n) = U_i(n-1) - lambda*dF -dt*S -
   // dt*P dbpp::Logger::instance()->OutputSuccess("Discretize Equation
   // completed"); BaseNumTreatment w_baseNumTreatment; could be a shared_ptr
@@ -736,6 +621,13 @@ void Wave1DSimulator::doOneStep() {
   // %f", m_tip->Delta()); 		dbpp::Logger::instance()->OutputSuccess(
   // "Simulation time computed is: %f", m_tip->time());
 
+  //*****************
+  // Design Note the signature of this method shall be somthing like
+  // advance(t0,t1,dt,timestepCriteria) time loop is done inside
+  // see "Dsn_FiniteDifferenceModel" advance method, its the way
+  // it shall be done. In this method a call is made to explicit integrator
+  // but this wrong, the model create the ODESolver, this must be replaced
+  // by odeSolver->solve(...) which is more natural.
   // sanity check about the numerical algorithm that is running
   m_numRep->advance(/*m_u*/); // variable is updated (pass as reference)
 
@@ -843,18 +735,9 @@ void Wave1DSimulator::timeLoop() // run equivalent
   // for code clarity
   dbpp::Simulation *w_sim = dbpp::Simulation::instance();
 
-  // initialize the number of iteration
-  // int w_currStepNo = m_tip->getTimeStepNo();
-
-  // sanity check (debugging purpose)
-  auto w_nbIter = w_sim->getIterationNumber();
-  //  auto w_nbStep = m_tip->getTimeStepNo();
-  assert(w_sim->getIterationNumber() == 1);
-  //  static_cast<unsigned int>(m_tip->getTimeStepNo()));
-
-  // debugging purpose (correspond to the original number of iteration for 22.5
-  // sec)
-  // w_sim->setNbIterationMax(1);  temporary fix (set on the GUI side)
+  // debugging purpose (correspond to the original number of iteration
+  // for 22.5 sec) w_sim->setNbIterationMax(1);  temporary fix (set on the GUI
+  // side)
   assert(10 == w_sim->getNbIterationMax()); // shall be put in a unit test
 
   // we are at first iteration and time is time step
@@ -869,15 +752,15 @@ void Wave1DSimulator::timeLoop() // run equivalent
     // emcil::Simulation::instance()->setSimulationTimeStep(w_dt);
     //
     // 			std::cout << "\n";
-    // 			std::cout << "+++++++++++++Simulation parameters for
-    // this time
-    // step++++++++++++++\n"; 			std::cout << "Time step computed
-    // is:
+    // 			std::cout << "+++++++++++++Simulation parameters
+    // for this time
+    // step++++++++++++++\n"; 			std::cout << "Time step
+    // computed is:
     // "
     // << m_tip->Delta() << "\n"; 			std::cout << "Simulation
     // time computed is: " <<
-    // m_tip->time() << "\n"; 			std::cout << "Iteration number
-    // is:
+    // m_tip->time() << "\n"; 			std::cout << "Iteration
+    // number is:
     // "
     // << m_tip->getTimeStepNo() << "\n"; 			std::cout <<
     // "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
@@ -906,8 +789,8 @@ void Wave1DSimulator::timeLoop() // run equivalent
     // 				std::cout << "time step " <<
     // m_tip->getTimeStepNo()
     // <<
-    // 					": u(x," << m_tip->time() << ") is
-    // computed.\n"
+    // 					": u(x," << m_tip->time() << ")
+    // is computed.\n"
     // 					<< std::endl;
     // 			}
 
@@ -915,7 +798,8 @@ void Wave1DSimulator::timeLoop() // run equivalent
     // auto w_dt =
     //   m_CFL*TimeStepCriteria::timeStep(m_numrep->getState().first,
     //                                    m_numrep->getState().second)
-    real w_dt = calculateDt(); // just for check
+
+    auto w_dt = calculateDt(); // just for check
     // simulation time is updated
     dbpp::Simulation::instance()->setSimulationTimeStep(w_dt);
     dbpp::Simulation::instance()->incrIteration(); // ready for next iteration
@@ -940,7 +824,7 @@ std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
   // shared pointer for algorithm numerical representation (base class)
   std::shared_ptr<dbpp::EMcNeil1D> w_num_rep{}; // set to nullptr
 
-#if 0 // dbpp::CmdLineArgs not supported for some reason
+#if 1 // dbpp::CmdLineArgs not supported for some reason
   // Check which mode simulator is running (manual/gui)
   if (getSimulatorMode() == eSimulationMode::manualMode) {
     m_activeAlgo = dbpp::CmdLineArgs::read(
@@ -1098,7 +982,8 @@ void Wave1DSimulator::saveResult(const StateVector &aStateVec,
 // was pass as an argument to advance, which is not the case anymore. Now we
 // using the GlobalDiscretization to retrieve the nodal variables that are
 // updated after each iteration. IMPORTANT: we are now considering 100 section
-// (domain discretization, at each node there is a section flow as it should be)
+// (domain discretization, at each node there is a section flow as it should
+// be)
 //  **It shall return a ListOfSections!! not void, it's a kind of factory
 //  method!!
 //    use of shared ptr for reference semantic??? maybe!
@@ -1111,6 +996,13 @@ void Wave1DSimulator::createListSections() {
   // this is temporary fix for debugging purpose
   if (nullptr == m_ListSectFlow) {
     // number of grid node(computational domain)
+    // NOTE m_lambda->values().size(); is probably more appropriate
+    // we have a section at each grid node (just some checks to make sure we we
+    // are on the right track) shall be removed in the future
+    assert(m_lambda->values().size() == m_lambda->grid().getNoPoints());
+    assert(m_lambda->grid().getMaxI(1) == m_lambda->grid().getNoPoints());
+    // number of sections should be equal to the number of grid
+    // of the computational domain
     m_ListSectFlow =
         new dbpp::ListSectFlow(m_numRep, m_lambda->grid().getMaxI(1));
 
@@ -1122,9 +1014,9 @@ void Wave1DSimulator::createListSections() {
     // array of 101 values, here we have array of 100 (domain)
     for (auto i = 1; i <= m_lambda->grid().getMaxI(1); i++) // node index
     {
-      //     auto w_xCurr = m_lambda->grid().getPoint(1, i);
-      // set water level to initial dam-break config (index i-1 because numeric
-      // array index start at 1)
+      // auto w_xCurr = m_lambda->grid().getPoint(1, i);
+      // set water level to initial dam-break config (index i-1 because
+      // numeric array index start at 1)
       m_ListSectFlow->add(new SectFlow(i - 1, m_lambda->grid().getPoint(1, i),
                                        m_lambda->values()(i)));
     }
@@ -1133,12 +1025,12 @@ void Wave1DSimulator::createListSections() {
   // hard coded (debugging purpose) it should be 100
   assert(100 == m_ListSectFlow->size());
 
-  if (m_simulatorMode == Wave1DSimulator::eSimulationMode::manualMode) {
-    // debugging purpose (print all information about a section)
-    std::for_each(m_ListSectFlow->getList().cbegin(),
-                  m_ListSectFlow->getList().cend(),
-                  std::mem_fn(&dbpp::SectFlow::printSectionInfo));
-  }
+  //  if (m_simulatorMode == Wave1DSimulator::eSimulationMode::manualMode) {
+  //    // debugging purpose (print all information about a section)
+  //    std::for_each(m_ListSectFlow->getList().cbegin(),
+  //                  m_ListSectFlow->getList().cend(),
+  //                  std::mem_fn(&dbpp::SectFlow::printSectionInfo));
+  //  }
 
   dbpp::Logger::instance()->OutputSuccess(
       std::string{"Created list of sections successfully"}.data());

@@ -11,7 +11,7 @@ namespace dbpp
 	class HydroUtils 
 	{
 	public:
-		//	Fonction spécifique à un canal rectangulaire de largeur B
+		//	Fonction spÃ©cifique Ã  un canal rectangulaire de largeur B
 
 		/** Rectangular cross-section
 		* @param section width
@@ -25,8 +25,8 @@ namespace dbpp
 		* @result cross-section wetted area  
 		*/
 		static double A (double B, double Y);
-		//	Fonction spécifique à un canal rectangulaire de largeur B
-		//	Périmètre établi en fonction d'une superficie d'écoulement A
+		//	Fonction spÃ©cifique Ã  un canal rectangulaire de largeur B
+		//	PÃ©rimÃ¨tre Ã©tabli en fonction d'une superficie d'Ã©coulement A
 		
 		/** Rectangular cross-section
 		*  @param section wetted area
@@ -34,8 +34,8 @@ namespace dbpp
 		* @result wetted perimeter 
 		*/
 		static double P (double A, double B);
-		//	Fonction spécifique à un canal rectangulaire de largeur B
-		//	Périmètre établi en fonction d'une superficie d'écoulement A
+		//	Fonction spÃ©cifique Ã  un canal rectangulaire de largeur B
+		//	PÃ©rimÃ¨tre Ã©tabli en fonction d'une superficie d'Ã©coulement A
 		/** Rectangular cross-section
 		* @param section width
 		* @result  

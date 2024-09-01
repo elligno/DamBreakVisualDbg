@@ -39,9 +39,10 @@ void TestRhsImpl::calculate(const StateVector &aU) {
   assert(aU.first->values().size() == 100);
 
   // computational domain
-  const dbpp::RealNumArray<real> &w_U1 = aU.first->values();
-  const dbpp::RealNumArray<real> &w_U2 = aU.second->values();
+  const auto &w_U1 = aU.first->values();
+  const auto &w_U2 = aU.second->values();
 
+  // +++++++++++++++++++++++++++++++++++++++++
   // When i do that i just resize or size the vector with default value (yeap!)
   vector<pair<real, real>> w_U1LR; // A
   w_U1LR.reserve(w_U1.size());
@@ -70,32 +71,19 @@ void TestRhsImpl::calculate(const StateVector &aU) {
   // Can be a unit test since it is essentially
   ReconstrUtil::reconstr_vec(w_vU1, w_vU2, w_U1LR, w_U2LR);
 
+  // Jean B (August 2024)
+  // All the lines above coul be replaced by these
+  // b.c. and all other should be handled by the reconstruction algo
+  // i mean its user responsibilities to implement the way he wants it
+  // API expose signature with scalarField and other types, not stl!!
+  // Encapsulate reponsibilities avoid cross dependencies
+  // MusclReonstruction w_muslcl;
+  // call ReconstrUtil::reconstr_vec if user has decided to implement
+  // w_muslcl.reconstr(aU.first,aU.second,GlobalDiscretization, cellFaceVar);
+  // +++++++++++++++++++++++++++++++++++++++++++++++++
+
   // good practice no memory leak
   std::unique_ptr<BaseNumTreatmemt> w_Bnum(new BaseNumTreatmemt);
-
-  // to call IFluxAlgo implementation, i need to cast i guess
-  // but i have a pointer to the base class, i thought it will
-  // be possible to access the interface method directly. But
-  // when u think about it, it make sense. I am using multiple
-  // inheritance, base class know nothing about the interface.
-  // Good practice is to use the boost cast library, in this case
-  // the polymorphic_cast will be appropriate
-  // 		if( IFluxAlgoImpl*
-  // w_ifalgo=dynamic_cast<IFluxAlgoImpl*>(w_Bnum.get()))
-  // 		{
-  // 			// allocate memory to store data
-  // 			m_swerhs.resize(aU.first->values().size());
-  //
-  // 			// compute the flux at cell interface
-  // 			w_ifalgo->calculFF( m_swerhs.m_FF1, m_swerhs.m_FF2,
-  // w_U1LR, w_U2LR);
-  //
-  // 			// doesn't make sense!! because we just reconstructed
-  // the face
-  // 			// variables what's the point to pass as argument the
-  // state vector.
-  // 			//w_ifalgo->calculFF(m_swerhs.m_FF1,m_swerhs.m_FF2,aU);
-  // 		}
 
   // for debugging purpose (temporary fix) shall be set by the simulation
   // i am no sure about that
@@ -147,22 +135,6 @@ void TestRhsImpl::calculate(const StateVector &aU,
   // sanity check (debugging purpose)
   assert(aU.first->values().size() == 100);
 
-  // computational domain
-  // 		  const jb::RealNumArray<real>& w_U1=aU.first->values();
-  // 		  const jb::RealNumArray<real>& w_U2=aU.second->values();
-
-  // When i do that i just resize or size the vector with default value (yeap!)
-#if 0 // older version of the library (deprecated)
-		  vector<double> w_vU1; // A
-		  w_vU1.reserve( aU.first->values().size()+1);
-		  vector<double> w_vU2; // Q
-		  w_vU2.reserve( aU.second->values().size()+1);
-
-		  // only computational node
-      aU.first->values().to_stdVector(w_vU1);
-		  aU.second->values().to_stdVector(w_vU2);
-#endif
-
   auto w_vU1 = aU.first->values().to_stdVector();  // A
   auto w_vU2 = aU.second->values().to_stdVector(); // Q
 
@@ -190,62 +162,15 @@ void TestRhsImpl::calculate(const StateVector &aU,
   // tree from boost
   DamBreakData w_dbDat(DamBreakData::DiscrTypes::emcneil);
 
-  // to call IFluxAlgo implementation, i need to cast i guess
-  // but i have a pointer to the base class, i thought it will
-  // be possible to access the interface method directly. But
-  // when u think about it, it make sense. I am using multiple
-  // inheritance, base class know nothing about the interface.
-  // Good practice is to use the boost cast library, in this case
-  // the polymorphic_cast will be appropriate
-  // we check if it support the following interface, if so call this
-  // implementation, otherwise call default implementation
-  if (IFluxAlgoImpl *w_ifalgo = dynamic_cast<IFluxAlgoImpl *>(aBaseTreatment)) {
-    vector<pair<real, real>> w_U1LR; // A
-    w_U1LR.reserve(aU.first->values().size());
-    vector<pair<real, real>> w_U2LR; // Q
-    w_U2LR.reserve(aU.second->values().size());
-
-    // reconstruct state or node variables at cell face (MUSCL-type
-    // extrapolation) Base class method used instead of the static class
-    // ReconstrUtil Can be a unit test since it is essentially
-    ReconstrUtil::reconstr_vec(w_vU1, w_vU2, w_U1LR, w_U2LR);
-
-    // allocate memory to store data
-    m_swerhs.resize(aU.first->values().size());
-
-    // compute the flux at cell interface
-    w_ifalgo->calculFF(m_swerhs.m_FF1, m_swerhs.m_FF2, w_U1LR, w_U2LR);
-#if 0
-        // testing the same implementation but with state vector
-        vector<pair<real,real>> w_sU1LR; // A
-        w_U1LR.reserve( aU.first->values().size());
-        vector<pair<real,real>> w_sU2LR; // Q
-        w_U2LR.reserve( aU.second->values().size());
-
-        // same reconstruction but state vector implementation
-        // pass as argument the scalarField
-        // NOTE: check if we use the reconstr_vec
-        ReconstrUtil::reconstrv_sv(aU, w_sU1LR, w_sU2LR);
-
-        // allocate memory to store data
-        m_swerhs.resize(aU.first->values().size());
-
-        // compute the flux at cell interface 
-        w_ifalgo->calculFF( m_swerhs.m_FF1, m_swerhs.m_FF2, w_sU1LR, w_sU2LR);
-#endif
-  } else // default implementation
-  {
-    // use the default implementation of the Base class
-    std::vector<double> w_vDU1(w_dbDat.nbSections());
-    std::vector<double> w_vDU2(w_dbDat.nbSections());
-    // set memory allocation
-    m_swerhs.resize(w_dbDat.nbSections());
-    m_swerhs.resize(w_dbDat.nbSections());
-    // compute flux at cell face according to Riemann problem
-    aBaseTreatment->CalculFF(m_swerhs.m_FF1, m_swerhs.m_FF2, w_vU1, w_vU2,
-                             w_vDU1, w_vDU2, w_dbDat.nbSections(),
-                             w_dbDat.getWidth());
-  }
+  // use the default implementation of the Base class
+  std::vector<double> w_vDU1(w_dbDat.nbSections());
+  std::vector<double> w_vDU2(w_dbDat.nbSections());
+  // set memory allocation
+  m_swerhs.resize(w_dbDat.nbSections());
+  m_swerhs.resize(w_dbDat.nbSections());
+  // compute flux at cell face according to Riemann problem
+  aBaseTreatment->CalculFF(m_swerhs.m_FF1, m_swerhs.m_FF2, w_vU1, w_vU2, w_vDU1,
+                           w_vDU2, w_dbDat.nbSections(), w_dbDat.getWidth());
 
   // bathymetry
   const std::vector<double> &w_Z = w_dbDat.getIC().m_Z;

@@ -188,18 +188,6 @@ public:
    *@return some attributes of the discretization
    */
   int getNbSections() const { return NbGlobalNode; }
-  // 		double getDx() const { return dx;}
-  // 		void setDamBreakData( const DamBreakData& aDamBdata)
-  // 		{
-  // 			// retrieve data from
-  // 			m_Phi1=aDamBdata.getPhi1();
-  // 			m_Phi0=aDamBdata.getPhi0();
-  // 			m_xmin=aDamBdata.x_min();
-  // 			m_xmax=aDamBdata.x_max();
-  // 			m_shockLocation=500.;
-  // 			dx=aDamBdata.dx();
-  // 			NbSections=aDamBdata.nbSections();
-  // 		}
 
   /** i am not sure yet why i am doing it?
    * main reason to let Singleton is to access

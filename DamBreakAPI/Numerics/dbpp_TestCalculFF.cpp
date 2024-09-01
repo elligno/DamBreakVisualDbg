@@ -12,14 +12,6 @@
 #include "../SfxTypes/dbpp_PhyConstant.h"
 #include "../SfxTypes/dbpp_Simulation.h"
 
-// deprecated
-// static double dmaxarg1, dmaxarg2;
-// #define DMAX(a,b) (dmaxarg1=(a), dmaxarg2=(b), (dmaxarg1) > (dmaxarg2) ?\
-// 	(dmaxarg1) : (dmaxarg2))
-//
-// #define DMIN(a,b) (dmaxarg1=(a), dmaxarg2=(b), (dmaxarg1) < (dmaxarg2) ?\
-// 	(dmaxarg1) : (dmaxarg2))
-
 namespace dbpp {
 // still have a loop on the number of sections, this should desappear
 // probably in the next version.
@@ -95,12 +87,6 @@ void TestCalculFF::calculFF(std::vector<double> &FF1, std::vector<double> &FF2,
     CS = 0.5 * (CL + CR) - 0.25 * (uL - uR);
     uS = 0.5 * (uL - uR) + CL - CR;
 
-    // shall replace that by the standard algorithm,
-    // this kind of home made functions are dangerous
-    // and error prone since most of the time test all case not done.
-    // 			SL = DMIN( uL - CL, uS - CS);	 deprecated use std::min
-    // 			SR = DMAX( uR + CR, uS + CS);    deprecated use std::max
-
     // testing the standard function
     SL = std::min(uL - CL, uS - CS);
     SR = std::max(uR + CR, uS + CS);
@@ -115,9 +101,6 @@ void TestCalculFF::calculFF(std::vector<double> &FF1, std::vector<double> &FF2,
       FF1[i] = FR1;
       FF2[i] = FR2;
     } else {
-      // 				FF1[i] = (SR*FL1 - SL*FR1 +
-      // SL*SR*(UR1-UL1))/(SR-SL); 				FF2[i] = (SR*FL2
-      // - SL*FR2 + SL*SR*(UR2-UL2))/(SR-SL);
       FF1[i] =
           (SR * FL1 - SL * FR1 + SL * SR * (aU1LR[i].second - aU1LR[i].first)) /
           (SR - SL);
@@ -294,7 +277,8 @@ void TestCalculFF::TraitementTermeSource2(std::vector<double> &S,
     // all discretization for RHS terms. This way we could use it as an
     // attribute of this class and call this method.
     // we set the last argument as default to 1.
-    BaseNumTreatmemt::TraitementTermeSource2(
+    BaseNumTreatmemt w_baseRhsDiscr;
+    w_baseRhsDiscr.TraitementTermeSource2(
         S, Q, A, w_H, w_dbData.getManning(), aDx,
         static_cast<const int>(aListSectFlow->size()));
   } else {

@@ -2,7 +2,7 @@
 #pragma once
 
 // Packages includes
-#include "../Algorithm/dbpp_IFluxAlgoImpl.h"
+//#include "../Algorithm/dbpp_IFluxAlgoImpl.h"
 #include "../Discretization/dbpp_EmcilNumTreatment.h"
 #include "../Discretization/dbpp_GlobalDiscretization.h"
 #include "../MathModel/dbpp_MathEquations.h"
@@ -34,9 +34,10 @@ public:
   TestBcSectF();
   // another ctor i am not sure aout this one???
   TestBcSectF(const GlobalDiscretization &aGdiscr);
+
   // not allowed to copy or assign construction
-  TestBcSectF(const TestBcSectF &) = delete;
-  TestBcSectF &operator=(const TestBcSectF &) = delete;
+  //  TestBcSectF(const TestBcSectF &) = delete;
+  //  TestBcSectF &operator=(const TestBcSectF &) = delete;
   // dtor
   ~TestBcSectF();
 
@@ -50,14 +51,6 @@ protected:
   void setInitSln(const StateVector &aU,
                   ListSectFlow *aListofSect) override final;
 
-protected:
-  // boundary condition
-  // 		virtual void setAmont();
-  // 		virtual void setAval();
-
-  // ... to be completed ???
-  friend class TwoStepsScehmeIntegrator;
-
 private:
   //
   // Explicit Integrator
@@ -66,13 +59,10 @@ private:
     using solnU12 = std::pair<std::vector<double>, std::vector<double>>;
 
   public:
+    enum class eIntegratorStep { predictorStep = 0, correctorStep = 1 };
+
+  public:
     TwoStepsScehmeIntegrator() = default;
-    TwoStepsScehmeIntegrator(IRhsDiscretization *aRhsdiscr)
-        : m_Rhsdiscr(aRhsdiscr) { /*log message???*/
-    }
-    TwoStepsScehmeIntegrator(const TwoStepsScehmeIntegrator &) = delete;
-    TwoStepsScehmeIntegrator &
-    operator=(const TwoStepsScehmeIntegrator &) = delete;
 
     void setInitSln(const std::vector<double> &aU1,
                     const std::vector<double> &aU2) {
@@ -97,31 +87,39 @@ private:
     // design note: what about move semantic?? in some situation ... to be
     // completed
     void setInitSln(std::vector<double> &&aU1, std::vector<double> &&aU2) {
-      // not sure how to do it??? can i do it??
-      U1 = aU1; // use move version of operator=??
-      U2 = aU2; // use move version of operator=??
+      // not sure how to do it??? can i do it?? just assign without move?
+      U1 = std::move(aU1); // use move version of operator=??
+      U2 = std::move(aU2); // use move version of operator=??
+    }
+
+    // 2-step integrator that belongs to Runge-Kutta family (second-order)
+    void step(double dt);
+
+    void setIntegratorStep(const eIntegratorStep aIntegratorStep) {
+      m_integratorStep = aIntegratorStep;
+    }
+
+    // default
+    eIntegratorStep getIntegratorStep() const {
+      return eIntegratorStep::predictorStep;
     }
 
     // ...
-    void predictor(const std::vector<double> &avH);
-    void corrector(const std::vector<double> &avH) {
-      predictor(avH); // debugging purpose, should be removed
-      // not implemented yet
-      //			w_pom->CalculFF(m_FF1, m_FF2, m_U1p, m_U2p,
-      // w_dU1, w_dU2, NbSections, w_Section0->B());
-      //			w_pom->TraitementTermeSource2(m_S, m_U2p, m_U1p,
-      // w_vH, w_n, dx, NbSections, w_Section0->B());
-    }
-    const solnU12 &getSolutionU12() const { return m_soln; }
+    void predictor(double dt /*, RHS*/);
+    void corrector(double dt /*, RHS*/);
+
+    // Since C++17 "Copy Elison is Mandatory"
+    //(unmaterialize to "xvalue" eXpiring)
+    solnU12 getSolutionU12() const { return m_soln; }
 
   private:
-    solnU12 m_soln;                 //**< */
-    std::vector<double> U1;         //**< initial cnd*/
-    std::vector<double> U2;         //**< */
-    std::vector<double> m_vH;       //**< water level*/
-    std::vector<double> m_U1p;      //**< imtermediate state */
-    std::vector<double> m_U2p;      //**< */
-    IRhsDiscretization *m_Rhsdiscr; //**< supported POM discretization*/
+    solnU12 m_soln; //**< */
+    eIntegratorStep m_integratorStep;
+    std::vector<double> U1;    //**< initial cnd*/
+    std::vector<double> U2;    //**< */
+    std::vector<double> m_vH;  //**< water level*/
+    std::vector<double> m_U1p; //**< imtermediate state */
+    std::vector<double> m_U2p; //**< */
   };
 
   //		unsigned m_NbSections;
@@ -139,14 +137,11 @@ private:
   std::shared_ptr<dbpp::scalarField> m_U12p;
 
   // some helpers functions
-  void predictor();
-  void corrector();
-
-  // it sure is!
-  std::unique_ptr<BaseNumTreatmemt> createBaseNumTreatment();
+  void predictor(); // create RHS (LdeltaOperator or SweRhsAlgorithm or Struct)
+  void corrector(); // ditto
 
   // List of sections flow in use
-  ListSectFlow *m_listSectFlow;
+  ListSectFlow *m_listSectFlow; // ??
 
 private:
   //

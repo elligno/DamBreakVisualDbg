@@ -83,11 +83,12 @@ void TestEMcNeilVec::advance() {
   unique_ptr<SweRhsAlgorithm> w_ptr2SweRhs(new TestRhsImpl);
 
   // create numerical discretization for this algorithm
-  unique_ptr<BaseNumTreatmemt> w_rhsDiscr(new TestCalculFF);
+  // unique_ptr<BaseNumTreatmemt> w_rhsDiscr(new TestCalculFF);
+  TestCalculFF w_rhsDiscr;
 
   // apply algorithm (rhs numerical treatment of convective flux, source terms)
   // fill the SWERHS structure (to be used in our time stepper from base class)
-  w_ptr2SweRhs->calculate(m_U12, w_rhsDiscr.get());
+  w_ptr2SweRhs->calculate(m_U12 /*, w_rhsDiscr*/);
 
   // retrieve the rhs computed value, because we need it
   // in the predictor step ()
@@ -125,7 +126,7 @@ void TestEMcNeilVec::advance() {
        w_rU2p.getPtr()); // the computational domain
 
   // apply algorithm (rhs numerical treatment of convective flux, source terms)
-  w_ptr2SweRhs->calculate(m_U12p, w_rhsDiscr.get()); // updated values
+  w_ptr2SweRhs->calculate(m_U12p /*, w_rhsDiscr.get()*/); // updated values
 
   // rhs computed values
   m_rhs = w_ptr2SweRhs->getRHS();

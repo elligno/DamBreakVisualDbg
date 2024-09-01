@@ -13,7 +13,7 @@ namespace dbpp
     // }
 
      // because we reserve i=0,...,99 need to add i=100
-     // // Aval, spécification du débit
+     // // Aval, spÃ©cification du dÃ©bit
      //U2[NbSections - 1] = 0.; // because we reserve and set i=0,...,99
 
   //   H[NbSections - 1] = (CP / CA) + 0./*w_lastSect->Z()*/; //Z[NbSections-1];
@@ -32,7 +32,7 @@ namespace dbpp
   {
 
     // H=Phi1
-    //	Amont, spécification de l'élévation de la surface libre
+    //	Amont, spÃ©cification de l'Ã©lÃ©vation de la surface libre
     //H[0] = 10.;  water level
     const double w_H = 10.; //phi1
 

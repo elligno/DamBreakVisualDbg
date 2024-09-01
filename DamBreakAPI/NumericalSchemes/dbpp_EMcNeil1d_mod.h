@@ -40,13 +40,14 @@ public:
 
 protected:
   /** physical algorithm (more the numerical algorithm)*/
-  void timeStep() override;
-  // ?? not sure yet
+  void timeStep() override; // solve(could more appropriate)
+  // ?? not sure yet         // we are time stepping anything
   void setH();
 
   /** boundary condition at both end (upstream/downstream)*/
   void setAmont(vecdbl &aU1, vecdbl &aU2);
   void setAval(vecdbl &aU1, vecdbl &aU2);
+
   // set all parameters for the
   void setInitSln(const StateVector &aU, ListSectFlow *aListofSect) override;
 
@@ -66,16 +67,6 @@ private:
   // what happens if
   Nodal_Value m_amontBC; /*< upstream boundary condition*/
   Nodal_Value m_avalBC;  /*< downstream boundary condition*/
-
-  // deprecated but want to remove them from base class
-  //	std::vector<double> m_dU1; /*< state variable gradient*/
-  //	std::vector<double> m_dU2; /*< state variable gradient*/
-  //     std::vector<double> m_U1p; /*< intermediate state variable*/
-  //     std::vector<double> m_U2p; /*< intermediate state variable*/
-  //     std::vector<double> m_FF1; /*< flux at cell face*/
-  //     std::vector<double> m_FF2; /*< flux at cell face*/
-  // 		std::vector<double> m_S;   /*< source*/
-  //		size_t m_NbSections;       /*< number of sections*/
 
   StateVector m_U12;   /**< state vector that hold state variables (U1,U2)*/
   StateVector m_U12p;  /**< state vector for mid time step*/

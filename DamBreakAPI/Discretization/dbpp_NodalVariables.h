@@ -11,6 +11,20 @@
 #include <boost/assert.hpp>
 #include <boost/operators.hpp>
 
+// not in use but should replace existing code with a call to this oprator
+template <typename... Ts>
+std::ostream &operator<<(std::ostream &os, std::tuple<Ts...> const &theTuple) {
+  std::apply(
+      [&os](Ts const &...tupleArgs) {
+        os << '[';
+        std::size_t n{0};
+        ((os << tupleArgs << (++n != sizeof...(Ts) ? ", " : "")), ...);
+        os << ']';
+      },
+      theTuple);
+  return os;
+}
+
 namespace dbpp {
 /** Brief Nodal type that hold variable value.
  *
@@ -64,7 +78,7 @@ public:
   /** assignment ctor*/
   Nodal_Value &operator=(const Nodal_Value &aOther);
   /** force destructor to be virtual*/
-  virtual ~Nodal_Value();
+  virtual ~Nodal_Value() = default;
 
   /** node parameters
    * @result node number
@@ -114,24 +128,6 @@ public:
    *  @result struct that contains nodal values
    */
   tuplevar Values() const { return m_Node3Data; }
-  // i am not sure if we are going to keep this method
-  // we might remove the tuple implementation, and use
-  // the pointer version (original version).
-  // 		std::vector<float64> value()
-  // 		{
-  // 			std::vector<float64> w_ret;
-  // 			w_ret.reserve(m_NumOfAttr);
-  // 			for( int32 i = 0; i<m_NumOfAttr; ++i)
-  // 			{
-  // 				w_ret.push_back((*this)[i]);
-  // 			}
-  // 			return w_ret;
-  // 		}
-  // what the hell is that?
-  // 		double value() const
-  // 		{
-  // 			return m_nodeIdX.second;
-  // 		}
 
   /** element accessor (write access)
    * @result nodal value from given index

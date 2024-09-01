@@ -8,9 +8,10 @@
 // boost includes
 #include <boost/assert.hpp>
 #include <boost/range/iterator_range.hpp>
-
 // package includes
+#include "../SfxTypes/dbpp_PhyConstant.h"
 #include "../Utility/dbpp_EMcNeilUtils.h"
+#include "../Utility/dbpp_TestLogger.h"
 #include "dbpp_GlobalDiscretization.h"
 #include "dbpp_ReconstrUtility.h"
 
@@ -34,19 +35,13 @@ void ReconstrUtil::reconstr_val(
   // ...
   const int NbSections = aField.values().size() + 1;
 
+  // apply b.c. (add ghost node)
+  //  const auto& w_bc = GlobalDiscretization::instance()->gamma();
+  //  using nval = GlobalDiscretization::NodalValComp;
+  //  auto w_Uaval = std::get<nval::A>(w_bc.values());
+
   // ...
-  vector<real> w_U(aField.values().getPtr(),
-                   aField.values().getPtr() + aField.values().size());
-  //		w_U.reserve( aField.values().size()+1); // add ghost node
-
-  // filed contains computational domain values
-  // 		const real* w_arrPtr = aField.values().getPtr();
-  // 		std::copy( w_arrPtr, w_arrPtr+aField.values().size(),
-  // 			std::back_inserter(w_tmpUi));
-
-  // setting boundary nodes value and ghost node
-  // setBCvalues(w_tmpUi);
-  //	Gamma& w_bc = GlobalDiscretization::instance()->gamma();
+  vector<real> w_U(aField.values().cbegin(), aField.values().cend());
 
   // sanity check just to  make sure  that we added the extra value (ghost)
   assert(aField.values().size() + 1 ==
@@ -57,15 +52,13 @@ void ReconstrUtil::reconstr_val(
   //	Calculs préalables: évaluation des éléments du vecteur dU
   w_dU[0] = HydroUtils::minmod(w_U[1] - w_U[0], 0.);
 
-  //		w_dU2[0] = HydroUtils::minmod( aU2[1]-aU2[0], 0.);
+  // w_dU2[0] = HydroUtils::minmod( aU2[1]-aU2[0], 0.);
   // change loop index because out-of-range error
   // i=1, i<NbSections-1 compare to Eric McNeil code ()
   // and added the boundary cnd. for the last node (ghost node i=100)
-  for (int i = 1; i < NbSections - 1; i++) // last element index=100
-  {                                        // i+1 -> 101 (doesn't exist)
+  for (auto i = 1; i < NbSections - 1; i++) // last element index=100
+  {                                         // i+1 -> 101 (doesn't exist)
     w_dU[i] = HydroUtils::minmod(w_U[i + 1] - w_U[i], w_U[i] - w_U[i - 1]);
-    //			w_dU2[i] = HydroUtils::minmod( aU2[i+1]-aU2[i],
-    // aU2[i]-aU2[i-1]);
   }
 
   // special treatment i=NbSections-1=100??
@@ -100,6 +93,20 @@ void ReconstrUtil::reconstr_val(
     //			aVecU2LR.push_back(make_pair(U2L,U2R));
   }
 
+  // ******************algorithm steps*****************
+  // compute dU std::adjacent_difference(U)
+  // force first element to 0 (yhe algorithm leave first element unchange)
+  // push 0. (last element) compare last dU[100]
+  // compute minmod: std::adjacent_difference(..., minmod) -> dU
+  // popup first element (begin()+1)
+  // cell face variables at j+1/2 (@second-order) left/right state (UL/UR)
+  // for_each(dU.begin(),dU.end(),multiply{0.5})
+  // transform(begin(),prev(end,1),dU,UL,plus});
+  // transform(next(begin(),1),end,std::next(dU,1),UR,minus});
+  // create pair cell face variables
+  //  for(i,...,global cell faces)
+  //   pair(UL[i],UR[i])
+
   // compute the gradient at first-order using the stl numeric algorithm
   // for now this algorithm need to be validated
   // TODO:
@@ -112,6 +119,13 @@ void ReconstrUtil::reconstr_val(
 
   // just in case (sanity check)
   //		assert( w_tmpdUi.size() == w_tmpUi.size());
+
+  // just a test
+  valarray<real> w_Ui(
+      vector<real>(aField.values().to_stdVector().cbegin(),
+                   std::prev(aField.values().to_stdVector().cend(), 1))
+          .data(),
+      aField.values().size());
 
   //
   // left state
@@ -160,139 +174,6 @@ void ReconstrUtil::reconstr_val(
   // 		transform( w_vecUL.begin(),w_vecUL.end(),w_vecUR.begin(),
   // 			std::back_inserter(aVecULR), bind(
   // &make_pair<double,double>,_1,_2));
-}
-
-// not completed, removed setBCvalues() will be handled by GlobalDiscrtetization
-void ReconstrUtil::reconstr_rng(
-    const dbpp::scalarField &aField, /* field to reconstruct at cell face */
-    std::vector<std::pair<double, double>> &aVecULR) {
-  using namespace std;
-  using namespace std::placeholders;
-  using namespace boost;
-
-  // ...
-  vector<real> w_vecU;
-  w_vecU.reserve(aField.values().size() + 1);
-  // filed contains computational domain values
-  const auto w_arrPtr = aField.values().getPtr();
-  std::copy(w_arrPtr, w_arrPtr + aField.values().size(),
-            std::back_inserter(w_vecU));
-
-  // add ghost node
-  //		setBCvalues(w_vecU); probably use the GlobalDiscretization
-  // sanity check just to  make sure  that we added the extra value (ghost)
-  assert(aField.values().size() + 1 ==
-         static_cast<int>(w_vecU.size())); // asset will work on debug
-  // just to make sure everything is ok let's double check
-  //	assert(w_vecU.size()==NbSections);
-
-  // compute gradient at first order and apply the minmod slope limiter
-  // based on the stl algorithm call adjacent_difference
-  vector<double> w_vDU;
-  //	w_vDU.reserve(NbSections);  i am  not sure about this line, need to be
-  // validated!!!
-  computeMinModDU(w_vecU, w_vDU);
-
-  //
-  // left-state vector range [0,...,99] -> UL=U_i + 0.5*dU_i
-  //
-  vector<real> w_vecUL;                    // UL=U_i+0.5*dU_i
-  w_vecUL.reserve(aField.values().size()); // computational domain
-
-  // C++20 ranges (counted views) return subrange
-  // auto w_rngUi = std::views::counted(w_vecU.begin(), w_vecU.size()-1);
-
-  // boost version range
-  auto w_rngUi = make_iterator_range(w_vecU.begin(), w_vecU.end() - 1);
-  auto w_rngdUi = make_iterator_range(w_vDU.begin(), w_vDU.end() - 1);
-
-  // boost range version
-  transform(w_rngUi.begin(), w_rngUi.end(),
-            w_rngdUi.begin(), // both ranges to add: U+0.5*dU
-            back_inserter(w_vecUL), plus<real>()); // store result UL
-
-  //
-  // right state vector range [1,...,100] -> UR=U_i+1 - 0.5*dU_i+1
-  //
-
-  // C++20 ranges (counted views) return subrange
-  // auto w_rngUi = std::views::counted(w_vecU.begin()+1, w_vecU.size());
-
-  vector<real> w_vecUR;                    // UL=U_i+0.5*dU_i
-  w_vecUL.reserve(aField.values().size()); // computational domain
-
-  // boost version range
-  auto w_rngUip1 = make_iterator_range(w_vecU.begin() + 1, w_vecU.end());
-  auto w_rngdUip1 = make_iterator_range(w_vDU.begin() + 1, w_vDU.end());
-
-  // boost range version
-  std::transform(w_rngUi.begin(), w_rngUi.end(),
-                 w_rngdUip1.begin(), // both ranges to add: U+0.5*dU
-                 std::back_inserter(w_vecUL),
-                 std::plus<real>()); // store result UL
-
-  // create pair of reconstructed field at cell face variable(UL,UR)
-  // 		transform( w_vecUL.begin(),w_vecUL.end(),w_vecUR.begin(),
-  // 			back_inserter(aVecULR),
-  // bind(&make_pair<real,real>,_1,_2));
-
-  aVecULR[0].first = 0.; // debugging purpose
-  aVecULR[0].second = 0.;
-}
-
-// a am not sure if we really need it!!
-// 	void ReconstrUtil::setBCvalues( std::vector<double>& aVecU)
-// 	{
-// for the purpose of this algorithm, we need to add a ghost node
-// and probably to set the boundary condition (i am not sure yet)
-// maybe we could use the ....
-// IMPORTANT:
-//   the boundary value has been already applied in the advance loop
-//   we are just re-using them here, no need to call B.C. again
-//		aVecU[0] = U1[0];
-//	w_vecU[0] = U2[0];
-// for the purpose of ...
-//		assert( aField.values().size()==NbSections-1);
-// ... push_back (add a ghost node and set value with B.C.)
-//	w_vecU[NbSections-1] = U1[NbSections-1];
-//		aVecU.push_back( U1[NbSections-1]); // be careful with global
-// variable!!! 		assert( aVecU.size() == NbSections);
-// w_vecU[NbSections-1] = U2[NbSections-1];
-//	}
-
-// temporary implementation (this is crapt!!)
-void ReconstrUtil::computeMinModDU(const std::vector<real> &aVecU,
-                                   std::vector<double> &aDU) {
-  using namespace std;
-  using namespace std::placeholders;
-
-  //
-  // using the stl numeric algorithm (adjacent difference) to compute
-  // first-order gradient and then apply the slope limiter function
-  //
-
-  // use deque because we want to pop up the first element
-  std::deque<double> w_vDU(aVecU.size()); // i am not sure about this one
-  // w_vDU.resize(w_vecU.size());
-  // zero added at the beginning to compare first element with something
-  std::adjacent_difference(aVecU.begin(), aVecU.end(),
-                           std::back_inserter(w_vDU));
-  assert(w_vDU.size() == aVecU.size());
-  //  because first element is set to 0 by the algo to compute the first diff.
-  w_vDU.pop_front(); // might as well to remove it
-  // just in case (sanity check)
-  assert(w_vDU.size() == aVecU.size() - 1);
-  // add 0. at the end for the b.c. node
-  w_vDU.push_back(0.);
-  assert(w_vDU.size() == aVecU.size());
-  // add a zero again and it is exactly what we want
-  std::adjacent_difference(w_vDU.begin(), w_vDU.end(), w_vDU.begin(),
-                           bind(&HydroUtils::minmod, _1, _2));
-  // we are stick again with a zero at the beginning, must get rid of it
-  w_vDU.pop_front();
-
-  // range (be careful, we are returning a copy ...)
-  aDU.assign(w_vDU.begin(), w_vDU.end());
 }
 
 // NOTE: i think this one has been tested.
@@ -461,76 +342,170 @@ void ReconstrUtil::reconstrv_sv(const StateVector &aU, vecULR &aVecU1LR,
   } // end of recontr procedure
 }
 
-// just testing the prototype <cellFaceId,cellFaceVar>
-std::map<unsigned, vecULR>
+// under construction (need to be tested)
+ReconstrUtil::mapofacesvar
 ReconstrUtil::reconstr_j12(const GlobalDiscretization *aGdiscr,
-                           const dbpp::scalarField &aU) {
+                           const StateVector &aStateVector) {
+
   using namespace std;
 
-  aGdiscr = nullptr; // debugging  purpose, should be removed
+  if (aStateVector.first) {
+    assert(aStateVector.first == aStateVector.second);
+    assert(EMCNEILNbSections::value ==
+           aStateVector.first->values().size()); // hard coded
+  }
 
-#if 0
-    vector<double> w_vU;
-    w_vU.reserve( aU.values().size()+1);
+  // avoid calling cbegin()/cend() on temporary prvalue (vector range ctor)
+  //  auto Aiter = aStateVector.first->values().to_stdVector();
+  //  auto Qiter = aStateVector.second->values().to_stdVector();
+  // range ctor
+  //  std::vector<double> w_Avec(Aiter.cbegin(), Aiter.cend());
+  //  std::vector<double> w_Qvec(Qiter.cbegin(), Qiter.cend());
 
-    // only computational node
-    aU.values().to_stdVector(w_vU);
+  // prvalue (pure reading value: temporary) move ctor
+  vector w_Avec(aStateVector.first->values().to_stdVector());
+  vector w_Qvec(aStateVector.second->values().to_stdVector());
 
-    // boundary condition to applied at both end
-    const Gamma& w_bc = aGdiscr->gamma();
-    w_bc.applyBC(); // compute b.c.
+  if (aGdiscr) {
+    const auto &w_bc = aGdiscr->gamma();
+    auto [Aamont, Qamont, Hamont] = w_bc.getBCNodeAmont().Values();
+    w_Avec[0] = Aamont;
+    w_Qvec[0] = Qamont;
 
-    // retrieve values for both end 
-    const Nodal_Value& w_bcUpstream = w_bc.getBCNodeAmont();
-    const Nodal_Value& w_bcDownstream = w_bc.getBCNodeAval();
+    auto [Aaval, Qaval, Haval] = w_bc.getBCNodeAval().Values();
+    w_Avec.push_back(Aaval);
+    w_Qvec.push_back(Qaval);
+  } else {
+    exit(EXIT_FAILURE); // maybe throw an exception!!!
+  }
 
-    // apply B.C. upstream
-    w_vU[0] = get<0>( w_bcUpstream.Values()); // A
-    w_vU[0] = get<1>( w_bcUpstream.Values()); // Q
+  vector<double> w_dAvec;
+  w_dAvec.reserve(EMCNEILNbSections::value);
+  vector<double> w_dQvec;
+  w_dQvec.reserve(EMCNEILNbSections::value);
+  // compute gradient first-order
+  adjacent_difference(w_Avec.cbegin(), w_Avec.cend(), w_dAvec.begin());
+  adjacent_difference(w_Qvec.cbegin(), w_Qvec.cend(), w_dQvec.begin());
+  // apply minmod slope limiter
+  w_dAvec[0] = 0.;
+  w_dAvec.push_back(0.); // add it for comparison of last element
+  w_dQvec[0] = 0.;
+  w_dQvec.push_back(0.); // ditto
+  adjacent_difference(w_dAvec.cbegin(), w_dAvec.cend(), w_dAvec.begin(),
+                      HydroUtils::minmod);
+  adjacent_difference(w_dQvec.cbegin(), w_dQvec.cend(), w_dQvec.begin(),
+                      HydroUtils::minmod);
+  assert(EMCNEILNbSections::value + 1 == w_dAvec.size());
 
-    // need to do a push_back because the scalar field hold computational
-    // node only. In the reconstruction process, in the case under study,
-    // a ghost node is used (added at the end of the grid but not part of 
-    // the computational domain, extrapolate)
+  // ***************left state*******************
 
-    // apply B.C. downstream 
-    w_vU.push_back( get<0>( w_bcDownstream.Values())); // A
-    w_vU.push_back( get<1>( w_bcDownstream.Values())); // Q
-#endif
-  // only computational node
-  auto w_vU = aU.values().to_stdVector();
+  // popup first element // [0,...,99] [0,..,100[
+  valarray<double> w_dU1(
+      vector(next(w_dAvec.cbegin(), 1), std::prev(w_dAvec.cend(), 1)).data(),
+      w_dAvec.size() - 1);
+  assert(EMCNEILNbSections::value - 1 == w_dU1.size());
+  valarray<double> w_dU2(
+      vector(next(w_dQvec.cbegin(), 1), std::prev(w_dQvec.cend(), 1)).data(),
+      w_dQvec.size() - 1);
+  assert(EMCNEILNbSections::value - 1 == w_dU2.size());
 
-  // compute the derivative (gradient) dU = U_i+1-U_i
-  auto w_DU = computeDU(w_vU);
+  valarray<double> w_U1(
+      vector(w_Avec.cbegin(), std::prev(w_Avec.cend(), 1)).data(),
+      w_Avec.size());
+  valarray<double> w_U2(
+      vector(w_Qvec.cbegin(), std::prev(w_Qvec.cend(), 1)).data(),
+      w_Avec.size());
+  assert(w_U1.size() == w_dU1.size()); // debugging purpose
+  assert(w_U2.size() == w_dU2.size()); // ditto
 
-  // apply minmod limiter function to ...
-  // first add at both ends 0. to be compare with
-  w_DU.insert(w_DU.begin(), 0.);
-  w_DU.push_back(0.);
+  auto w_U1L = w_U1 + 0.5 * w_dU1; // A at j+1/2
+  auto w_U2L = w_U2 + 0.5 * w_dU2; // Q at j+1/2
 
-  // ....
-  std::vector<double> w_minDU;
+  // ***************right state*******************
+  // popup first element and go next // [1,...,100[ ]0,...,100]
+  valarray<double> w_dU1r(
+      vector(next(w_dAvec.cbegin(), 2), w_dAvec.cend()).data(),
+      w_dAvec.size() - 1);
+  assert(EMCNEILNbSections::value - 1 == w_dU1.size());
+  valarray<double> w_dU2r(
+      vector(next(w_dQvec.cbegin(), 2), w_dQvec.cend()).data(),
+      w_dQvec.size() - 1);
+  assert(EMCNEILNbSections::value - 1 == w_dU2.size());
+  valarray<double> w_U1r(
+      vector(std::next(w_Avec.cbegin(), 1), w_Avec.cend()).data(),
+      w_Avec.size());
+  valarray<double> w_U2r(
+      vector(std::next(w_Qvec.cbegin(), 1), w_Qvec.cend()).data(),
+      w_Avec.size());
+  assert(w_U1r.size() == w_dU1r.size()); // debugging purpose
+  assert(w_U2r.size() == w_dU2r.size()); // ditto
+  auto w_U1R = w_U1r - 0.5 * w_dU1r;     // A at j+1/2
+  auto w_U2R = w_U2r - 0.5 * w_dU2r;     // Q at j+1/2
 
-  using namespace std::placeholders;
-  // (just applying the minmod function to some range)
-  //     std::adjacent_difference( w_DU.begin(), w_DU.end(),w_minDU.begin(),
-  //       std::bind(&std::min<int>,_1,_2)); // for testing purpose
+  // loop to fill map of cell face variables
+  mapofacesvar w_cellFaceVar;
+  for (auto i = 1; i < EMCNEILNbSections::value; ++i) {
+    cellFaceVariables w_U1faceVar{w_U1L[i - 1], w_U1R[i - 1],
+                                  static_cast<unsigned>(i)};
+    cellFaceVariables w_U2faceVar{w_U2L[i - 1], w_U2R[i - 1],
+                                  static_cast<unsigned>(i)};
 
-  auto w_vecIncrement = w_DU.begin();
-  std::advance(w_vecIncrement, 1);
+    if (auto [pos, succeed] = w_cellFaceVar.insert(
+            {static_cast<unsigned>(i), {w_U1faceVar, w_U2faceVar}});
+        !succeed) {
+      std::cerr << "Couldn't insert cell face variablles into map\n";
+      Logger::instance()->OutputError(
+          std::string{"We set DamBreak step function"}.data());
+      // auto checkPos=*pos; iterator that hold position
+      // in this case it should be equal at end
+    } // if
+  }   // for-loop
 
-  // remove first element since not part of the computation
-  std::vector<double> w_DU1(w_minDU.begin() + 1, w_minDU.end());
+  // ******************algorithm steps*****************
+  // compute dU std::adjacent_difference(U)
+  // force first element to 0 (the algorithm leave first element unchange)
+  // push 0. (last element) compare last dU[100]
+  // compute minmod: std::adjacent_difference(..., minmod) -> dU
+  // popup first element (begin()+1)
+  // cell face variables at j+1/2 (@second-order) left/right state (UL/UR)
+  // for_each(dU.begin(),dU.end(),multiply{0.5})
+  // transform(begin(),prev(end,1),dU,UL,plus});
+  // transform(next(begin(),1),end,std::next(dU,1),UR,minus});
+  // create pair cell face variables
+  //  for(i,...,global cell faces)
+  //   pair(UL[i],UR[i])
 
-  // compute the variable at cell face at second-order (default U=U_dU)
-  // retrieve cell face form discretization
-  // const std::list<cellFace> &w_cellFaces = aGdiscr->faces();
-  std::map<unsigned, vecULR> w_mapOfVarULR;
-  // for (const cellFace &wCFace : w_cellFaces) {
-  // compute the variable at cell face with the following algorithm
-  // insert in the map
-  //}
+  // compute the gradient at first-order using the stl numeric algorithm
+  // for now this algorithm need to be validated
+  // TODO:
+  //		vector<real> w_tmpdUi; //= computeDU(w_tmpUi);
+  // compute the TVD of the gradient by taking st::min as slope limiter
+  //		auto w_stdminDU = applyLimiter(w_tmpUi); // could pass as
+  // argument the
+  // slope limiter function, ut for now just testing
+  //	auto w_stdminDU = applyLimiter(computeDU(w_tmpUi));
 
-  return w_mapOfVarULR;
+  // just in case (sanity check)
+  //		assert( w_tmpdUi.size() == w_tmpUi.size());
+
+  //
+  // left state
+  //
+
+  // 		std::valarray<real> w_vUi(w_Ui.data(),w_Ui.size());
+  // 		std::valarray<real> w_vdUi(w_dUi.data(),w_dUi.size());
+
+  // just a test if we could do that kind of operation
+  // 		valarray<real> w_Ui( vector<real>(w_tmpUi.begin(),
+  // w_tmpUi.end()-1).data(), 			aField.values().size());
+  // valarray<real> w_dUi(vector<real>(w_tmpdUi.begin(),
+  // w_tmpdUi.end()-1).data(), 			aField.values().size());
+  // 		// compute left state according to MUSCL formula
+  // 		valarray<real> w_UL=w_Ui+0.5*w_dUi; // one line of code, that's
+  // it!
+  // 		// create a vector a left state (UL)
+  // 		vector<real> w_vecUL(begin(w_UL),end(w_UL));
+
+  return w_cellFaceVar;
 }
 } // namespace dbpp

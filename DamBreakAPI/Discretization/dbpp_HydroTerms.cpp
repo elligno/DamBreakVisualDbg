@@ -3,54 +3,42 @@
 //#include "../HydroCodeDef.h"
 #include "../SfxTypes/dbpp_PhyConstant.h"
 
-namespace dbpp 
-{
-	// ...
-	HydroTerms::~HydroTerms()
-	{
+namespace dbpp {
+double HydroTerms::CalculTermePressionHydrostatique1D(double A,
+                                                      double B /*=1.*/) {
+  //	Fonction spÃ©cifique Ã  un canal rectangulaire de largeur B
+  //	Pression hydrodynamique Ã©tabli en fonction d'une superficie d'Ã©coulement
+  //A
 
-	}
+  double I;
 
-	HydroTerms::HydroTerms()
-	{
+  I = A * A / (2. * B);
 
-	}
+  return (I);
+}
 
-	double HydroTerms::CalculTermePressionHydrostatique1D(double A, double B/*=1.*/)
-	{
-		//	Fonction spécifique à un canal rectangulaire de largeur B
-		//	Pression hydrodynamique établi en fonction d'une superficie d'écoulement A
+double HydroTerms::EvaluationF2_C_1D(double U1, double U2, double B /*=1.*/) {
+  //	Fonction de calcul de F2 complet (incluant le terme de pression
+  //hydrostatique)
 
-		double I;
+  double F2, I;
 
-		I = A*A/(2.*B);
+  I = CalculTermePressionHydrostatique1D(U1, B);
+  const double w_grav = PhysicalConstant::sGravity;
+  F2 = U2 * U2 / U1 + w_grav * I;
 
-		return (I);
-	}
+  return (F2);
+}
 
-	double HydroTerms::EvaluationF2_C_1D(double U1, double U2, double B/*=1.*/)
-	{
-		//	Fonction de calcul de F2 complet (incluant le terme de pression hydrostatique)
+double HydroTerms::EvaluationF2_I_1D(double U1, double U2, double B /*=1.*/) {
+  //	Fonction de calcul de F2 incomplet (excluant le terme de pression
+  //hydrostatique)
 
-		double F2, I;
+  double F2;
 
-		I = CalculTermePressionHydrostatique1D (U1, B);
-        const double w_grav=PhysicalConstant::sGravity;
-		F2 = U2*U2/U1 + w_grav*I;
+  F2 = U2 * U2 / U1;
 
-		return (F2);
-	}
+  return (F2);
+}
 
-	double HydroTerms::EvaluationF2_I_1D(double U1, double U2, double B/*=1.*/)
-	{
-		//	Fonction de calcul de F2 incomplet (excluant le terme de pression hydrostatique)
-
-		double F2;
-
-		F2 = U2*U2/U1;
-
-		return (F2);
-	}
-
-} // end of namespace
-
+} // namespace dbpp

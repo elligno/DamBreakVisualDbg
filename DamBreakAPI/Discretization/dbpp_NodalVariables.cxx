@@ -50,20 +50,6 @@ Nodal_Value::Nodal_Value(const Nodal_Value &aOther) {
   m_ghostNode = aOther.m_ghostNode;
 }
 
-// destructor
-Nodal_Value::~Nodal_Value() {
-  // debugging purpose
-  std::cout << "We are in NValue destructor\n";
-}
-
-// 	Nodal_Value::Nodal_Value( unsigned aId, int aNumAttr, int
-// aTiedNode/*=-1*/) 	: m_nodeIdX.first(aId), 	  m_NumOfAttr ( aNumAttr
-// ), 	  m_TieNode_No( aTiedNode )
-// 	{
-// 		// ...
-// 		m_Node3Data( aTuple)
-// 	}
-
 // assignment ctor
 Nodal_Value &Nodal_Value::operator=(const Nodal_Value &aOther) {
   // check for self assignment
@@ -107,5 +93,4 @@ std::ostream &operator<<(std::ostream &s, Nodal_Value &nv) {
   //
   return s;
 }
-
 } // namespace dbpp

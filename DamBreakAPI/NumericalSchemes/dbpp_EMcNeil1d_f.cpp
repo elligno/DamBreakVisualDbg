@@ -35,18 +35,12 @@ EMcNeil1d_f::EMcNeil1d_f()
   m_U12p.second.reset(new dbpp::scalarField(w_grid, std::string("A2p")));
 }
 
-//	EMcNeil1d_f::~EMcNeil1d_f()
-//	{
-//		dbpp::Logger::instance()->OutputSuccess("EMcNeil1d_f::EMcNeil1d_f()
-// dtor");
-//	}
-
 void EMcNeil1d_f::timeStep() {
   using namespace std;
   using namespace std::placeholders;
 
-  auto w_msg = "EMcNeil1d_f::timeStep() algorithm";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"EMcNeil1d_f::timeStep() algorithm"}.data());
 
   // set boundary value at both end (downstream and upstream)
   setBC();
@@ -81,8 +75,8 @@ void EMcNeil1d_f::timeStep() {
 		m_U12.first->values().to_stdVector(w_U2);
 #endif
 
-  std::vector<double> w_U1 = m_U12.first->values().to_stdVector();
-  std::vector<double> w_U2 = m_U12.first->values().to_stdVector();
+  auto w_U1 = m_U12.first->values().to_stdVector();
+  auto w_U2 = m_U12.first->values().to_stdVector();
 
   dbpp::DbgLogger::instance()->write2file(
       std::make_tuple(m_U12.first->values().size(), w_U1, w_U2));
@@ -132,19 +126,19 @@ void EMcNeil1d_f::corrector(const fluxVector &aFluxVec) {
   const auto &w_grid1d = m_U12p.first->grid();
 
   // scalar field values over the grid
-  const dbpp::RealNumArray<real> &w_U1p = m_U12p.first->values();
-  const dbpp::RealNumArray<real> &w_U2p = m_U12p.second->values();
+  const auto &w_U1p = m_U12p.first->values();
+  const auto &w_U2p = m_U12p.second->values();
 
   // does it change values of aU in the advance(...) method??
-  dbpp::RealNumArray<real> &w_U1 = m_U12.first->values();
-  dbpp::RealNumArray<real> &w_U2 = m_U12.second->values();
+  auto &w_U1 = m_U12.first->values();
+  auto &w_U2 = m_U12.second->values();
 
   // spatial grid spacing or step (finite difference discretization)
   const double w_dx = w_grid1d.Delta(1);
 
   // dF_i = (F_i - F_i-1)/dx first-order derivative with backward upwind stencil
-  std::vector<real> w_dFF1 = UpwindDerivatr1st(aFluxVec.first);
-  std::vector<real> w_dFF2 = UpwindDerivatr1st(aFluxVec.second);
+  auto w_dFF1 = UpwindDerivatr1st(aFluxVec.first);
+  auto w_dFF2 = UpwindDerivatr1st(aFluxVec.second);
 
   // set BC
   w_U1(1) = m_amontBC[0];
@@ -182,8 +176,8 @@ void EMcNeil1d_f::predictor() {
 		m_U12.second->values().to_stdVector(U2);
 #endif
 
-  vecdbl U1 = m_U12.first->values().to_stdVector(); // computational node;
-  vecdbl U2 = m_U12.second->values().to_stdVector();
+  auto U1 = m_U12.first->values().to_stdVector(); // computational node;
+  auto U2 = m_U12.second->values().to_stdVector();
 
   // not sure about this one (node indexed from 1 to N)
   // const int nx = m_grid->getMaxI(1); number of points in first dimension
@@ -193,8 +187,7 @@ void EMcNeil1d_f::predictor() {
                          // we need to subtract by 1
 
   // Uh are global nodal values
-  const boost::ptr_vector<Nodal_Value> &w_Uval =
-      GlobalDiscretization::instance()->Uh();
+  const auto &w_Uval = GlobalDiscretization::instance()->Uh();
 
   // setting boundary condition
   if (w_Uval[firstIdx - 1].isTiedNode()) // check first node
@@ -245,7 +238,7 @@ void EMcNeil1d_f::predictor() {
 
   // m_numTermsAlgo->TraitementTermeSource2( S, U2, U1, w_H, n, dx,
   // NbSections/*, B*/);
-  const double dx = m_U12.first->grid().Delta(1);
+  const auto dx = m_U12.first->grid().Delta(1);
   w_numTermsAlgo->TraitementTermeSource2(
       m_S, U2, U1, w_H, w_n, dx,
       static_cast<const int>(m_listSections->size()));
@@ -276,10 +269,9 @@ void EMcNeil1d_f::corrector() {
 		m_U12p.second->values().to_stdVector(w_U2p);
 #endif
 
-  // intermediate state variable
-  vecdbl w_U1p = m_U12p.first->values()
-                     .to_stdVector(); // only computational node (100 nodes)
-  vecdbl w_U2p = m_U12p.second->values().to_stdVector();
+  // intermediate state variable (only computational node (100 nodes))
+  auto w_U1p = m_U12p.first->values().to_stdVector();
+  auto w_U2p = m_U12p.second->values().to_stdVector();
 
   // no choice to push_back, when assign (to_stdVector) we reset
   // begin and end iterator and we don't have 101 element but the
@@ -305,7 +297,7 @@ void EMcNeil1d_f::corrector() {
   w_FF12.first.reserve(m_U12p.first->values().size());
   w_FF12.second.reserve(m_U12p.second->values().size());
 
-  const double dx = m_U12.first->grid().Delta(1);
+  const auto dx = m_U12.first->grid().Delta(1);
   std::vector<double> w_n;
   if (!m_S.empty()) {
     m_S.clear(); // size is now zero

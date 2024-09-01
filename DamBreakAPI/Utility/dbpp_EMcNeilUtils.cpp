@@ -59,18 +59,19 @@ double HydroUtils::Evaluation_H_fonction_A(double A, double B, double Z) {
  * of a cross-section from water level)
  */
 double HydroUtils::minmod(double a, double b) {
-  double Resultat;
+  double Resultat{};
 
   if (a * b <= 0.)
     Resultat = 0.;
 
-  else if ((fabs(a) < fabs(b)) && (a * b > 0.))
+  else if ((std::fabs(a) < std::fabs(b)) && (a * b > 0.))
     Resultat = a;
 
-  else if ((fabs(b) < fabs(a)) && (a * b > 0.))
+  else if ((std::fabs(b) < std::fabs(a)) && (a * b > 0.))
     Resultat = b;
 
-  else if (fabs(b) == fabs(a)) //	ATTENTION, mis pour vérification !!!!
+  else if (std::fabs(b) ==
+           std::fabs(a)) //	ATTENTION, mis pour vérification !!!!
     Resultat = a;
   else {
     //	printf("Fonction MINMOD: situation ne correspondant pas a celle
@@ -84,7 +85,7 @@ double HydroUtils::minmod(double a, double b) {
     //            "attendue, leaving program\n");
     // throw std::exception("Fonction MINMOD: situation ne correspondant pas a
     // celle attendue");
-    exit(101); // don't do that! at least throw an exception!!
+    exit(EXIT_FAILURE); // don't do that! at least throw an exception!!
   }
 
   return (Resultat);
