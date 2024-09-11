@@ -200,6 +200,7 @@ Wave1DSimulator::Wave1DSimulator(/*unsigned int aNbIterationsMax  =50 ,*/
       m_finalTime{22.5},                 // time loop stop criteria
       m_simulatorMode(Wave1DSimulator::eSimulationMode::guiMode) {
 
+  // // still use this in the code???  if not might as well remove it!!!
   // all supported algorithm for our demo (global variable)
   //		std::vector<std::string> w_supportedAlgorithm;
   m_supportedAlgorithm.reserve(5); // memory allocation
@@ -265,28 +266,31 @@ void Wave1DSimulator::scan() {
 
   m_lambda.reset(new scalarField(m_grid, "lambda_H"));
 
+  // NOTE need to initialize the command line args in the main
+  // to make it work, without this it will crash (argv and argc empty)
+
   //   the wave-function can be specified on the command line
   //   1: Gaussian function
   //   2: SWE DamBreak initialization
-  // int func = CmdLineArgs::read("-func", 1);
+  int func = CmdLineArgs::read("-func", 1); // set to 0 in cmd line args
 
   // select the appropriate initial functions
   // describing the seabed and surface.
-  // if (func == 1) {
-  //  m_H.reset(new GaussianBell('H'));
-  //  m_I.reset(new GaussianBell('U'));
-  //   auto *w_msg = "We set DamBreak GaussianBell function";
-  //   Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
-  //} else                     // in the current version of the Simulator
-  //{                          // func = 0 in cmd line argument of the project
-  m_I.reset(new Flat{});   // we consider flat bed bathymetry
-  m_H.reset(new Step1D{}); // we set DamBreak step function
+  if (func == 1) {
+    m_H.reset(new GaussianBell('H'));
+    m_I.reset(new GaussianBell('U'));
+    auto *w_msg = "We set DamBreak GaussianBell function";
+    Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+  } else                     // in the current version of the Simulator
+  {                          // func = 0 in cmd line argument of the project
+    m_I.reset(new Flat{});   // we consider flat bed bathymetry
+    m_H.reset(new Step1D{}); // we set DamBreak step function
 
-  Logger::instance()->OutputSuccess(
-      std::string{"We are considering flat bed topography"}.data());
-  Logger::instance()->OutputSuccess(
-      std::string{"We set DamBreak step function"}.data());
-  // }
+    Logger::instance()->OutputSuccess(
+        std::string{"We are considering flat bed topography"}.data());
+    Logger::instance()->OutputSuccess(
+        std::string{"We set DamBreak step function"}.data());
+  }
 
   // initialize the parameters in the functions.
   // Design Note: these parameters could be read from
@@ -348,10 +352,10 @@ real Wave1DSimulator::calculateDt() {
   // NOTE (important) for some reason the numeric_limits compile time error
   // it seems it doesn't recognize the max() method. I think there is a
   // conflict. no choice we make use of big_dt When i include the EMcNeil1D.h
-  // header file, that create he problem lot header are included that comes from
-  // c language, it may the reason that create a compile time error. Finally i
-  // found it, the header file include the windows.h which windef.h that
-  // contains minmax macro. Resolve it by surrounding the function with
+  // header file, that create he problem lot header are included that comes
+  // from c language, it may the reason that create a compile time error.
+  // Finally i found it, the header file include the windows.h which windef.h
+  // that contains minmax macro. Resolve it by surrounding the function with
   // parenthese.
   // real dt = BIG_dt;
 
@@ -365,9 +369,9 @@ real Wave1DSimulator::calculateDt() {
   }
 
   // debugging purpose don't really need to do that, actually this is not
-  // as important as the simulation time, since we are comparing with E. McNeil
-  // source code (see file 'debug de la fonction de controle')
-  // cout << "\nAutomatic variable adjustment of time step to " << dt << endl;
+  // as important as the simulation time, since we are comparing with E.
+  // McNeil source code (see file 'debug de la fonction de controle') cout <<
+  // "\nAutomatic variable adjustment of time step to " << dt << endl;
 
   // Calcul de dt (shall be done outside the method, this method
   // compute time step, multiplication by cfl number not here, when
@@ -526,10 +530,11 @@ void Wave1DSimulator::initialize() {
   // NOTE this part is done in the factory method (same test is performed)
   // check in which mode we are in the manual mode or we are using
   // the GUI to manage the simulation
-  //  if (getSimulatorMode() == Wave1DSimulator::eSimulationMode::manualMode) {
+  //  if (getSimulatorMode() == Wave1DSimulator::eSimulationMode::manualMode)
+  //  {
   //    // creating our algorithm for this simulation
-  //    m_numRep = createEMcNeil1DAlgo(); // algorithm name from comd line args
-  //    if (m_numRep != nullptr) {
+  //    m_numRep = createEMcNeil1DAlgo(); // algorithm name from comd line
+  //    args if (m_numRep != nullptr) {
   //      auto *w_msg = "Created Numerical Scheme for manual mode";
   //      dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
   //    } else {
@@ -738,7 +743,8 @@ void Wave1DSimulator::timeLoop() // run equivalent
   // debugging purpose (correspond to the original number of iteration
   // for 22.5 sec) w_sim->setNbIterationMax(1);  temporary fix (set on the GUI
   // side)
-  assert(10 == w_sim->getNbIterationMax()); // shall be put in a unit test
+  // assert(10 == w_sim->getNbIterationMax());  shall be put in a unit test
+  //  auto check = w_sim->getNbIterationMax();
 
   // we are at first iteration and time is time step
   // initial cnd are has been set and we are ready
@@ -997,8 +1003,8 @@ void Wave1DSimulator::createListSections() {
   if (nullptr == m_ListSectFlow) {
     // number of grid node(computational domain)
     // NOTE m_lambda->values().size(); is probably more appropriate
-    // we have a section at each grid node (just some checks to make sure we we
-    // are on the right track) shall be removed in the future
+    // we have a section at each grid node (just some checks to make sure we
+    // we are on the right track) shall be removed in the future
     assert(m_lambda->values().size() == m_lambda->grid().getNoPoints());
     assert(m_lambda->grid().getMaxI(1) == m_lambda->grid().getNoPoints());
     // number of sections should be equal to the number of grid

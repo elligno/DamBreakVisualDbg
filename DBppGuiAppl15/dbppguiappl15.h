@@ -8,20 +8,6 @@ class DBppGuiAppl15;
 }
 QT_END_NAMESPACE
 
-#if 0  // original code at project creation before merged VS15 stuff
-class DBppGuiAppl15 : public QMainWindow
-{
-    Q_OBJECT
-
-public:
-    DBppGuiAppl15(QWidget *parent = nullptr);
-    ~DBppGuiAppl15();
-
-private:
-    Ui::DBppGuiAppl15 *ui;
-};
-#endif // 0
-
 namespace dbpp {
 class Wave1DSimulator;
 }
@@ -55,17 +41,20 @@ public slots:
   void initSim();
   // 	void saveSimulation();
   // 	void about(); //from menu
-  void setNbIterationsMax();
+  // void onCFLValueChanged();
+  void setCFLValue(double aCflValue);
+  void setNbIterationsMax(int aIterMax);
   void setInitialWaveProfile();
-  void setUpstream();
-  void setDownstream();
-  void setShockLoc();
+  void setUpstream(double aPhi1);
+  void setDownstream(double aPhi0);
+  void setShockLoc(double aShockValue);
+  void setActiveNumericalMethod(QString aNumMethod);
   void setDamBreakData(QString aDisrData);
-  // void writeMsg2Gui(const QString &);  don't need that!!
-  // void setReconstructionAlgorithm();
+  // void writeMsg2Gui(const QString &);  don't need that!! not sure yet
+  // void setReconstructionAlgorithm();   maybe in the next re-factoring
   void about();
   void handleResults(const QString &aMsg2Write);
-signals:
+signals: // thread stuff
   void operate(const QString &);
 
 private:

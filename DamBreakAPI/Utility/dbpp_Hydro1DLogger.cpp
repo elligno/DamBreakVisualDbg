@@ -121,38 +121,68 @@ void DbgLogger::setDbgWorkingFile() {
       m_fileName += ".txt";   // file extension
     } else                    // not empty, contains
     {
-      //      std::vector<int> w_numberAlgo; w_numberAlgo.reserve(10);
-      bfs::path filePath{};
+      auto i = 0;
       for (const bfs::directory_entry &e :
            bfs::directory_iterator(m_currrentWrkDirectory)) {
-        filePath = e.path();
-        if (filePath.has_filename()) {
-          std::cout << "File name is: " << filePath.filename() << "\n";
-          continue;
-        } // if
-      }   // for-loop
-
-      //    const auto strName = dir_iter->path().string(); // last file in
-      //    directory const auto w_file =
-      //        *dir_iter; // crash cannot dereference end iterator?? work on
-      //        VS15
-      // auto strName = w_file.path().filename().string(); // file name
-      std::vector<std::string> w_nameExt;
-      w_nameExt.reserve(2); // SSO
-      boost::split(w_nameExt, filePath.filename().string(),
-                   boost::is_any_of("."));          // without extension
-      const auto w_lastDigit = w_nameExt[0].back(); // last digit of file name
-      auto w_toInt = std::atoi(&w_lastDigit);       // char to integer
-      w_toInt += 1; // w_numberAlgo.back(); w_toInt+=1;
-      auto &w_updatdInt = w_nameExt[0].back();
-      // w_updatdInt = *const_cast<char *>(std::to_string(w_toInt).c_str());
-      w_updatdInt = *(std::to_string(w_toInt).data());
-      auto w_newName = w_nameExt[0]; // update version number
-      w_newName += std::string{"."} + w_nameExt[1];
-      // avoid copying long string without SSO (Small String Optimization)
-      m_fileName = std::move(w_newName); // swap resources
-    }                                    // else
-  }                                      // if bfs exist
+        if (bfs::is_directory(e))
+          ++i;
+      }
+      if (i == folder_dist) { // all directory
+                              // do something here
+        m_fileName.append("_algo");
+        m_fileName.append("_");
+        m_fileName.append("1"); // default
+        m_fileName += ".txt";   // file extension
+      } else {                  // mix of files and directories
+        //      std::vector<int> w_numberAlgo; w_numberAlgo.reserve(10);
+        bfs::path filePath{};
+        for (const bfs::directory_entry &e :
+             bfs::directory_iterator(m_currrentWrkDirectory)) {
+          if (bfs::is_directory(e))
+            continue;
+          filePath = e.path();
+          if (filePath.has_filename()) {
+            std::cout << "File name is: " << filePath.filename() << "\n";
+            continue;
+          } // if
+        }   // for-loop
+        std::vector<std::string> w_nameExt;
+        w_nameExt.reserve(2); // SSO
+        boost::split(w_nameExt, filePath.filename().string(),
+                     boost::is_any_of("."));          // without extension
+        const auto w_lastDigit = w_nameExt[0].back(); // last digit of file name
+        auto w_toInt = std::atoi(&w_lastDigit);       // char to integer
+        w_toInt += 1; // w_numberAlgo.back(); w_toInt+=1;
+        auto &w_updatdInt = w_nameExt[0].back();
+        // w_updatdInt = *const_cast<char *>(std::to_string(w_toInt).c_str());
+        w_updatdInt = *(std::to_string(w_toInt).data());
+        auto w_newName = w_nameExt[0]; // update version number
+        w_newName += std::string{"."} + w_nameExt[1];
+        // avoid copying long string without SSO (Small String Optimization)
+        m_fileName = std::move(w_newName); // swap resources
+      }
+    }
+    //    const auto strName = dir_iter->path().string(); // last file in
+    //    directory const auto w_file =
+    //        *dir_iter; // crash cannot dereference end iterator?? work on
+    //        VS15
+    // auto strName = w_file.path().filename().string(); // file name
+    //    std::vector<std::string> w_nameExt;
+    //    w_nameExt.reserve(2); // SSO
+    //    boost::split(w_nameExt, filePath.filename().string(),
+    //                 boost::is_any_of("."));          // without extension
+    //    const auto w_lastDigit = w_nameExt[0].back(); // last digit of file
+    //    name auto w_toInt = std::atoi(&w_lastDigit);       // char to integer
+    //    w_toInt += 1; // w_numberAlgo.back(); w_toInt+=1;
+    //    auto &w_updatdInt = w_nameExt[0].back();
+    //    // w_updatdInt = *const_cast<char *>(std::to_string(w_toInt).c_str());
+    //    w_updatdInt = *(std::to_string(w_toInt).data());
+    //    auto w_newName = w_nameExt[0]; // update version number
+    //    w_newName += std::string{"."} + w_nameExt[1];
+    //    // avoid copying long string without SSO (Small String Optimization)
+    //    m_fileName = std::move(w_newName); // swap resources
+    //  }                                    // else
+  } // if bfs exist
 }
 
 void DbgLogger::write2file_p(const tuplevec &aTuple) {
