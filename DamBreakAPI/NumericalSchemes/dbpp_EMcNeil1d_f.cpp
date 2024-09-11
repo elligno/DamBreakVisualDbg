@@ -46,6 +46,9 @@ void EMcNeil1d_f::timeStep() {
   setBC();
 
   // set boundary value at both end (downstream and upstream)
+  assert(100 == m_listSections->getList().size());
+  assert(100 == m_U12.first->values().size());
+
   m_listSections->getList()[0]->setH(m_amontBC[2]);
   m_listSections->getList()[m_U12.first->values().size()]->setH(
       m_avalBC[2]); // ghost node

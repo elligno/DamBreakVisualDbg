@@ -30,7 +30,7 @@ public:
     initTimeLoop();
   }
 
-  // default copy and assignment will do
+  // default copy and assignment will do (move copy and assignment)
 
   // alternative initialization:
   // { time_=start_; delta=delta_; stop=stop_; initTimeLoop(); }

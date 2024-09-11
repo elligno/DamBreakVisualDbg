@@ -60,26 +60,24 @@ EMcNeil1DFactory::CreateSolver(EMcNeil1DFactory::EMcNeil1DType eType,
     shrPtr2EMcNeil1D w_numRep = std::make_shared<dbpp::EMcNeil1d_mod>();
     // sanity check
     if (w_numRep) {
-      auto w_msg = "EMcNeil1D_mod class created";
-      dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+      // auto w_msg = std::string{"EMcNeil1D_mod class created"};
+      dbpp::Logger::instance()->OutputSuccess(
+          std::string{"EMcNeil1D_mod class created"}.data());
     }
     // not sure about this
     return w_numRep;
     break;
   }
-    // 		case EMcNeil1DFactory::EMcNeil1DType::EMCNEIL1D_F:
-    // 			{
-    // 		//		pSolver = new CEMSolver(rSettings);
-    // 				shrPtr2EMcNeil1D w_numRep =
-    // std::make_shared<dbpp::EMcNeil1d_f>(); 				if(
-    // w_numRep)
-    // 				{
-    // 					dbpp::Logger::instance()->OutputSuccess("EMcNeil1D_f
-    // class created");
-    // 				}
-    //         return w_numRep;
-    // 				break;
-    // 			}
+  case EMcNeil1DFactory::EMcNeil1DType::EMCNEIL1D_F: {
+    //		pSolver = new CEMSolver(rSettings);
+    shrPtr2EMcNeil1D w_numRep = std::make_shared<dbpp::EMcNeil1d_f>();
+    if (w_numRep) {
+      dbpp::Logger::instance()->OutputSuccess(
+          std::string{"EMcNeil1D_f class created"}.data());
+    }
+    return w_numRep;
+    break;
+  }
     // 		case EMcNeil1DFactory::EMcNeil1DType::TESTEMCNEILVEC:
     // 			{
     // 		//		pSolver = new CEMSolver(rSettings);

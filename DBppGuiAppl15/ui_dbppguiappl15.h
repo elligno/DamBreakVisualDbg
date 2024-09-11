@@ -43,21 +43,13 @@ public:
     QComboBox *reconstr_comboBox;
     QWidget *verticalLayoutWidget_2;
     QVBoxLayout *verticalLayout_2;
-    QLabel *fluxalgo_label;
-    QComboBox *convecflux_combo;
+    QLabel *numalgo_label;
+    QComboBox *numalgo_combo;
     QWidget *verticalLayoutWidget_9;
     QVBoxLayout *verticalLayout_9;
     QLabel *rhsalgo_label;
     QComboBox *rhsalgo_combo;
-    QWidget *verticalLayoutWidget_11;
-    QVBoxLayout *verticalLayout_11;
-    QLabel *label;
-    QComboBox *discrdata_combo;
     QGroupBox *Simulation;
-    QWidget *verticalLayoutWidget_3;
-    QVBoxLayout *verticalLayout_3;
-    QLabel *cfl_label;
-    QDoubleSpinBox *doubleSpinBox;
     QWidget *verticalLayoutWidget_4;
     QVBoxLayout *verticalLayout_4;
     QLabel *nbIter;
@@ -78,11 +70,20 @@ public:
     QVBoxLayout *verticalLayout_8;
     QLabel *nbgridPts_label;
     QSpinBox *_nbgridpts;
+    QWidget *verticalLayoutWidget_3;
+    QVBoxLayout *verticalLayout_3;
+    QLabel *cflNumlabel;
+    QDoubleSpinBox *cflNumSpinBox;
+    QTextEdit *_msgText;
+    QGroupBox *data_groupBox;
+    QWidget *verticalLayoutWidget_11;
+    QVBoxLayout *verticalLayout_11;
+    QLabel *label;
+    QComboBox *discrdata_combo;
     QWidget *verticalLayoutWidget_10;
     QVBoxLayout *verticalLayout_10;
-    QLabel *xmax_label;
-    QSpinBox *_xmax;
-    QTextEdit *_msgText;
+    QLabel *label_2;
+    QDoubleSpinBox *doubleSpinBox_2;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
     QMenuBar *menuBar;
@@ -107,10 +108,13 @@ public:
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         AlgoSelect = new QGroupBox(centralWidget);
         AlgoSelect->setObjectName(QString::fromUtf8("AlgoSelect"));
-        AlgoSelect->setGeometry(QRect(30, 40, 191, 241));
+        AlgoSelect->setGeometry(QRect(30, 50, 211, 251));
+        QFont font;
+        font.setPointSize(8);
+        AlgoSelect->setFont(font);
         verticalLayoutWidget = new QWidget(AlgoSelect);
         verticalLayoutWidget->setObjectName(QString::fromUtf8("verticalLayoutWidget"));
-        verticalLayoutWidget->setGeometry(QRect(20, 20, 161, 48));
+        verticalLayoutWidget->setGeometry(QRect(20, 30, 191, 48));
         verticalLayout = new QVBoxLayout(verticalLayoutWidget);
         verticalLayout->setSpacing(6);
         verticalLayout->setContentsMargins(11, 11, 11, 11);
@@ -129,26 +133,26 @@ public:
 
         verticalLayoutWidget_2 = new QWidget(AlgoSelect);
         verticalLayoutWidget_2->setObjectName(QString::fromUtf8("verticalLayoutWidget_2"));
-        verticalLayoutWidget_2->setGeometry(QRect(20, 80, 161, 48));
+        verticalLayoutWidget_2->setGeometry(QRect(20, 100, 191, 48));
         verticalLayout_2 = new QVBoxLayout(verticalLayoutWidget_2);
         verticalLayout_2->setSpacing(6);
         verticalLayout_2->setContentsMargins(11, 11, 11, 11);
         verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
         verticalLayout_2->setContentsMargins(0, 0, 0, 0);
-        fluxalgo_label = new QLabel(verticalLayoutWidget_2);
-        fluxalgo_label->setObjectName(QString::fromUtf8("fluxalgo_label"));
+        numalgo_label = new QLabel(verticalLayoutWidget_2);
+        numalgo_label->setObjectName(QString::fromUtf8("numalgo_label"));
 
-        verticalLayout_2->addWidget(fluxalgo_label);
+        verticalLayout_2->addWidget(numalgo_label);
 
-        convecflux_combo = new QComboBox(verticalLayoutWidget_2);
-        convecflux_combo->setObjectName(QString::fromUtf8("convecflux_combo"));
-        convecflux_combo->setEditable(true);
+        numalgo_combo = new QComboBox(verticalLayoutWidget_2);
+        numalgo_combo->setObjectName(QString::fromUtf8("numalgo_combo"));
+        numalgo_combo->setEditable(true);
 
-        verticalLayout_2->addWidget(convecflux_combo);
+        verticalLayout_2->addWidget(numalgo_combo);
 
         verticalLayoutWidget_9 = new QWidget(AlgoSelect);
         verticalLayoutWidget_9->setObjectName(QString::fromUtf8("verticalLayoutWidget_9"));
-        verticalLayoutWidget_9->setGeometry(QRect(20, 140, 161, 44));
+        verticalLayoutWidget_9->setGeometry(QRect(20, 170, 191, 48));
         verticalLayout_9 = new QVBoxLayout(verticalLayoutWidget_9);
         verticalLayout_9->setSpacing(6);
         verticalLayout_9->setContentsMargins(11, 11, 11, 11);
@@ -164,52 +168,12 @@ public:
 
         verticalLayout_9->addWidget(rhsalgo_combo);
 
-        verticalLayoutWidget_11 = new QWidget(AlgoSelect);
-        verticalLayoutWidget_11->setObjectName(QString::fromUtf8("verticalLayoutWidget_11"));
-        verticalLayoutWidget_11->setGeometry(QRect(20, 190, 160, 44));
-        verticalLayout_11 = new QVBoxLayout(verticalLayoutWidget_11);
-        verticalLayout_11->setSpacing(6);
-        verticalLayout_11->setContentsMargins(11, 11, 11, 11);
-        verticalLayout_11->setObjectName(QString::fromUtf8("verticalLayout_11"));
-        verticalLayout_11->setContentsMargins(0, 0, 0, 0);
-        label = new QLabel(verticalLayoutWidget_11);
-        label->setObjectName(QString::fromUtf8("label"));
-
-        verticalLayout_11->addWidget(label);
-
-        discrdata_combo = new QComboBox(verticalLayoutWidget_11);
-        discrdata_combo->setObjectName(QString::fromUtf8("discrdata_combo"));
-
-        verticalLayout_11->addWidget(discrdata_combo);
-
         Simulation = new QGroupBox(centralWidget);
         Simulation->setObjectName(QString::fromUtf8("Simulation"));
-        Simulation->setGeometry(QRect(230, 40, 221, 241));
-        verticalLayoutWidget_3 = new QWidget(Simulation);
-        verticalLayoutWidget_3->setObjectName(QString::fromUtf8("verticalLayoutWidget_3"));
-        verticalLayoutWidget_3->setGeometry(QRect(20, 30, 78, 45));
-        verticalLayout_3 = new QVBoxLayout(verticalLayoutWidget_3);
-        verticalLayout_3->setSpacing(6);
-        verticalLayout_3->setContentsMargins(11, 11, 11, 11);
-        verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
-        verticalLayout_3->setContentsMargins(0, 0, 0, 0);
-        cfl_label = new QLabel(verticalLayoutWidget_3);
-        cfl_label->setObjectName(QString::fromUtf8("cfl_label"));
-
-        verticalLayout_3->addWidget(cfl_label);
-
-        doubleSpinBox = new QDoubleSpinBox(verticalLayoutWidget_3);
-        doubleSpinBox->setObjectName(QString::fromUtf8("doubleSpinBox"));
-        doubleSpinBox->setMinimum(0.100000000000000);
-        doubleSpinBox->setMaximum(1.000000000000000);
-        doubleSpinBox->setSingleStep(0.100000000000000);
-        doubleSpinBox->setValue(0.600000000000000);
-
-        verticalLayout_3->addWidget(doubleSpinBox);
-
+        Simulation->setGeometry(QRect(270, 50, 291, 251));
         verticalLayoutWidget_4 = new QWidget(Simulation);
         verticalLayoutWidget_4->setObjectName(QString::fromUtf8("verticalLayoutWidget_4"));
-        verticalLayoutWidget_4->setGeometry(QRect(20, 80, 80, 45));
+        verticalLayoutWidget_4->setGeometry(QRect(20, 100, 121, 45));
         verticalLayout_4 = new QVBoxLayout(verticalLayoutWidget_4);
         verticalLayout_4->setSpacing(6);
         verticalLayout_4->setContentsMargins(11, 11, 11, 11);
@@ -228,7 +192,7 @@ public:
 
         verticalLayoutWidget_5 = new QWidget(Simulation);
         verticalLayoutWidget_5->setObjectName(QString::fromUtf8("verticalLayoutWidget_5"));
-        verticalLayoutWidget_5->setGeometry(QRect(120, 30, 72, 48));
+        verticalLayoutWidget_5->setGeometry(QRect(170, 30, 111, 48));
         verticalLayout_5 = new QVBoxLayout(verticalLayoutWidget_5);
         verticalLayout_5->setSpacing(6);
         verticalLayout_5->setContentsMargins(11, 11, 11, 11);
@@ -250,7 +214,7 @@ public:
 
         verticalLayoutWidget_6 = new QWidget(Simulation);
         verticalLayoutWidget_6->setObjectName(QString::fromUtf8("verticalLayoutWidget_6"));
-        verticalLayoutWidget_6->setGeometry(QRect(120, 90, 72, 48));
+        verticalLayoutWidget_6->setGeometry(QRect(170, 100, 111, 48));
         verticalLayout_6 = new QVBoxLayout(verticalLayoutWidget_6);
         verticalLayout_6->setSpacing(6);
         verticalLayout_6->setContentsMargins(11, 11, 11, 11);
@@ -271,7 +235,7 @@ public:
 
         verticalLayoutWidget_7 = new QWidget(Simulation);
         verticalLayoutWidget_7->setObjectName(QString::fromUtf8("verticalLayoutWidget_7"));
-        verticalLayoutWidget_7->setGeometry(QRect(120, 150, 75, 51));
+        verticalLayoutWidget_7->setGeometry(QRect(170, 170, 111, 51));
         verticalLayout_7 = new QVBoxLayout(verticalLayoutWidget_7);
         verticalLayout_7->setSpacing(6);
         verticalLayout_7->setContentsMargins(11, 11, 11, 11);
@@ -284,15 +248,15 @@ public:
 
         _shockloc = new QDoubleSpinBox(verticalLayoutWidget_7);
         _shockloc->setObjectName(QString::fromUtf8("_shockloc"));
-        _shockloc->setMinimum(0.500000000000000);
+        _shockloc->setMinimum(0.000000000000000);
         _shockloc->setMaximum(500.000000000000000);
-        _shockloc->setValue(500.000000000000000);
+        _shockloc->setValue(0.000000000000000);
 
         verticalLayout_7->addWidget(_shockloc);
 
         verticalLayoutWidget_8 = new QWidget(Simulation);
         verticalLayoutWidget_8->setObjectName(QString::fromUtf8("verticalLayoutWidget_8"));
-        verticalLayoutWidget_8->setGeometry(QRect(20, 130, 81, 45));
+        verticalLayoutWidget_8->setGeometry(QRect(20, 170, 121, 45));
         verticalLayout_8 = new QVBoxLayout(verticalLayoutWidget_8);
         verticalLayout_8->setSpacing(6);
         verticalLayout_8->setContentsMargins(11, 11, 11, 11);
@@ -311,28 +275,70 @@ public:
 
         verticalLayout_8->addWidget(_nbgridpts);
 
-        verticalLayoutWidget_10 = new QWidget(Simulation);
+        verticalLayoutWidget_3 = new QWidget(Simulation);
+        verticalLayoutWidget_3->setObjectName(QString::fromUtf8("verticalLayoutWidget_3"));
+        verticalLayoutWidget_3->setGeometry(QRect(20, 30, 121, 51));
+        verticalLayout_3 = new QVBoxLayout(verticalLayoutWidget_3);
+        verticalLayout_3->setSpacing(6);
+        verticalLayout_3->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
+        verticalLayout_3->setContentsMargins(0, 0, 0, 0);
+        cflNumlabel = new QLabel(verticalLayoutWidget_3);
+        cflNumlabel->setObjectName(QString::fromUtf8("cflNumlabel"));
+
+        verticalLayout_3->addWidget(cflNumlabel);
+
+        cflNumSpinBox = new QDoubleSpinBox(verticalLayoutWidget_3);
+        cflNumSpinBox->setObjectName(QString::fromUtf8("cflNumSpinBox"));
+        cflNumSpinBox->setMaximum(1.000000000000000);
+        cflNumSpinBox->setSingleStep(0.100000000000000);
+        cflNumSpinBox->setValue(0.600000000000000);
+
+        verticalLayout_3->addWidget(cflNumSpinBox);
+
+        _msgText = new QTextEdit(centralWidget);
+        _msgText->setObjectName(QString::fromUtf8("_msgText"));
+        _msgText->setEnabled(true);
+        _msgText->setGeometry(QRect(30, 310, 831, 191));
+        data_groupBox = new QGroupBox(centralWidget);
+        data_groupBox->setObjectName(QString::fromUtf8("data_groupBox"));
+        data_groupBox->setGeometry(QRect(590, 50, 271, 251));
+        verticalLayoutWidget_11 = new QWidget(data_groupBox);
+        verticalLayoutWidget_11->setObjectName(QString::fromUtf8("verticalLayoutWidget_11"));
+        verticalLayoutWidget_11->setGeometry(QRect(10, 30, 191, 48));
+        verticalLayout_11 = new QVBoxLayout(verticalLayoutWidget_11);
+        verticalLayout_11->setSpacing(6);
+        verticalLayout_11->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_11->setObjectName(QString::fromUtf8("verticalLayout_11"));
+        verticalLayout_11->setContentsMargins(0, 0, 0, 0);
+        label = new QLabel(verticalLayoutWidget_11);
+        label->setObjectName(QString::fromUtf8("label"));
+
+        verticalLayout_11->addWidget(label);
+
+        discrdata_combo = new QComboBox(verticalLayoutWidget_11);
+        discrdata_combo->setObjectName(QString::fromUtf8("discrdata_combo"));
+
+        verticalLayout_11->addWidget(discrdata_combo);
+
+        verticalLayoutWidget_10 = new QWidget(data_groupBox);
         verticalLayoutWidget_10->setObjectName(QString::fromUtf8("verticalLayoutWidget_10"));
-        verticalLayoutWidget_10->setGeometry(QRect(20, 180, 81, 45));
+        verticalLayoutWidget_10->setGeometry(QRect(10, 100, 160, 51));
         verticalLayout_10 = new QVBoxLayout(verticalLayoutWidget_10);
         verticalLayout_10->setSpacing(6);
         verticalLayout_10->setContentsMargins(11, 11, 11, 11);
         verticalLayout_10->setObjectName(QString::fromUtf8("verticalLayout_10"));
         verticalLayout_10->setContentsMargins(0, 0, 0, 0);
-        xmax_label = new QLabel(verticalLayoutWidget_10);
-        xmax_label->setObjectName(QString::fromUtf8("xmax_label"));
+        label_2 = new QLabel(verticalLayoutWidget_10);
+        label_2->setObjectName(QString::fromUtf8("label_2"));
 
-        verticalLayout_10->addWidget(xmax_label);
+        verticalLayout_10->addWidget(label_2);
 
-        _xmax = new QSpinBox(verticalLayoutWidget_10);
-        _xmax->setObjectName(QString::fromUtf8("_xmax"));
+        doubleSpinBox_2 = new QDoubleSpinBox(verticalLayoutWidget_10);
+        doubleSpinBox_2->setObjectName(QString::fromUtf8("doubleSpinBox_2"));
 
-        verticalLayout_10->addWidget(_xmax);
+        verticalLayout_10->addWidget(doubleSpinBox_2);
 
-        _msgText = new QTextEdit(centralWidget);
-        _msgText->setObjectName(QString::fromUtf8("_msgText"));
-        _msgText->setEnabled(true);
-        _msgText->setGeometry(QRect(33, 300, 421, 191));
         DBppGuiAppl15->setCentralWidget(centralWidget);
         mainToolBar = new QToolBar(DBppGuiAppl15);
         mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
@@ -360,12 +366,14 @@ public:
         menu_Simulation->addAction(action_doOneStep);
 
         retranslateUi(DBppGuiAppl15);
-        QObject::connect(_phi1, SIGNAL(valueChanged(double)), DBppGuiAppl15, SLOT(setUpstream()));
-        QObject::connect(_phi0, SIGNAL(valueChanged(double)), DBppGuiAppl15, SLOT(setDownstream()));
-        QObject::connect(_shockloc, SIGNAL(valueChanged(double)), DBppGuiAppl15, SLOT(setShockLoc()));
-        QObject::connect(iterations, SIGNAL(valueChanged(int)), DBppGuiAppl15, SLOT(setNbIterationsMax()));
+        QObject::connect(cflNumSpinBox, SIGNAL(valueChanged(double)), DBppGuiAppl15, SLOT(setCFLValue(double)));
+        QObject::connect(_shockloc, SIGNAL(valueChanged(double)), DBppGuiAppl15, SLOT(setShockLoc(double)));
+        QObject::connect(_phi1, SIGNAL(valueChanged(double)), DBppGuiAppl15, SLOT(setUpstream(double)));
+        QObject::connect(_phi0, SIGNAL(valueChanged(double)), DBppGuiAppl15, SLOT(setDownstream(double)));
+        QObject::connect(iterations, SIGNAL(valueChanged(int)), DBppGuiAppl15, SLOT(setNbIterationsMax(int)));
+        QObject::connect(numalgo_combo, SIGNAL(currentTextChanged(QString)), DBppGuiAppl15, SLOT(setActiveNumericalMethod(QString)));
 
-        convecflux_combo->setCurrentIndex(-1);
+        numalgo_combo->setCurrentIndex(-1);
 
 
         QMetaObject::connectSlotsByName(DBppGuiAppl15);
@@ -381,22 +389,23 @@ public:
         action_doOneStep->setShortcut(QApplication::translate("DBppGuiAppl15", "Shift+S, 1", nullptr));
 #endif // QT_NO_SHORTCUT
         actioninitialize->setText(QApplication::translate("DBppGuiAppl15", "&initialize", nullptr));
-        AlgoSelect->setTitle(QApplication::translate("DBppGuiAppl15", "Algorithm Selection", nullptr));
+        AlgoSelect->setTitle(QApplication::translate("DBppGuiAppl15", "Algporithm Selection", nullptr));
         reconstr_label->setText(QApplication::translate("DBppGuiAppl15", "Reconstruction Algorithm", nullptr));
         reconstr_comboBox->setCurrentText(QApplication::translate("DBppGuiAppl15", "MUSCL Slope Limiter", nullptr));
-        fluxalgo_label->setText(QApplication::translate("DBppGuiAppl15", "Flux Algorithm", nullptr));
-        convecflux_combo->setCurrentText(QString());
-        rhsalgo_label->setText(QApplication::translate("DBppGuiAppl15", "RHS Algorithm", nullptr));
+        numalgo_label->setText(QApplication::translate("DBppGuiAppl15", "Numerical Method", nullptr));
+        numalgo_combo->setCurrentText(QString());
+        rhsalgo_label->setText(QApplication::translate("DBppGuiAppl15", "Physical Algorithm", nullptr));
         rhsalgo_combo->setCurrentText(QString());
-        label->setText(QApplication::translate("DBppGuiAppl15", "DamBreakData", nullptr));
         Simulation->setTitle(QApplication::translate("DBppGuiAppl15", "Parameters of run", nullptr));
-        cfl_label->setText(QApplication::translate("DBppGuiAppl15", "CFL Number", nullptr));
         nbIter->setText(QApplication::translate("DBppGuiAppl15", "Nb Iterations", nullptr));
-        phi1_label->setText(QApplication::translate("DBppGuiAppl15", "Phi1", nullptr));
-        phi0_label->setText(QApplication::translate("DBppGuiAppl15", "Phi0", nullptr));
+        phi1_label->setText(QApplication::translate("DBppGuiAppl15", "Phi1 Value", nullptr));
+        phi0_label->setText(QApplication::translate("DBppGuiAppl15", "Phi0 Value", nullptr));
         shocloc_label->setText(QApplication::translate("DBppGuiAppl15", "Shock Location", nullptr));
         nbgridPts_label->setText(QApplication::translate("DBppGuiAppl15", "Nb Grid Points", nullptr));
-        xmax_label->setText(QApplication::translate("DBppGuiAppl15", "x-coord max", nullptr));
+        cflNumlabel->setText(QApplication::translate("DBppGuiAppl15", "CFL Number", nullptr));
+        data_groupBox->setTitle(QApplication::translate("DBppGuiAppl15", "Simulation Data", nullptr));
+        label->setText(QApplication::translate("DBppGuiAppl15", "DamBreakData", nullptr));
+        label_2->setText(QApplication::translate("DBppGuiAppl15", "Manning Coeff", nullptr));
         menuFile->setTitle(QApplication::translate("DBppGuiAppl15", "File", nullptr));
         menuView->setTitle(QApplication::translate("DBppGuiAppl15", "View", nullptr));
         menu_Simulation->setTitle(QApplication::translate("DBppGuiAppl15", "&Simulation", nullptr));
