@@ -24,12 +24,24 @@
 
 // dbpp::Wave1DSimulator* m_waveSim {nullptr};  = new dbpp::Wave1DSimulator; ???
 
+// ++++++++++++++++++++++++++++++++++++++++++
 // Thread function
-void testThreadCall() {
-  //   m_waveSim = new dbpp::Wave1DSimulator;
-  //   m_waveSim->timeLoop();
-  // should i delete it the pointer
+// void testThreadCall() {
+//   m_waveSim = new dbpp::Wave1DSimulator;
+//   m_waveSim->timeLoop();
+// should i delete it the pointer
+//}
+
+WorkerThread::WorkerThread(std::function<void()> functionToExecute,
+                           QObject *parent)
+    : QThread(parent), m_FunctionToExecute(functionToExecute) {}
+
+void WorkerThread::run() {
+  if (m_FunctionToExecute) {
+    m_FunctionToExecute();
+  }
 }
+// ++++++++++++++++++++++++++++++++++++++++++
 
 DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::DBppGuiAppl15), // ..
@@ -151,38 +163,79 @@ DBppGuiAppl15::~DBppGuiAppl15() {
 
   // Simulation debug file release
   dbpp::DbgLogger::instance()->release();
-
-  // workerThread.quit();
-  // workerThread.wait();
 }
 
+// some thread test!!
+void DBppGuiAppl15::runSimulation() {
+  // we start it in a separate thread to keep the UI responding
+  auto workerThread = new WorkerThread([=]() { m_waveSim->timeLoop(); }, this);
+  connect(workerThread, &WorkerThread::finished, workerThread,
+          &QObject::deleteLater);
+  connect(workerThread, &WorkerThread::finished, this,
+          [&] { dbpp::Simulation::instance()->setRunning(false); });
+  dbpp::Simulation::instance()->setRunning(true);
+  workerThread->start(); // emit "started()" signal before run()
+
+  // ui->_msgText->append(QString{"Simulation completed successfully!"});
+  ui->_msgText->append(QString{"Simulation is running in a separate thread!"});
+  QMessageBox msgBox;
+  msgBox.setText("Simulation is running in a separate thread!");
+  msgBox.exec();
+}
+
+#if 0
 // slot
 void DBppGuiAppl15::runSimulation() {
   // assert(0.5 == m_waveSim->getCFL()); debugging purpose (default value)
   // GUI is 'ON' but want launch a new computation
-  if (dbpp::Simulation::instance()->isRunning()) {
-    if (nullptr != dbpp::GlobalDiscretization::instance()) {
-      // release all resources
-      dbpp::GlobalDiscretization::instance()->release();
-    }
-    m_waveSim->timeLoop();
-  } else // simulator not running (open GUI first time)
-  {
-    dbpp::Simulation::instance()->setRunning(true);
+  //  if (dbpp::Simulation::instance()->isRunning()) {
+  //    if (nullptr != dbpp::GlobalDiscretization::instance()) {
+  //      // release all resources
+  //      dbpp::GlobalDiscretization::instance()->release();
+  //    }
+  //    m_waveSim->timeLoop();
+  //  } else // simulator not running (open GUI first time)
+  //  {
+  dbpp::Simulation::instance()->setRunning(true);
+
+  m_waveSim->timeLoop();
+
+  dbpp::Simulation::instance()->setRunning(false);
+  // delete m_waveSim; done in the dtor
+  //  }
+
+  // create a thread to run simulation
+  // std::thread w_simThread(testThreadCall);
+  //   w_simThread.join(); // wait for thread to finish
 
 #if 0
+    // wave profile
+    auto listSectionsFlow = createListSectionsFlow();
+
+    // made of physical objects (sections flow)
+    auto phySystem = createPhysicalSystem();
+
     // configure initial solution
-    phyConfigure->configure(physystem, simulation);
+    phyConfigure->configure(phySystem, simulation);
 
     // initialize simulator list section flow
-    m_listSectionFlow = physystem->getListSectionFlow();
+    m_listSectionFlow = phySystem->getListSectionFlow();
 
     // time stepping base on initial solution??
-    // auto delta = calculateDt(physystem->getStateVectorField());
+    // auto delta = calculateDt(phySystem->getStateVectorField());
 
     // initialized in initSim from gui user selection
     dbpp::TimePrm w_timePrm {start,delta,stop};
     w_timePrm.setFinalTime(ui final time); // overwrite default
+
+    // May be create the Numerical Method here instead of retrieving it from Gbl Discr
+    // selected from GUI (current method is based on calculFF(), how the numerical flux)
+    // at cell face is evaluated. Abstract class and user override 'calculFF()' and
+    // implement the face flux algorithm. In the current version, we have already
+    // a drop-downbox with the list of available method. Since we plan to use many
+    // implementation of calculFF(), also of the source term, we may want list all of them
+    // we could run multiple runs with different method and compare result. There is
+    // already a slot call 'setActiveNumericalMethod()',
 
     // retrieve numerical method (it uses a solver to solution the discrete equation)
     auto w_numodel = dbpp::GlobalDiscretization::instance()->num_rep();
@@ -190,11 +243,13 @@ void DBppGuiAppl15::runSimulation() {
     // Set the solver method (solving discrete equation)
     w_numodel->setSolver(new SWESolver);
 
-    // user gui selection (should we pass thge solver to PhysicalAlgorithm???)
+    // user gui selection (should we pass the solver to PhysicalAlgorithm???)
     w_numodel->odesolver()->addPhysicalAlgorithm(EMcNeilPhysicalAlgorithm);
+    // add more if there are more
+    // set active algorithm for this simulation
 
     // register physical for this simulation
-    w_numodel->odesolver()->registerPhysicalSystem(physystem);
+    w_numodel->odesolver()->registerPhysicalSystem(phySystem);
 
     // time stepping
     while (w_timePrm.finished() ||
@@ -222,21 +277,13 @@ void DBppGuiAppl15::runSimulation() {
     }
 #endif
 
-    m_waveSim->timeLoop();
-
-    // create a thread to run simulation
-    // std::thread w_simThread(testThreadCall);
-    //   w_simThread.join(); // wait for thread to finish
-    dbpp::Simulation::instance()->setRunning(false);
-    // delete m_waveSim; done in the dtor
-  }
-
   ui->_msgText->append(QString{"Simulation completed successfully!"});
 
   QMessageBox msgBox;
   msgBox.setText("Simulation completed successfully!");
   msgBox.exec();
 }
+#endif
 
 void DBppGuiAppl15::runStepbyStep() {
   // to do add code here

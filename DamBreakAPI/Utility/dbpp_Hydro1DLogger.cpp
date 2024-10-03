@@ -56,26 +56,40 @@ void DbgLogger::close() {
   }
 }
 //
-void DbgLogger::open(const std::string &aFilename /*="LoggerFile.txt"*/) {
+void DbgLogger::open(/*const std::string &aFilename ="LoggerFile.txt"*/) {
   namespace bfs = boost::filesystem;
-  m_currrentWrkDirectory /= m_fileName;
-  m_currrentWrkDirectory.lexically_normal();
+#if 0 // move at the end of "setDbgWorkingFile()"
+  m_currrentWrkDirectory /= m_fileName;      // full path
+  m_currrentWrkDirectory.lexically_normal(); // ...
   //     if( bfs::exists(m_currrentWrkDirectory))
   //     {
   //       // increment version number
   //     }
 
+  // sanity check
+  if (!m_currrentWrkDirectory.has_extension()) {
+    m_currrentWrkDirectory.replace_extension(".txt");
+  }
+#endif
+  static bool firstm = true;
   auto w_filename = m_currrentWrkDirectory.string();
 
   // initializing file creation
   ::strcpy_s(NomFichierDEBUG, 256, w_filename.c_str());
 
+  errno_t err{};
   // Open for write
-  errno_t err = fopen_s(&FichierDEBUG, NomFichierDEBUG, "w");
+  if (false == firstm) {
+    err = fopen_s(&FichierDEBUG, NomFichierDEBUG, "a");
+  } else {
+    err = fopen_s(&FichierDEBUG, NomFichierDEBUG, "w");
+  }
+
   if (err == 0) {
     printf("The logger file 'HLL RK2 Debug' was opened\n");
     m_opened = true;
-    m_fileName = aFilename;
+    firstm = false;
+    //  m_fileName = aFilename;
   } else {
     printf("The logger file 'HLL RK2 Debug' was not opened\n");
   }
@@ -146,6 +160,41 @@ void DbgLogger::setDbgWorkingFile() {
             continue;
           } // if
         }   // for-loop
+#if 0
+        //+++++++++++++++++++++++++++
+        // just testing
+        auto w_fnameNoExt = filePath.stem();
+        auto lastDigit = w_fnameNoExt.string().back();
+        auto w_to2Int = std::atoi(&lastDigit);
+        w_to2Int += 1;
+        auto newOne = *(std::to_string(w_to2Int).data());
+        auto foundOne = std::find_if(w_fnameNoExt.string().begin(),
+                                     w_fnameNoExt.string().end(),
+                                     [](char c) { return std::isdigit(c,std::locale()); });
+
+        if (foundOne != w_fnameNoExt.string().end()) {
+          // found one
+          auto distFromBeg =
+              std::distance(foundOne, w_fnameNoExt.string().end());
+          if (dist > 1) {
+          }
+        }
+        auto str = w_fnameNoExt.string();
+        auto beg = str.begin();
+        while (*beg && !isdigit(*beg))
+          beg++;
+        if (*beg) {
+          // beg==end means only one digit
+          // otherwise more than one
+          // distance from end distance(beg,str.end())
+          // distance
+          // auto distFrmBeg = std::distance(str.begin(),beg);
+          // replace last digit
+          std::replace(str.begin(), str.end(), lastDigit, newOne);
+        }
+        //+++++++++++++++++++++++++++++++++
+#endif
+
         std::vector<std::string> w_nameExt;
         w_nameExt.reserve(2); // SSO
         boost::split(w_nameExt, filePath.filename().string(),
@@ -183,6 +232,18 @@ void DbgLogger::setDbgWorkingFile() {
     //    m_fileName = std::move(w_newName); // swap resources
     //  }                                    // else
   } // if bfs exist
+
+  m_currrentWrkDirectory /= m_fileName;      // full path
+  m_currrentWrkDirectory.lexically_normal(); // ...
+  //     if( bfs::exists(m_currrentWrkDirectory))
+  //     {
+  //       // increment version number
+  //     }
+
+  // sanity check
+  if (!m_currrentWrkDirectory.has_extension()) {
+    m_currrentWrkDirectory.replace_extension(".txt");
+  }
 }
 
 void DbgLogger::write2file_p(const tuplevec &aTuple) {

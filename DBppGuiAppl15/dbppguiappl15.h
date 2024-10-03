@@ -1,6 +1,8 @@
 #pragma once
 
+// QT includes
 #include <QMainWindow>
+#include <QThread>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -11,6 +13,25 @@ QT_END_NAMESPACE
 namespace dbpp {
 class Wave1DSimulator;
 }
+
+// Different way to implment this functionality,
+// here we use a lambda as a thread function.
+// Testing integration of thread in the simulator
+// runs a blocking function in a separate thread
+class WorkerThread : public QThread {
+public:
+  /// Constructor
+  /// \param[in] functionToExecute the function to run in the thread
+  /// \param[in] parent, parent of the state
+  WorkerThread(std::function<void()> functionToExecute, QObject *parent);
+
+  // runs the thread
+  void run() override;
+
+private:
+  /// The function to run in the thread
+  std::function<void()> m_FunctionToExecute;
+};
 
 /** Brief By default we inherit from QGuiApplication.
  * DamBreak app is a GUI to manage the simulation
