@@ -5,6 +5,7 @@
 *.user
 *.lib
 *.txt
+*.jpg
 DamBreakAPI/Makefile.Release
 DBppGuiAppl15/Makefile.Debug
 DBppGuiAppl15/Makefile.Release
