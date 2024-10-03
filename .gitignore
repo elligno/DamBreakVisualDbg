@@ -12,6 +12,7 @@ DBppGuiAppl15/Makefile.Release
 *.Makefile.Release
 \bin
 \doc
+\Graph
 \debug
 \release
 DamBreakAPI\debug
