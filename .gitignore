@@ -20,6 +20,7 @@ DamBreakAPI\debug
 DamBreakAPI\release
 DamBreakVisualDbg\debug
 DamBreakVisualDbg\release
+DamBreakVisualDbg/Graphs/
 DamBreakAPI/Makefile.Debug
 DBppGuiDev.pro.user
 DamBreakVisualDbg/debug/qrc_qmake_qmake_qm_files.cpp
@@ -29,3 +30,4 @@ DamBreakVisualDbg/Makefile.Release
 DBppGuiAppl15/debug/moc_dbppguiappl15.cpp
 DamBreakVisualDbg/Makefile.Debug
 DamBreakVisualDbg/Makefile.Release
+DamBreakVisualDbg/debug/moc_dambreakvisualdbg.cpp

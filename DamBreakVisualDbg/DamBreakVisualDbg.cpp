@@ -1,6 +1,8 @@
 #include "dambreakvisualdbg.h"
 #include "ui_dambreakvisualdbg.h"
 
+#include <QFileInfo>
+
 #if 0 // original code
 DamBreakVisualDbg::DamBreakVisualDbg(QWidget *parent)
     : QMainWindow(parent)
@@ -126,6 +128,7 @@ void DamBreakVisualDbg::setPlotParams(const QString &aYLabel, double aYmax) {
   try {
     // 2d plot (plot x-axis and y-axis)
     //     m_customPlot = new QCustomPlot;
+#if 0
     m_customPlot->setGeometry(
         200, 100, 640, 400); // window size when poping-up with offset in x/y
     m_customPlot->setWindowTitle(QString{"DamBreak Wave Propagation"});
@@ -142,6 +145,8 @@ void DamBreakVisualDbg::setPlotParams(const QString &aYLabel, double aYmax) {
 
     m_customPlot->xAxis->setLabel("X Coordinate");
     m_customPlot->yAxis->setLabel(m_yAxisLabel);
+#endif
+
     // set axes ranges, so we see all data:
     m_customPlot->xAxis->setRange(m_xAxisRng.first /*min*/,
                                   m_xAxisRng.second /*max*/); // x-coordinate
@@ -214,7 +219,7 @@ void DamBreakVisualDbg::readDataFromFile(QFile &aFile2read) {
   QString line;
   // if you don't do that, first time push_back is call
   // vector resize, not really efficient
-  m_graph2D.m_xVar1.reserve(101); // debugging purpose
+  m_graph2D.m_xVar1.reserve(EMCNEILCTE::value); // debugging purpose
 
   // reading line after one
   while (w_data2Read.readLineInto(&line)) {
@@ -252,61 +257,65 @@ void DamBreakVisualDbg::readFullResultFile(QFile &aFile2read) {
   //     QVector<dbltpl> w_vecOfTpl;
   //     w_vecOfTpl.reserve(101); // be careful with hard coding
 
-  QTextStream w_fileStream{&aFile2read};
-  // loop on line
-  QString line;
-  double w_timeVal{}; // time at each iteration
+  if (aFile2read.open(QFile::ReadOnly)) { // open file for reading
+    QTextStream w_fileStream{&aFile2read};
+    // loop on line
+    QString line;
+    double w_timeVal{}; // time at each iteration
 
-  // reading line after one
-  while (!w_fileStream.atEnd()) {
-    w_fileStream.readLineInto(&line);
-    if (w_bStartReadVal) {
-      //         do
-      //         {
-      //           auto w_checkRetype = extractLineValues(line/*, w_vecOfTpl*/);
-      //           w_vecOfTpl.push_back(std::move(w_checkRetype));
-      //         } while ( w_fileStream.readLineInto(&line) && !line.isEmpty());
+    // reading line after one
+    while (!w_fileStream.atEnd()) {
+      w_fileStream.readLineInto(&line);
+      if (w_bStartReadVal) {
+        //         do
+        //         {
+        //           auto w_checkRetype = extractLineValues(line/*,
+        //           w_vecOfTpl*/);
+        //           w_vecOfTpl.push_back(std::move(w_checkRetype));
+        //         } while ( w_fileStream.readLineInto(&line) &&
+        //         !line.isEmpty());
 
-      // just a test (compile)
-      auto w_vecOfTpl =
-          extractLineValuesTmplt<double, double, double, double, double>(
-              w_fileStream, std::move(line));
-      w_bStartReadVal = false; // according to the current format
+        // just a test (compile)
+        auto w_vecOfTpl =
+            extractLineValuesTmplt<double, double, double, double, double>(
+                w_fileStream, std::move(line));
+        w_bStartReadVal = false; // according to the current format
 
-      // add it to vector of pair pair<Time, values>
-      m_graph2D.m_vecTimeValues.push_back({w_timeVal, std::move(w_vecOfTpl)});
-      continue; // ready to continue to next Time: 0.0034 for example
-    }
-
-    if (line.isEmpty()) // check if line is empty
-    {
-      continue; // go to next line
-    }
-    auto w_lineTrimmed = line.trimmed();
-    //    auto dbgBool = w_lineTrimmed.contains('X');
-    //    auto w_firstChar = line.at(0); // front
-
-    if (!w_lineTrimmed.contains('X') && w_bStartReadVal == false) {
-      // Time: 0.0019 sec.   (file format)
-      if (w_lineTrimmed.contains("Time")) {
-        // split about ":"
-        auto w_timeStr = w_lineTrimmed.split(QString{":"});
-        w_timeStr.back().remove(
-            QRegularExpression{"[sec]"}); // remove all ocurence of "sec"
-        w_timeStr.back().remove(w_timeStr.back().size() - 1,
-                                1);              // remove dot at the end (sec.)
-        w_timeVal = w_timeStr.back().toDouble(); // contains value + sec.
+        // add it to vector of pair pair<Time, values>
+        m_graph2D.m_vecTimeValues.push_back({w_timeVal, std::move(w_vecOfTpl)});
+        continue; // ready to continue to next Time: 0.0034 for example
       }
-      continue; // next line
-    } else {
-      // flag to specify we start reading values
-      w_bStartReadVal = true;
-      continue;
-    }
-  } // while-loop
+
+      if (line.isEmpty()) // check if line is empty
+      {
+        continue; // go to next line
+      }
+      auto w_lineTrimmed = line.trimmed();
+      //    auto dbgBool = w_lineTrimmed.contains('X');
+      //    auto w_firstChar = line.at(0); // front
+
+      if (!w_lineTrimmed.contains('X') && w_bStartReadVal == false) {
+        // Time: 0.0019 sec.   (file format)
+        if (w_lineTrimmed.contains("Time")) {
+          // split about ":"
+          auto w_timeStr = w_lineTrimmed.split(QString{":"});
+          w_timeStr.back().remove(
+              QRegularExpression{"[sec]"}); // remove all ocurence of "sec"
+          w_timeStr.back().remove(w_timeStr.back().size() - 1,
+                                  1); // remove dot at the end (sec.)
+          w_timeVal = w_timeStr.back().toDouble(); // contains value + sec.
+        }
+        continue; // next line
+      } else {
+        // flag to specify we start reading values
+        w_bStartReadVal = true;
+        continue;
+      }
+    } // while-loop
+  }   // if
 }
 
-// variables
+// variables layout
 // X         H          U1(A)             U2(Q)           V
 void DamBreakVisualDbg::extractProfileFromFullRes(int aListIndex) {
   using namespace std;
@@ -317,19 +326,22 @@ void DamBreakVisualDbg::extractProfileFromFullRes(int aListIndex) {
   if (!m_graph2D.m_xVar1.isEmpty()) {
     m_graph2D.m_xVar1.clear();
   }
-  m_graph2D.m_xVar1.reserve(101); // again hard coded, prototyping phase
+  m_graph2D.m_xVar1.reserve(EMCNEILCTE::value);
   switch (m_graph2D.m_graphFmt) {
   case eGraphFmt::XH:
     // copy values in m_xVar
     {
-      for (auto &val : m_graph2D.m_vecTimeValues[aListIndex]
-                           .second) // should be initial condition
-      {
-        // re-ordering tuple index, since in
-        dbltpl w_revertOrder = tuple_inverse_idx_order<dbltpl, 4, 3, 2, 1, 0>(
-            val, std::index_sequence<4, 3, 2, 1, 0>{});
-        // swap tuple element
-        val.swap(w_revertOrder);
+      for (auto &val : m_graph2D.m_vecTimeValues[aListIndex].second) {
+        // Simulation data from full result file format
+        // current version contains 5 colums: X|H|A|Q|V
+        auto tplSiz = std::tuple_size_v<dbltpl>;
+        if (5 == tplSiz) { // 5 columns 0 to 4 format
+          // re-ordering tuple index, since in
+          dbltpl w_revertOrder = tuple_inverse_idx_order<dbltpl, 4, 3, 2, 1, 0>(
+              val, std::index_sequence<4, 3, 2, 1, 0>{});
+          // swap tuple element
+          val.swap(w_revertOrder);
+        }
 
         double x{};
         double h{};
@@ -341,10 +353,14 @@ void DamBreakVisualDbg::extractProfileFromFullRes(int aListIndex) {
       break;
     }
   case eGraphFmt::XQ:
-    // auto i = 0;  init
-    for (const auto &val : m_graph2D.m_vecTimeValues[aListIndex]
-                               .second) // should be initial condition
-    {
+    for (auto &val : m_graph2D.m_vecTimeValues[aListIndex].second) {
+      // re-ordering tuple index, since when parsing file it
+      // returns the line element in reverse order (end to begin)
+      dbltpl w_revertOrder = tuple_inverse_idx_order<dbltpl, 4, 3, 2, 1, 0>(
+          val, std::index_sequence<4, 3, 2, 1, 0>{});
+      // swap tuple element now bring it back from begin to end
+      val.swap(w_revertOrder);
+
       double x{};
       double q{};
       // fill the plot2D data profile container
@@ -355,9 +371,14 @@ void DamBreakVisualDbg::extractProfileFromFullRes(int aListIndex) {
     break;
   case eGraphFmt::XV:
     //   auto i = 0;  init
-    for (const auto &val : m_graph2D.m_vecTimeValues[aListIndex]
-                               .second) // should be initial condition
-    {
+    for (auto &val : m_graph2D.m_vecTimeValues[aListIndex].second) {
+      // re-ordering tuple index, since when parsing file it
+      // returns the line element in reverse order (end to begin)
+      dbltpl w_revertOrder = tuple_inverse_idx_order<dbltpl, 4, 3, 2, 1, 0>(
+          val, std::index_sequence<4, 3, 2, 1, 0>{});
+      // swap tuple element now bring it back from begin to end
+      val.swap(w_revertOrder);
+
       double x{};
       double v{};
       // fill the plot2D data profile container
@@ -376,8 +397,8 @@ void DamBreakVisualDbg::plot2dButton() {
   // 		m_x.reserve(
   // static_cast<int>(m_graph2D.m_mapValU[1].first.size()));
   // // be careful hard coded 		m_h.reserve(
-  // static_cast<int>(m_graph2D.m_mapValU[1].first.size()));  // shall retrieve
-  // value from ???
+  // static_cast<int>(m_graph2D.m_mapValU[1].first.size()));  // shall
+  // retrieve value from ???
 
   // switch case to handle different case such as: final profile/X/H
   if (eGraphFmt::XH == m_graph2D.m_graphFmt &&
@@ -389,6 +410,13 @@ void DamBreakVisualDbg::plot2dButton() {
              eFileFormat::full_result == m_graph2D.m_filFmt) {
     plot2DProfile(m_graph2D.m_graphFmt);
   } else if (eGraphFmt::XQ == m_graph2D.m_graphFmt &&
+             eFileFormat::full_result == m_graph2D.m_filFmt) {
+    plot2DProfile(m_graph2D.m_graphFmt);
+  } else if (eGraphFmt::XV == m_graph2D.m_graphFmt &&
+             eFileFormat::full_result == m_graph2D.m_filFmt) {
+    plot2DProfile(m_graph2D.m_graphFmt);
+  } else if ((eGraphFmt::XQ == m_graph2D.m_graphFmt ||
+              eGraphFmt::XH == m_graph2D.m_graphFmt) &&
              eFileFormat::dbgFormat == m_graph2D.m_filFmt) {
     // debug format (this format we plot in separate window not in the main)
     setMultipleGraph();
@@ -406,16 +434,17 @@ void DamBreakVisualDbg::saveToFile() {
   if (!fileName.isEmpty()) // set default name as ...
   {
     if (m_customPlot) {
-      m_customPlot->saveJpg(fileName + QString(".jpg"), 640, 400);
+      m_customPlot->saveJpg(fileName, /*+ QString(".jpg"),*/ 640, 400);
     } else {
-      m_plot2d->saveJpg(fileName + QString(".jpg"), 640, 400);
+      m_plot2d->saveJpg(fileName, /*+ QString(".jpg"),*/ 640, 400);
     }
   } else {
     if (m_customPlot) {
       // name set from GUI ...
-      m_customPlot->saveJpg(m_graph2D.m_graphName + QString(".jpg"), 640, 400);
+      m_customPlot->saveJpg(m_graph2D.m_graphName /*+ QString(".jpg")*/, 640,
+                            400);
     } else {
-      m_plot2d->saveJpg(m_graph2D.m_graphName + QString(".jpg"), 640, 400);
+      m_plot2d->saveJpg(m_graph2D.m_graphName /*+ QString(".jpg")*/, 640, 400);
     }
   }
 }
@@ -428,9 +457,9 @@ void DamBreakVisualDbg::loadFromFile() {
       tr("Simulation Result (*.txt);;All Files (*)"));
 
   m_graph2D.m_file1.setFileName(w_simFileName1);
-  if (!m_graph2D.m_file1.isOpen()) {
-    auto check = m_graph2D.m_file1.open(QIODevice::ReadOnly);
-  }
+  //  if (!m_graph2D.m_file1.isOpen()) {
+  //    auto check = m_graph2D.m_file1.open(QIODevice::ReadOnly);
+  //  }
 
   // 			if( !m_graph2D.m_file1.isOpen())
   // 			{
@@ -473,6 +502,14 @@ void DamBreakVisualDbg::loadFromFile() {
     }
   } else if (m_fileFmtItem->currentText() == "Full Result") {
     m_graph2D.m_filFmt = eFileFormat::full_result;
+    //   auto check = m_graphFmtItem->currentText();
+    if (m_graphFmtItem->currentText() == "X/H") {
+      m_graph2D.m_graphFmt = eGraphFmt::XH;
+    } else if (m_graphFmtItem->currentText() == "X/Q") {
+      m_graph2D.m_graphFmt = eGraphFmt::XQ;
+    } else if (m_graphFmtItem->currentText() == "X/V") {
+      m_graph2D.m_graphFmt = eGraphFmt::XV;
+    }
   } else if (m_fileFmtItem->currentText() == "Exact/Computed") {
     // readFiles2Cmp();
     auto w_simFileName2 = QFileDialog::getOpenFileName(
@@ -480,9 +517,9 @@ void DamBreakVisualDbg::loadFromFile() {
         tr("Simulation Result (*.txt);;All Files (*)"));
 
     m_graph2D.m_file2.setFileName(w_simFileName2);
-    if (!m_graph2D.m_file2.isOpen()) {
-      auto check = m_graph2D.m_file2.open(QIODevice::ReadOnly);
-    }
+    //    if (!m_graph2D.m_file2.isOpen()) {
+    //      auto check = m_graph2D.m_file2.open(QIODevice::ReadOnly);
+    //    }
 
     m_graph2D.m_filFmt = eFileFormat::exact_computed;
   }
@@ -501,6 +538,9 @@ void DamBreakVisualDbg::loadFromFile() {
   // see article of Kevin ... "Six Of The Best"
   if (m_graph2D.m_file1.isOpen())
     m_graph2D.m_file1.close();
+
+  if (m_graph2D.m_file2.isOpen())
+    m_graph2D.m_file2.close();
 
   m_bigEditor->append(QString("Finished to load data"));
   m_bigEditor->append(
@@ -584,6 +624,8 @@ QGridLayout *DamBreakVisualDbg::singleLayout() {
   m_fileFmtItem->setEditable(false); // can't be edited by user
   w_dropDownFileFmt->addWidget(w_fileFmtLabel);
   w_dropDownFileFmt->addWidget(m_fileFmtItem);
+  //  QObject::connect(m_fileFmtItem, SIGNAL(currentTextChanged(QString)), this,
+  //                   SLOT(getFileFmt(QString))); next version
 
   QVBoxLayout *w_dropDownGraphFmt = new QVBoxLayout;
   QLabel *w_graphFmtLabel = new QLabel{tr("Graph Format")};
@@ -594,6 +636,9 @@ QGridLayout *DamBreakVisualDbg::singleLayout() {
   m_graphFmtItem->setEditable(false); // can't be edited by user
   w_dropDownGraphFmt->addWidget(w_graphFmtLabel);
   w_dropDownGraphFmt->addWidget(m_graphFmtItem);
+  //  QObject::connect(m_graphFmtItem, SIGNAL(currentTextChanged(QString)),
+  //  this,
+  //                   SLOT(getGraphFmt(QString)));
 
   // NOTE not adding item, will be added in the extractProfileFromFullRes()
   QVBoxLayout *w_dropDownSimTimes = new QVBoxLayout;
@@ -650,16 +695,16 @@ QGridLayout *DamBreakVisualDbg::singleLayout() {
   // adding QCustomPlot plot to layout
   w_secondLayout->addWidget(m_plot2d); // take the ownership of the widget plot
 
-  m_bigEditor = new QTextEdit(this);
+  m_bigEditor = new QTextEdit;
   m_bigEditor->setOverwriteMode(false);
   m_bigEditor->setText("Ready to plot graph from simulation data");
   m_bigEditor->append("Press Load Button to proceed and select file");
-  QHBoxLayout *w_textEdit = new QHBoxLayout;
-  m_bigEditor->setMaximumSize(QSize(1.75 * m_centralWidget->width(), 150));
+  QVBoxLayout *w_textEdit = new QVBoxLayout;
+  // m_bigEditor->setMaximumSize(QSize(1.9 * m_centralWidget->width(), 150));
   w_textEdit->addWidget(m_bigEditor);
 
   // Add spacer item with 50px width and 1px height
-  w_textEdit->addSpacerItem(new QSpacerItem(30, 50));
+  //  w_textEdit->addSpacerItem(new QSpacerItem(30, 50));
 
   // Graph settings box (shall create a group box)
   // 		auto w_graphSettingsBox1 = setHboxLayout( QString("Graph #1"));
@@ -801,6 +846,18 @@ void DamBreakVisualDbg::plot2DProfile(const eGraphFmt aGraphFmt) {
       m_plot2d->yAxis->setLabel("H (Water Depth)");
       m_plot2d->xAxis->setRange(0., 1.);
       m_plot2d->yAxis->setRange(0.43, 1.1);
+    } else if (eGraphFmt::XQ == aGraphFmt) {
+      m_plot2d->xAxis->setLabel("X Coordinate");
+      m_plot2d->yAxis->setLabel("Q (Discharge)");
+      m_plot2d->xAxis->setRange(0.3, 0.7);
+      m_plot2d->yAxis->setRange(0., 0.8);
+    } else if (eGraphFmt::XV == aGraphFmt) {
+      m_plot2d->xAxis->setLabel("X Coordinate");
+      m_plot2d->yAxis->setLabel("V (Velocity)");
+      m_plot2d->xAxis->setRange(0.3, 0.7);
+      m_plot2d->yAxis->setRange(0., 0.8);
+    } else {
+      m_bigEditor->append("You have selected wrong graph format");
     }
 
     // Design Note
@@ -824,9 +881,9 @@ void DamBreakVisualDbg::plot2DProfile(const eGraphFmt aGraphFmt) {
     // Design Note
     //  call dambreak0Curve() which does exactly (shall be renamed by
     //  dambreak1Curve()) Should have a bunch of those function for different
-    //  graph type dambreak2Curve() --> 2 curves (compare) dambreak3Curve() -->
-    //  3 curves (compare at different time) multigraph() can plot 5 graphs
-    //  (need to set parameters)
+    //  graph type dambreak2Curve() --> 2 curves (compare) dambreak3Curve()
+    //  --> 3 curves (compare at different time) multigraph() can plot 5
+    //  graphs (need to set parameters)
 
     // find max element in both axes
     const auto w_xmax = std::max_element(w_xCoord.cbegin(), w_xCoord.cend());
@@ -836,18 +893,20 @@ void DamBreakVisualDbg::plot2DProfile(const eGraphFmt aGraphFmt) {
         std::min_element(w_varValues.cbegin(), w_varValues.cend());
 
     // just a test, already set in SingleLayout
-    //       m_plot2d->xAxis->setRange(0./*min*/, *w_xmax/*max*/); //
-    //       x-coordinate m_plot2d->yAxis->setRange(*w_valmin/*min*/,
-    //       *w_valmax/*max*/);   //
+    m_plot2d->xAxis->setRange(0. /*min*/, *w_xmax /*max*/); //
+    //       x-coordinate
+    m_plot2d->yAxis->setRange(*w_valmin /*min*/, *w_valmax);
+    //    *w_valmax/*max*/);   //
 
     // NOTE
     //  for the current version all hard coded, fix in future version
     //  now put all effort on the a first version of the plotting feature
     // set axes ranges, so we see all data:
-    m_plot2d->xAxis->setRange(0., 1.);
-    m_plot2d->yAxis->setRange(0.43, 1.1);
+    // m_plot2d->xAxis->setRange(0., 1.);
+    // m_plot2d->yAxis->setRange(0.43, 1.1);
 
     // ready to plot
+    m_plot2d->graph()->rescaleAxes();
     m_plot2d->graph()->setData(w_xCoord, w_varValues);
   }
   //     else // debug file format and stepping mode (under construction)
@@ -867,6 +926,10 @@ void DamBreakVisualDbg::plot2DProfile(const eGraphFmt aGraphFmt) {
 
 // Eventually, user should be able to set the step value (default=5)
 // DESIGN NOTE display in the main window
+// IMPORTANT use only for Debug format result file
+// user have selected 'File Format' = Debug contains values
+// at mid step and final step in a 2-columns format (A|Q)
+// This version support (display) only values of the final step.
 void DamBreakVisualDbg::plot2DProfile() // m_plot2d window
 {
   m_bigEditor->append("******* Wave Profile at Iteration: " +
@@ -875,8 +938,8 @@ void DamBreakVisualDbg::plot2DProfile() // m_plot2d window
   // debug file format and stepping mode
   if (eGraphFmt::XH == m_graph2D.m_graphFmt) {
     // Lambda capture local variable by value
-    // Copies of local variable returned by the function (5 is the step value by
-    // default) Access copies of local variables at the time the lambda was
+    // Copies of local variable returned by the function (5 is the step value
+    // by default) Access copies of local variables at the time the lambda was
     // created.
     std::function<int(int)> offset_5 = make_offseter(m_graph2D.iterationStep);
 
@@ -890,12 +953,12 @@ void DamBreakVisualDbg::plot2DProfile() // m_plot2d window
     m_plot2d->yAxis->setRange(0., *w_maxH); // H-value
 
     m_plot2d->graph()->setData(
-        m_graph2D.m_qvecX,
-        QVector<double>::fromStdVector(
+        m_graph2D.m_qvecX,              // x-coord
+        QVector<double>::fromStdVector( // variable values
             m_graph2D.m_mapValU[m_stepGraphCounter += 5].first));
   } else if (eGraphFmt::XQ == m_graph2D.m_graphFmt) {
-    // Copies of local variable returned by the function (5 is the step value by
-    // default) Access copies of local variables at the time the lambda was
+    // Copies of local variable returned by the function (5 is the step value
+    // by default) Access copies of local variables at the time the lambda was
     // created.
     std::function<int(int)> offset_5 = make_offseter(m_graph2D.iterationStep);
 
@@ -913,8 +976,8 @@ void DamBreakVisualDbg::plot2DProfile() // m_plot2d window
 
     // set data for plotting
     m_plot2d->graph()->setData(
-        m_graph2D.m_qvecX,
-        QVector<double>::fromStdVector(
+        m_graph2D.m_qvecX,              // x-coord
+        QVector<double>::fromStdVector( // variable values 'U2'
             m_graph2D.m_mapValU[m_stepGraphCounter += 5].second));
   } else {
     QMessageBox w_msg;
@@ -925,6 +988,34 @@ void DamBreakVisualDbg::plot2DProfile() // m_plot2d window
 
   // call replot() it sure is!!
   m_plot2d->replot();
+}
+
+void DamBreakVisualDbg::getFileFmt(QString aFileFmt) {
+  if (aFileFmt == "Debug") {
+    m_graph2D.m_filFmt = eFileFormat::dbgFormat;
+  } else if (aFileFmt == "Final Profile") {
+    m_graph2D.m_filFmt = eFileFormat::var_profile;
+  } else if (aFileFmt == "Full Result") {
+    m_graph2D.m_filFmt = eFileFormat::full_result;
+  } else if (aFileFmt == "Exact/Computed") {
+    m_graph2D.m_filFmt = eFileFormat::exact_computed;
+  } else {
+    std::cerr << "Not supported format\n";
+  }
+}
+
+void DamBreakVisualDbg::getGraphFmt(QString aGraphFmt) {
+  if (aGraphFmt == "XH") {
+    m_graph2D.m_graphFmt = eGraphFmt::XH;
+  } else if (aGraphFmt == "XQ") {
+    m_graph2D.m_graphFmt = eGraphFmt::XQ;
+  } else if (aGraphFmt == "XV") {
+    m_graph2D.m_graphFmt = eGraphFmt::XV;
+  } else if (aGraphFmt == "Exact/Computed") {
+    //   m_graph2D.m_graphFmt = eFileFormat::exact_computed;
+  } else {
+    std::cerr << "Not supported format\n";
+  }
 }
 
 void DamBreakVisualDbg::getProfileTimes(const QString &aTimeVal) {
@@ -977,11 +1068,36 @@ void DamBreakVisualDbg::setMultipleGraph() {
   // does it make sense? not sure
   m_customPlot = new QCustomPlot;
 
+  // 2d plot (plot x-axis and y-axis)
+  m_customPlot->setGeometry(
+      200, 100, 640, 400); // window size when poping-up with offset in x/y
+  m_customPlot->setWindowTitle(QString{"DamBreak Wave Propagation"});
+
+  // first we create and prepare a text layout element:
+  QCPTextElement *title = new QCPTextElement(m_customPlot);
+  title->setText(QString{"HLL Riemann Solver"});
+  title->setFont(QFont("sans", 9, QFont::Bold));
+  // then we add it to the main plot layout:
+  m_customPlot->plotLayout()->insertRow(
+      0); // insert an empty row above the axis rect
+  m_customPlot->plotLayout()->addElement(
+      0, 0, title); // place the title in the empty cell we've just created
+
+  m_customPlot->xAxis->setLabel(QString{"X Coordinate"});
+  if (eGraphFmt::XH == m_graph2D.m_graphFmt) // X/H profile
+  {
+    m_customPlot->yAxis->setLabel(QString{"H (Water Depth)"});
+  } else {
+    m_customPlot->yAxis->setLabel(QString{"Q (Discharge)"});
+  }
+
+  // loop on all supported graph
   auto jj = 0;
   for (auto i = 0; i < nbGraph; ++i) {
     if (m_activate[i]->isChecked()) {
       m_customPlot->addGraph();
       auto w_graphLineType = m_lineType[i]->currentText();
+
       if (w_graphLineType == QString{"Dash Line"}) {
         m_customPlot->graph(i)->setLineStyle(QCPGraph::LineStyle::lsLine);
       } else if (w_graphLineType == QString{"Dot Line"}) {
@@ -994,8 +1110,8 @@ void DamBreakVisualDbg::setMultipleGraph() {
       // we have to curve but data extract form files.
       //   m_graph2D.m_xVar
 
-      //   m_customPlot->graph(i)->setData(m_graph2D.m_qvecX, // increment graph
-      //   no by 1 for legend display and next graph
+      //   m_customPlot->graph(i)->setData(m_graph2D.m_qvecX, // increment
+      //   graph no by 1 for legend display and next graph
       //     QVector<double>::fromStdVector(m_graph2D));
 
       // ======================== DEBUG FORMAT
@@ -1045,27 +1161,50 @@ void DamBreakVisualDbg::setMultipleGraph() {
         // default graph format is X/H (it's the only one )
         if (i == 0) // temporary fix
         {
-          m_customPlot->graph(i)->setPen(
-              QColor(m_colorCurve[i]->currentText()));
-          m_customPlot->graph(i)->setLineStyle(
-              QCPGraph::lsLine); // lsline(each point attached by line), lsnone
-                                 // (no point attached similar to dot)
+          QPen w_pen0;
+          w_pen0.setStyle(Qt::DotLine);
+          w_pen0.setWidth(1);
+          w_pen0.setColor(QColor(180, 180, 180));
+          m_customPlot->graph(0)->setPen(w_pen0);
+          m_customPlot->graph(0)->setBrush(QBrush(QColor(255, 50, 30, 20)));
+          // let the ranges scale themselves so graph 0 fits perfectly in the
+          // visible area:
+          m_customPlot->graph(0)->rescaleAxes();
+          // QColor(m_colorCurve[i]->currentText()));
+          //  m_customPlot->graph(i)->setLineStyle(
+          //      QCPGraph::lsLine); // lsline(each point attached by line),
+          // lsnone (no point attached similar to dot)
           // legend name (first curve)
+
           m_customPlot->graph(i)->setName(QString{"Exact Solution"});
           setPlotParams(
               QString{"H(Water Depth)"},
               m_graph2D.m_yMaxValue); // be careful with hard coding 2.?
+
           // ... to be completed
           m_customPlot->graph(i)->setData(m_graph2D.m_qvecX,
                                           m_graph2D.m_ValuesCurve1);
           continue;
         } else // second graph
         {
-          m_customPlot->graph(i)->setPen(
-              QColor(m_colorCurve[i]->currentText()));
-          m_customPlot->graph(i)->setLineStyle(
-              QCPGraph::lsImpulse); // lsline(each point attached by line),
-                                    // lsnone (no point attached similar to dot)
+          // add theory curve graph:
+          QPen w_pen1;
+          w_pen1.setStyle(Qt::DashLine);
+          w_pen1.setWidth(2);
+          w_pen1.setColor(Qt::blue);
+          m_customPlot->graph(i)->setPen(w_pen1);
+          // same thing for graph 1, but only enlarge ranges (in case graph 1 is
+          // smaller than graph 0):
+          m_customPlot->graph(1)->rescaleAxes(true);
+
+          //          m_customPlot->graph(i)->setPen(
+          //              QColor(m_colorCurve[i]->currentText()));
+          //          m_customPlot->graph(i)->setLineStyle(
+          //              QCPGraph::lsImpulse); // lsline(each point attached by
+          //              line),
+          // lsnone (no point attached similar to
+          // dot)
+
           // legend name (second curve)
           m_customPlot->graph(i)->setName(QString("Computed Solution"));
           setPlotParams(
@@ -1074,9 +1213,9 @@ void DamBreakVisualDbg::setMultipleGraph() {
           m_customPlot->graph(i)->setData(m_graph2D.m_qvecX,
                                           m_graph2D.m_ValuesCurve2);
         }
-      } // exact/computed
-      else {
-        continue;
+      }           // exact/computed
+      else {      // not sure about this one, really need it?
+        continue; // what???
       }
     } // for-loop
 
@@ -1115,12 +1254,16 @@ void DamBreakVisualDbg::setMultipleGraph() {
 // Compare 2-graph (e.g. exact/computed)
 // file format: two-columns x-H,Q,...
 void DamBreakVisualDbg::dambreak2Curve() {
+  // open file for reading
+  m_graph2D.m_file1.open(QFileDevice::ReadOnly);
+  if (!m_graph2D.m_file1.isOpen())
+    return;
   // some utility to read file
   QTextStream w_data2Read1(&m_graph2D.m_file1);
   QString line;
   // if you don't do that, first time push_back is call
   // vector resize, not really efficient
-  m_graph2D.m_xVar1.reserve(101); // debugging purpose
+  m_graph2D.m_xVar1.reserve(EMCNEILCTE::value); // debugging purpose
 
   // reading line after one
   while (w_data2Read1.readLineInto(&line)) {
@@ -1133,14 +1276,22 @@ void DamBreakVisualDbg::dambreak2Curve() {
     auto w_listDbl = line.split(" ");
 
     // push in a map or vector (move semantic)
+    // not sure if we should use move? because return a temporary
+    // since C++17 copy elison, return (prvalue: pure reading value),
+    // by calling move we prevent this feature
+    // here we push a pair ...
     m_graph2D.m_xVar1.push_back({w_listDbl.front().toDouble() /*x*/,
                                  w_listDbl.back().toDouble() /*variable*/});
   } // while-loop
 
+  // open file for reading
+  m_graph2D.m_file2.open(QFileDevice::ReadOnly);
+  if (!m_graph2D.m_file2.isOpen())
+    return;
   QTextStream w_data2Read2(&m_graph2D.m_file2);
   // if you don't do that, first time push_back is call
   // vector resize, not really efficient
-  m_graph2D.m_xVar2.reserve(101); // debugging purpose
+  m_graph2D.m_xVar2.reserve(EMCNEILCTE::value); // debugging purpose
 
   // reading line after one
   while (w_data2Read2.readLineInto(&line)) {
@@ -1219,7 +1370,8 @@ void DamBreakVisualDbg::dambreak2Curve() {
   //       std::transform(w_vecurvesData.cbegin(), w_vecurvesData.cend(),
   //       m_graph2D.m_xVar1.begin(),
   //         [](const auto& aTpl) -> std::pair<double, double> { double x;
-  //         double h;  std::tie(x, h, std::ignore, std::ignore); return{ x,h };
+  //         double h;  std::tie(x, h, std::ignore, std::ignore); return{ x,h
+  //         };
   //         });
   //
   //       // Curve #2
@@ -1227,12 +1379,14 @@ void DamBreakVisualDbg::dambreak2Curve() {
   //       std::transform(w_vecurvesData.cbegin(), w_vecurvesData.cend(),
   //       m_graph2D.m_xVar2.begin(),
   //         [](const auto& aTpl) -> std::pair<double, double> { double x;
-  //         double h;  std::tie(std::ignore, std::ignore, x, h); return{ x,h };
+  //         double h;  std::tie(std::ignore, std::ignore, x, h); return{ x,h
+  //         };
   //         });
 
   // x-coordinate
   //       m_graph2D.m_qvecX.reserve(m_graph2D.m_xVar1.size());
-  //       std::transform(m_graph2D.m_xVar1.cbegin(), m_graph2D.m_xVar1.cend(),
+  //       std::transform(m_graph2D.m_xVar1.cbegin(),
+  //       m_graph2D.m_xVar1.cend(),
   //       // x-coord are identical for both graph
   //         std::back_inserter(m_graph2D.m_qvecX),
   //         [](std::pair<double, double> aPairVal)
@@ -1267,44 +1421,51 @@ void DamBreakVisualDbg::dambreak2Curve() {
 
 // NOTE: lot of hard coding, all these value will be set
 // from simulation GUI (on construction)
-void DamBreakVisualDbg::loadData2Show() {
-  // DESIGN NOTE
-  //  this is a piece of crapt!!! need a serious refctoring!!
-  // Not sure about this one!! need to think about it!
+void qplot::DamBreakVisualDbg::generateXcoord(const eDataType &aDatatype) {
   std::vector<double> w_X; // shall we use reserve? yes i do think so
   // E. McNeil data
-  if (m_graph2D.m_dataType == eDataType::EMcNeil) {
-    w_X.reserve(101); // since we are using back_inserter (push_back)
+  if (aDatatype == eDataType::EMcNeil) {
+    w_X.reserve(
+        EMCNEILCTE::value); // since we are using back_inserter (push_back)
     const auto w_dx = 10.;
     const auto w_startX = -10.;
-    const unsigned w_nbPts = 101;
+    // const unsigned w_nbPts = EMCNEILCTE::value;
     std::generate_n(std::back_inserter(w_X),              // start
-                    w_nbPts,                              // number of elements
+                    EMCNEILCTE::value,                    // number of elements
                     NumSequence<double>(w_startX, w_dx)); // generate values
 
-    // need QVector to be use in QtCustomPlot, let's create one with the helper
+    // need QVector to be use in QtCustomPlot, let's create one with the
+    // helper (return a temporary, since C++17 copy elison)
+    // unmaterialize to xvalue (eXpiring value)
     m_graph2D.m_qvecX = QVector<double>::fromStdVector(w_X);
-    assert(m_graph2D.m_qvecX.size() == w_nbPts);
+    assert(m_graph2D.m_qvecX.size() == EMCNEILCTE::value);
   } else // only 2 supported for now
   {
-    // std::vector<double> w_X;  shall we use reserve? yes i do think so
-    w_X.reserve(101); // since we are using back_inserter (push_back)
+    // shall we use reserve? yes since we are using back_inserter (push_back)
+    w_X.reserve(EMCNEILCTE::value);
     const auto w_dx = 0.01;
     const auto w_startX = -0.01;
-    const unsigned w_nbPts = 101;
+    // const unsigned w_nbPts = EMCNEILCTE::value;
     std::generate_n(std::back_inserter(w_X),              // start
-                    w_nbPts,                              // number of elements
+                    EMCNEILCTE::value,                    // number of elements
                     NumSequence<double>(w_startX, w_dx)); // generate values
 
-    // need QVector to be use in QtCustomPlot, let's create one with the helper
+    // need QVector to be use in QtCustomPlot, let's create one with the
+    // helper (return a temporary, since C++17 copy elison)
+    // unmaterialize to xvalue (eXpiring value)
     m_graph2D.m_qvecX = QVector<double>::fromStdVector(w_X);
-    assert(m_graph2D.m_qvecX.size() == w_nbPts);
+    assert(m_graph2D.m_qvecX.size() == EMCNEILCTE::value);
   }
+}
 
-  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void DamBreakVisualDbg::loadData2Show() {
+  // DESIGN NOTE
+  // in this version we only use EMcNeil data, set to it by default (ctor init)
+  // but in future version this field is set by user from GUI
+  // maybe we should make this call in setMultipleGraph()
+  // I think its the only place we use it
+  generateXcoord(m_graph2D.m_dataType);
 
-  // std::chrono::time_point<std::chrono::system_clock> start, end;
-  //  auto start = std::chrono::system_clock::now();
   switch (m_graph2D.m_filFmt) {
   case qplot::DamBreakVisualDbg::eFileFormat::dbgFormat:
     // extract data from result file
@@ -1314,25 +1475,22 @@ void DamBreakVisualDbg::loadData2Show() {
   case qplot::DamBreakVisualDbg::eFileFormat::var_profile:
     readDataFromFile(m_graph2D.m_file1); // format: X/H, X/V
     break;
-  case qplot::DamBreakVisualDbg::eFileFormat::full_result:
-    readFullResultFile(m_graph2D.m_file1); // vector<pair<Time, values>>, X/H or
-                                           // X/Q or X/V user select
+  case qplot::DamBreakVisualDbg::eFileFormat::full_result: {
+    readFullResultFile(m_graph2D.m_file1); // vector<pair<Time, values>>, X/H
+                                           // or X/Q or X/V user select
     extractSimTimes(); // extract times value and fill combo box
     // extractProfileFromFullRes();
     break;
+  }
   case qplot::DamBreakVisualDbg::eFileFormat::exact_computed:
+    // Open files for reading data (files opened in 'loadFromFile')
+    // but it shouldn't be, all files shall be opened in this function
+    // fill data structure 'GraphPrm' to be used to plot graph
     dambreak2Curve();
     break;
   default: // nothing to do for now (not supported format)
     break;
   }
-
-#if 0
-      // not sure if it is relevant anymore!!!
-      auto end = std::chrono::system_clock::now();
-      long long elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>
-        (end - start).count();
-#endif
 
   m_bigEditor->append(QString{"Finished preparing data to view"});
 }
@@ -1401,7 +1559,7 @@ void DamBreakVisualDbg::extractSimTimes() {
   // the full result (user may want to check or display different profile at
   // different time)
   m_graph2D.m_simTimesList.reserve(70);
-  for (const auto w_time : m_graph2D.m_vecTimeValues) {
+  for (const auto &w_time : m_graph2D.m_vecTimeValues) {
     m_graph2D.m_simTimesList.push_back(QString::number(w_time.first));
   }
 

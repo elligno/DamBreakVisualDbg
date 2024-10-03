@@ -34,7 +34,7 @@ class DbgLogger : public Singleton<DbgLogger> {
 
 public:
   /** open file for writing (file name as default)*/
-  void open(const std::string &aFilename = "LoggerFile.txt");
+  void open(/*const std::string &aFilename = "LoggerFile.txt"*/);
   bool isOpen() { return m_opened; }             /*< check file status*/
   void close();                                  /*< close when finish writing*/
   void write2file(const std::string &aMsg = ""); // writing to file

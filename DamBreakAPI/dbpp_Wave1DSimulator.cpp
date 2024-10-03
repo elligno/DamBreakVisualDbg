@@ -719,23 +719,25 @@ void Wave1DSimulator::timeLoop() // run equivalent
   using namespace dbpp;
 
   // Working debug file for this simulation
+  // initialize file name and file location
+  // and file ready to be open for writing
   dbpp::DbgLogger::instance()->setDbgWorkingFile();
 
   // EMcNeilAlgo timestep()
   // Symetry: open/close at same location you write
   // initialize the sole instance of the logger (global instance)
-  dbpp::DbgLogger *w_dbgLog = dbpp::DbgLogger::instance();
-  auto w_fileName = Simulation::instance()->getAlgorithmName();
-  w_fileName += ".txt";
-  w_dbgLog->open(
-      w_fileName
-      /*w_save_file_name*/); // be careful because this is a default arg
-                             // which is not valid anymore but still in use
+  // dbpp::DbgLogger *w_dbgLog = dbpp::DbgLogger::instance();
+  //  auto w_fileName = Simulation::instance()->getAlgorithmName();
+  //  w_fileName += ".txt";
+  //  w_dbgLog->open(
+  //      w_fileName
+  // w_save_file_name);  be careful because this is a default arg
+  // which is not valid anymore but still in use
   // sanity check
-  if (!w_dbgLog->isOpen()) {
-    dbpp::Logger::instance()->OutputError(
-        std::string{"Problem to open the debug log file\n"}.data());
-  }
+  //  if (!w_dbgLog->isOpen()) {
+  //    dbpp::Logger::instance()->OutputError(
+  //        std::string{"Problem to open the debug log file\n"}.data());
+  //  }
 
   // for code clarity
   dbpp::Simulation *w_sim = dbpp::Simulation::instance();
@@ -823,7 +825,7 @@ void Wave1DSimulator::timeLoop() // run equivalent
   // to store file name for writing and then at some place open
   // with this file name. In its actual version, its hard to find
   // out where the open call is done.
-  dbpp::DbgLogger::instance()->close();
+  //  dbpp::DbgLogger::instance()->close();
 }
 
 std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {

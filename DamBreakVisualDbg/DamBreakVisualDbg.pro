@@ -14,7 +14,12 @@ SOURCES += \
     dambreakvisualdbg.cpp
 
 HEADERS += \
+    DataLoader.h \
+    Enumerators.h \
     GenNumber.hpp \
+    GraphSettingsPrm.h \
+    GraphVisualizer.h \
+    VisualDbgUtilities.hpp \
     dambreakvisualdbg.h
 
 FORMS += \

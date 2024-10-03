@@ -35,6 +35,14 @@ void EMcNeil1d_mod::timeStep() {
   using namespace std;
   using namespace std::placeholders;
 
+  // require resource
+  dbpp::DbgLogger::instance()->open();
+  // sanity check
+  if (!dbpp::DbgLogger::instance()->isOpen()) {
+    dbpp::Logger::instance()->OutputError( // C++17 return char* and not const
+        std::string{"Couldn't open file for writing debug info\n"}.data());
+  }
+
   // first step of two-phase algorithm
   predictor();
 
@@ -77,6 +85,11 @@ void EMcNeil1d_mod::timeStep() {
   // notify list of section flow and update GlobalDiscretization and
   // BoundaryCondition
   setState();
+
+  // release respource
+  if (dbpp::DbgLogger::instance()->isOpen()) {
+    dbpp::DbgLogger::instance()->close();
+  }
 }
 
 void EMcNeil1d_mod::setAmont(vecdbl &aU1, vecdbl &aU2) {

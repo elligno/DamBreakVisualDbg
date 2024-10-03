@@ -44,6 +44,15 @@ private:
 #endif
 
 namespace {
+
+/**
+ * @brief Helper to define some application constant
+ * @tparam T constant type (template automatic type deduction)
+ */
+template <auto v> struct AppConstant { static constexpr auto value = v; };
+// E. McNeil constant used to validate code
+using EMCNEILCTE = AppConstant<101>;
+
 // Access copies of local variables at the time the lambda was created.
 // Every call to make_offseter returns a new lambda function object through
 // the std::function< > function wrapper. This is the safest form of local
@@ -58,7 +67,13 @@ template <typename T> T read(std::istringstream &is) {
   return t;
 }
 
-template <typename... Args> std::tuple<Args...> parse(std::istringstream &is) {
+// template <typename... Args> std::tuple<Args...> parse(std::istringstream &is)
+// {
+//  return std::make_tuple(read<Args>(is)...);
+//}
+
+// let compiler deduce return type
+template <typename... Args> auto parse(std::istringstream &is) {
   return std::make_tuple(read<Args>(is)...);
 }
 
@@ -66,21 +81,18 @@ template <typename... Args> std::tuple<Args...> parse(std::istringstream &is) {
 // Use utility function to parse line (return a tuple with
 // value in reverse order tuple index 4->0 instead of 0->4)
 // Return a vector of values corresponding at simulation time.
-template <typename... Args> // let compiler deduce return type (maybe i should
-                            // use decltype(auto)?)
-                            auto
-                            extractLineValuesTmplt(QTextStream &afileStream,
-                                                   QString &&aFirstLine) {
+template <typename... Args> // let compiler deduce return type
+auto extractLineValuesTmplt(QTextStream &afileStream, QString &&aFirstLine) {
   QString w_line2Read{std::move(aFirstLine)};
   QVector<std::tuple<Args...>> w_vecoftpl;
   w_vecoftpl.reserve(101); // hard coded!!!
   do {
     // replace sequence of white by a single one
     auto w_lineTrimmed = w_line2Read.simplified().toStdString();
-    std::istringstream w_iis{
-        w_lineTrimmed}; // step to next white space one after one
-    auto w_tplResult =
-        parse<Args...>(w_iis); // parse a line with format X|H|A|...
+    // step to next white space one after one
+    std::istringstream w_iis{w_lineTrimmed};
+    // parse a line with format X|H|A|...
+    auto w_tplResult = parse<Args...>(w_iis);
     w_vecoftpl.push_back(
         std::move(w_tplResult)); // not sure we are moving something!! No, see
                                  // Scott Meyer's book item #25
@@ -99,7 +111,7 @@ Tuple tuple_inverse_idx_order(const Tuple &t, std::index_sequence<Is...>) {
 
 namespace qplot {
 using dbltpl = std::tuple<double, double, double, double, double>;
-// using dbltpl3 = std::tuple<double, double, double>;
+// using dbltpl3Col = std::tuple<double, double, double>;
 
 class DamBreakVisualDbg
     : public QMainWindow // shall inherit from jb::Observer class
@@ -158,6 +170,8 @@ private slots:
   void loadFromFile();  // file according to user selection
   void plot2DProfile(); // stepping mode
   void getProfileTimes(const QString &);
+  void getFileFmt(QString);
+  void getGraphFmt(QString);
 
 private:
   Ui::DamBreakVisualDbg *ui;
@@ -173,7 +187,7 @@ private:
 
   // GUI ... to be completed
   QCustomPlot *m_customPlot; // call qt custom plot package
-  QCustomPlot *m_plot2d{nullptr};
+  QCustomPlot *m_plot2d;
   QWidget *m_centralWidget; // central area of the win widget
   QTextEdit *m_bigEditor;   //
 
@@ -242,10 +256,12 @@ private:
         eFileFormat::dbgFormat}; /* file contain the final profile that user
                                     want to view*/
     eGraphFmt m_graphFmt{eGraphFmt::XH};      /* default */
-    eDataType m_dataType{eDataType::EMcNeil}; /* default */
+    eDataType m_dataType{eDataType::EMcNeil}; /* default (temporary, we need to
+                                                 be able to set this field)*/
     QStringList m_simTimesList;
-    constexpr static int iterationStep = 5;
-    void setYaxisLabel(const eGraphFmt aYaxis2Set) {
+    // inline and a definition since C++17
+    static constexpr int iterationStep = 5;
+    void setYaxisLabel(/*const eGraphFmt aYaxis2Set*/) {
       switch (m_graphFmt) {
       case DamBreakVisualDbg::eGraphFmt::XH:
         m_yaxisLabel = QString{"H(Water Depth)"}; // w_yAxisLabel[0];
@@ -322,5 +338,6 @@ private:
 #endif // 0
 
   bool w_bStartReadVal;
+  void generateXcoord(const eDataType &aDatatype);
 };
 } // namespace qplot
