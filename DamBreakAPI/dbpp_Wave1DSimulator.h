@@ -175,7 +175,7 @@ public:
     // not sure why it do anything else than creating the numerical scheme
     m_numRep = aNumAlgo;
   }
-  std::shared_ptr<dbpp::EMcNeil1D> getNumericalLAgorithm() const {
+  std::shared_ptr<dbpp::EMcNeil1D> getNumericalAlgorithm() const {
     return m_numRep;
   }
 

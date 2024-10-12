@@ -1,19 +1,21 @@
 #include <stdlib.h> // getenv_s
 // C++ includes
+#include <filesystem> // boost file system utility
 #include <fstream>
 #include <iostream>
 #include <sstream> //istringstream
 // stl include
 #include <map>
 #include <vector>
-//#include <filesystem>  remove boost filesystem
-// boost includes
-#include <boost/filesystem.hpp> // boost file system utility
 // Boost string algorithm
 #include <boost/algorithm/string.hpp> // contains()
 // Qt includes
 #include <QFile>
 #include <QTextStream>
+// App include
+//#include "VisualDbgUtilities.hpp"
+// lib API
+#include "Utility/dbpp_AppConstant.hpp"
 
 namespace qplot {
 // usefull typedef (actually we don't really need it, just the "auto" keyword)
@@ -75,7 +77,7 @@ void PrepareSimRes2View(
                                     //  Hard to use incorrectly"!!
   using namespace std;
 
-  // tested stuff to read from data source file
+  // read data source file
   ifstream w_file2read(aFilename);
   if (!w_file2read.is_open()) {
     std::cerr << "Cannot open file for reading simulation data\n";
@@ -85,11 +87,15 @@ void PrepareSimRes2View(
   w_lineRed.reserve(50); // SSO Short String Optimization
   int w_iterNb = 1;      // initialization
 
-  // some container to store data for future use
-  vector<double> w_vU1;  // A
-  vector<double> w_vU2;  // Q
-  vector<double> w_vU1p; // Ap
-  vector<double> w_vU2p; // Qp
+  // store data for future use
+  vector<double> w_vU1;
+  w_vU1.reserve(dbpp::EMCNEILNbSections::value); // A
+  vector<double> w_vU2;
+  w_vU2.reserve(dbpp::EMCNEILNbSections::value); // Q
+  vector<double> w_vU1p;
+  w_vU1p.reserve(dbpp::EMCNEILNbSections::value); // Ap
+  vector<double> w_vU2p;
+  w_vU2p.reserve(dbpp::EMCNEILNbSections::value); // Qp
 
   // line-by-line
   while (!w_file2read.eof()) {
@@ -101,9 +107,6 @@ void PrepareSimRes2View(
     // const std::string w_textSearch = "Iteration"; instead of contains
     if (boost::contains(w_lineRed,
                         "Iteration number")) { // w_lineRed.start_with("++++");
-      // 				vector<string> w_strs;
-      // 				auto w_splitStr = boost::split(w_strs,
-      // w_lineRed, boost::is_any_of("  ")); // split according to white space
       // last element shall be iteration number  Iteration number x
 
       std::istringstream w_iss{w_lineRed}; // white space tokens as default
@@ -127,13 +130,8 @@ void PrepareSimRes2View(
     }
     if (w_lineRed.empty()) // second line after iteration number
       continue;
-    //	if( boost::contains( w_lineRed, "p")) // n+1/2 U1p[3]: 2.12
-    if (w_lineRed.find('p') != std::string::npos) {
-      // 				std::vector<std::string> w_strs;
-      // 				boost::split( w_strs, w_lineRed,
-      // boost::is_any_of("  "));
 
-      // some test on splitting string without using boost split
+    if (w_lineRed.find('p') != std::string::npos) {
       // NOTE std::istringstream operator>> has an interesting property
       // ...
       std::istringstream w_iss{w_lineRed}; // white space tokens as default
@@ -146,7 +144,7 @@ void PrepareSimRes2View(
       // 				w_strs.erase( std::remove_if(
       // w_strs.begin(), w_strs.end(),  // logical end
       // std::bind( &std::string::empty, std::placeholders::_1)), w_strs.end());
-      // // physical end
+      // physical end
       //				BOOST_ASSERT(w_strs.size() == 4 &&
       //"Removed empty string successfully");
       w_vU1p.push_back(std::stod(
@@ -184,5 +182,9 @@ void PrepareSimRes2View(
   aMapU12.insert(
       make_pair(w_iterNb, // current iteration number
                 make_pair(move(w_vU1), move(w_vU2)))); // values extracted
+
+  // acquisition and release resource (symetric)
+  if (w_file2read.is_open())
+    w_file2read.close();
 }
 } // namespace qplot
