@@ -17,6 +17,7 @@ DBppGuiAppl15/Makefile.Release
 \Graph
 \debug
 \release
+\.vscode
 DamBreakAPI\debug
 DamBreakAPI\release
 DamBreakVisualDbg\debug
@@ -32,3 +33,4 @@ DBppGuiAppl15/debug/moc_dbppguiappl15.cpp
 DamBreakVisualDbg/Makefile.Debug
 DamBreakVisualDbg/Makefile.Release
 DamBreakVisualDbg/debug/moc_dambreakvisualdbg.cpp
+DamBreakVisualDbg/debug/moc_predefs.h

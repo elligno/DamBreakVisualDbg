@@ -126,7 +126,7 @@ DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
   ui->discrdata_combo->addItem(QString{"hudson"});
 
 #if 0 // to do in future version
-  // Some tests (QThread is not a thread, its a wrapper around the thread)
+  // (QThread is not a thread, its a wrapper around the thread)
   // provide services with signal and slot.
   //
   dbpp::Worker* worker = new dbpp::Worker();
@@ -144,6 +144,8 @@ DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
   connect(&workerThread, &QThread::finished, worker, &QObject::deleteLater);
   workerThread.start();
 #endif
+
+  // QCustomPlot create instance and basic setup (ready to plot)
 }
 
 DBppGuiAppl15::~DBppGuiAppl15() {
@@ -165,7 +167,7 @@ DBppGuiAppl15::~DBppGuiAppl15() {
   dbpp::DbgLogger::instance()->release();
 }
 
-// some thread test!!
+// run the simulation in separate thread (timeLoop() is run())
 void DBppGuiAppl15::runSimulation() {
   // we start it in a separate thread to keep the UI responding
   auto workerThread = new WorkerThread([=]() { m_waveSim->timeLoop(); }, this);

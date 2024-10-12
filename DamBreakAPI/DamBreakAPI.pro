@@ -44,7 +44,6 @@ SOURCES += \
     Utility/dbpp_Hydro1DLogger.cpp \
     Utility/dbpp_SimulationUtility.cpp \
     Utility/dbpp_TestLogger.cxx \
-    Utility/dbpp_Worker.cpp \
     dbpp_Wave1DSimulator.cpp
 
 HEADERS += \
@@ -87,6 +86,7 @@ HEADERS += \
     SfxTypes/dbpp_cellFace.h \
     SfxTypes/dbpp_gridLattice.h \
     SfxTypes/dbpp_scalarField.h \
+    Utility/dbpp_AppConstant.hpp \
     Utility/dbpp_CommandLineArgs.h \
     Utility/dbpp_EMcNeilUtils.h \
     Utility/dbpp_EnvVarMgr.h \
@@ -96,7 +96,6 @@ HEADERS += \
     Utility/dbpp_SimulationUtility.h \
     Utility/dbpp_SomeUtilities.hpp \
     Utility/dbpp_TestLogger.h \
-    Utility/dbpp_Worker.h \
     dbpp_Wave1DSimulator.h
 
 INCLUDEPATH += $(BOOST_ROOT)

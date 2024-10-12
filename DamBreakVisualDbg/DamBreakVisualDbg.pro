@@ -9,6 +9,8 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    DataLoader.cpp \
+    GraphVisualizer.cpp \
     TestReadRes.cpp \
     main.cpp \
     dambreakvisualdbg.cpp
@@ -16,6 +18,7 @@ SOURCES += \
 HEADERS += \
     DataLoader.h \
     Enumerators.h \
+    FunctionLambda.hpp \
     GenNumber.hpp \
     GraphSettingsPrm.h \
     GraphVisualizer.h \
@@ -27,6 +30,7 @@ FORMS += \
 
 INCLUDEPATH += $$PWD/../../../QCustomPlot
 INCLUDEPATH += $(BOOST_ROOT)
+INCLUDEPATH += $$PWD/../DamBreakAPI
 LIBS += -L$$PWD/../bin/ -lqcustomplotd2
 LIBS += -L$(BOOST_ROOT)/lib64-msvc-14.2/lib -lboost_filesystem-vc142-mt-gd-x64-1_82
 
