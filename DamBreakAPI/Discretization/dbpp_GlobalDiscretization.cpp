@@ -134,7 +134,7 @@ void GlobalDiscretization::createNodalVal() {
   m_nval.reserve(NbGlobalNode);
 
   // loop on the number of sections
-  for (int i = 0; i < NbGlobalNode; ++i) {
+  for (int32 i = 0; i < NbGlobalNode; ++i) {
     // add nodal variable to pointer container
     if (i == 0) // tied node
     {
@@ -227,7 +227,7 @@ void GlobalDiscretization::init(const ListSectFlow *aListSections) {
   U2 = (double *)malloc(NbSections * sizeof(double));
   //	Allocation de mémoire des paramètres du modèle hydrodynamique
   H = (double *)malloc(NbSections * sizeof(double));
-  h = (double *)malloc(NbSections * sizeof(double));
+  //  h = (double *)malloc(NbSections * sizeof(double));
   X = (double *)malloc(NbSections * sizeof(double));
   Z = (double *)malloc(NbSections * sizeof(double));
   // n = (double *) malloc( NbSections * sizeof (double));
@@ -361,8 +361,9 @@ void GlobalDiscretization::createFaces() {
         cellFace(i /*cell id*/, i /*left node id*/, i + 1 /*right node id*/));
   }
   // m_cellF.push_back (new cellFace());
-  auto w_msg = "Global Cell faces created";
-  Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+  // auto w_msg = "Global Cell faces created";
+  Logger::instance()->OutputSuccess(
+      std::string{"Global Cell faces created"}.data());
 }
 
 // under construction
@@ -387,9 +388,10 @@ void GlobalDiscretization::createPairFaces() {
   using namespace std;
   using namespace boost;
   using namespace std::placeholders;
-  typedef std::list<cellFace>::iterator list_iter;        // list iterator
-  typedef iterator_range<list_iter> iter_cellface;        // iterator list range
-  typedef range_iterator<iter_cellface>::type range_iter; // range iterator type
+  typedef std::list<cellFace>::iterator list_iter; // list iterator
+  typedef iterator_range<list_iter> iter_cellface; // iterator list range
+  //  typedef range_iterator<iter_cellface>::type range_iter; // range iterator
+  //  type
   typedef range_difference<iter_cellface>::type diff_type; // range difference
 
   // Creating 2 range with offset towards right and left (at both end)

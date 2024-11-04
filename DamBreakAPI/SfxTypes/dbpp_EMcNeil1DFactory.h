@@ -43,9 +43,9 @@ class EMcNeil1DFactory {
 
 public:
   static std::shared_ptr<dbpp::EMcNeil1D>
-  CreateSolver(EMcNeil1DType eType, const DamBreakData &rSettings);
+  CreateSolver(EMcNeil1DType eType /*, const DamBreakData &rSettings*/);
   static std::shared_ptr<dbpp::EMcNeil1D>
-  CreateSolver(const std::string &rstrType, const DamBreakData &rSettings);
+  CreateSolver(const std::string &rstrType /*, const DamBreakData &rSettings*/);
   static std::string GetName(EMcNeil1DFactory::EMcNeil1DType eType);
   static EMcNeil1DFactory::EMcNeil1DType GetType(const std::string &rstrType);
 };

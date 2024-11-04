@@ -40,6 +40,7 @@ Nodal_Value::Nodal_Value(nodeIdX aNodeXId, int aNumAttr, tuplevar aTuple,
   // not much to do for now
 }
 
+#if 0
 // copy ctor
 Nodal_Value::Nodal_Value(const Nodal_Value &aOther) {
   m_nodeIdX = aOther.m_nodeIdX;
@@ -65,6 +66,7 @@ Nodal_Value &Nodal_Value::operator=(const Nodal_Value &aOther) {
 
   return *this;
 }
+#endif
 
 // ___________________________________________________
 //

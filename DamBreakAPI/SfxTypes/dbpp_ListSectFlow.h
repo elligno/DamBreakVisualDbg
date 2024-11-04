@@ -256,7 +256,7 @@ public:
   /**
    *  @return true if container has no section added
    */
-  [[nodiscard]] bool isEmpty() const { return m_listOfSect.empty(); }
+  [[nodiscard]] bool isEmpty() const noexcept { return m_listOfSect.empty(); }
   /**
    *  @return true/false if all sections are unit width
    */

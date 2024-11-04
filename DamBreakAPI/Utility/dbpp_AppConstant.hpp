@@ -13,4 +13,8 @@ template <auto v> struct AppConstant { static constexpr auto value = v; };
  *   @brief E. McNeil constant for the number of sections (scenario)
  */
 using EMCNEILNbSections = AppConstant<101>;
+/**
+ *   @brief Computational domain extends
+ */
+using DIM = AppConstant<100>;
 } // namespace dbpp

@@ -349,10 +349,11 @@ void EMcNeil1d_f::setAval(std::vector<double> &aU1, std::vector<double> &aU2) {
 }
 
 // Design Note temporary fix in the refactoring process
-void EMcNeil1d_f::setInitSln(const StateVector &aU, ListSectFlow *aListofSect) {
+void EMcNeil1d_f::setInitSln(
+    const StateVector &aU /*, ListSectFlow *aListofSect*/) {
   // copy semantic? not sure we have a pair
-  m_U12 = aU;                   // set initial condition
-  m_listSections = aListofSect; // need to define operator=
+  m_U12 = aU;               // set initial condition
+  m_listSections = nullptr; // need to define operator=
 }
 
 void EMcNeil1d_f::setH(vecdbl &aVecofH) {

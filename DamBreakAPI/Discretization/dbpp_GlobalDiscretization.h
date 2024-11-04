@@ -48,10 +48,8 @@ class SemiDiscreteModel;
  *    strong component design class
  *            Global_Discretization = { Omega_h, u_h}
  */
-class GlobalDiscretization
-    : // public Observer,   should remove this for now
-      public Singleton<GlobalDiscretization> // Base class
-{
+class GlobalDiscretization : // global instance
+                             public Singleton<GlobalDiscretization> {
 public:
   //		typedef boost::iterator_range<std::list<double>::iterator>
   // rngA_iter;
@@ -145,7 +143,7 @@ public:
    *@param component of nodal variable
    */
   void to_stdVector(std::vector<double> &aVec2Fill,
-                    NodalValComp aNvalComp = NodalValComp::A) {
+                    NodalValComp aNvalComp = NodalValComp::A) const {
     using namespace boost;
 
     // replacing the functor declaration in SomeUtilities.h
@@ -189,12 +187,8 @@ public:
    */
   int getNbSections() const { return NbGlobalNode; }
 
-  /** i am not sure yet why i am doing it?
-   * main reason to let Singleton is to access
-   * default ctor which is protected, that's the reason!!!
-   * Base class need to be a friend to access the protected
-   * member of the derived class, and that's what i am doing
-   * here with this 'friend' declaration.
+  /** Base class need to be a friend to access the protected
+   * member of the derived class.
    */
   friend class Singleton<GlobalDiscretization>;
 
@@ -218,22 +212,17 @@ private:
   boost::ptr_vector<Nodal_Value> m_nval;
   /**< nodal variables (A,Q,H)*/
 
-  // boost::ptr_vector<cellFace> m_listFaces;
   std::list<cellFace> m_listFaces;
   /**<cell faces j+1/2*/
 
   std::list<std::pair<cellFace, cellFace>> m_cellFacesPair;
   /**< pair of faces with global identifier*/
 
-  // bnd cond.
+  /**< Physical boundary condition*/
   Gamma m_gamma;
 
-  // Observer Design Pattern kind of!!! deprecated
+  /**< Numerical representation of math equations*/
   EMcNeil1D *m_numRep;
-
-  //
-  //  Helper method (all deprecated)
-  //
 
   // initialize the field with some initial values
   // for our test, we use the dam-break problem

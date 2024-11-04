@@ -48,7 +48,7 @@ void EMcNeil1D::setState() {
   using namespace std::placeholders;
 
   // notify section flow (notify all observers)
-  notify(); // call observer update() method
+  // notify();  call observer update() method
 
   // update the global discretization
   dbpp::GlobalDiscretization::instance()->update();

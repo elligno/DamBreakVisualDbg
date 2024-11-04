@@ -4,7 +4,7 @@
 #include <iostream>
 // stl include
 #include <vector>
-// SfxBase15 include
+// Library include
 #include "dbpp_DefineTypes.h"
 
 namespace dbpp {
@@ -135,7 +135,7 @@ public:
    * @param v
    * @return RealNumArray&
    */
-  RealNumArray &operator=(const RealNumArray &v); // assignment operator
+  RealNumArray &operator=(const RealNumArray<T> &v); // assignment operator
 
   /**
    * @brief Destroy the Real Num Array object
@@ -259,6 +259,25 @@ RealNumArray<T>::RealNumArray(const RealNumArray<T> &aOther) {
               << "illegal dimension " << aOther.dimensions << std::endl;
     exit(1);
   }
+}
+
+template <typename T>
+RealNumArray<T> &RealNumArray<T>::operator=(const RealNumArray<T> &aOther) {
+  if (aOther.dimensions == 2) {
+    // delete first
+    delete[] A;
+    A = allocate(aOther.length[0], aOther.length[1]);
+    for (int i = 0; i != (length[0] * length[1]); ++i)
+      A[i] = aOther.A[i];
+  } else if (aOther.dimensions == 1) {
+    delete[] A;
+    A = allocate(aOther.length[0]);
+    for (int i = 0; i != length[0]; ++i)
+      A[i] = aOther.A[i];
+  } else {
+    // do something a log message
+  }
+  return *this;
 }
 
 template <typename T> RealNumArray<T>::~RealNumArray() { deallocate(); }

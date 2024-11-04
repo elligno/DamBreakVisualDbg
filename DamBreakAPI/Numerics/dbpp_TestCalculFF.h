@@ -1,14 +1,11 @@
 #pragma once
 
-// C++ incliude
+// C++ include
 #include <cassert>
-// stl include
+// stl includes
 #include <list>
-// discretization package
-#include "../Discretization/dbpp_EmcilNumTreatment.h"
-#include "../Discretization/dbpp_NodalVariables.h"
-// algorithm package
-#include "../SfxTypes/dbpp_ListSectFlow.h"
+#include <vector>
+// lib include
 #include "../SfxTypes/dbpp_cellFace.h"
 
 namespace dbpp {
@@ -20,10 +17,7 @@ namespace dbpp {
  * face evaluation.
  *
  */
-class TestCalculFF //: public BaseNumTreatmemt,  provide basic implementation of
-                   // the RHS algorithm
-// public IFluxAlgoImpl  provide another implementation of
-// the flux algorithm
+class TestCalculFF // the flux algorithm
 {
 public:
   /**
@@ -48,24 +42,5 @@ public:
    */
   void calculFF(const std::list<cellFace> &aListOface, std::vector<double> &FF1,
                 std::vector<double> &FF2);
-
-  /**
-   *   new signature of this method
-   */
-  void TraitementTermeSource2(std::vector<double> &S,
-                              const std::vector<double> &Q,
-                              const std::vector<double> &A, const double aDx,
-                              ListSectFlow *aListSectFlow);
-
-  /**
-   *   another signature which is probably more natural
-   */
-  //   void TraitementTermeSource2( std::vector<double>& S, const
-  //   dbpp::scalarField* Q, const dbpp::scalarField* A, const ListSectFlow*
-  //   aListSectFlow);
-private:
-  // shall we add a method for the boundary condition
-  Nodal_Value m_upstreamBCValues;   /**< deprecated*/
-  Nodal_Value m_downstreamBCValues; /**< deprecated*/
 };
 } // namespace dbpp

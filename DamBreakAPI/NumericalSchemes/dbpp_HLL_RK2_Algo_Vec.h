@@ -11,6 +11,11 @@
 // SfxTypes package include
 #include "../SfxTypes/dbpp_DamBreakData.h"
 #include "../SfxTypes/dbpp_Observer.h"
+#include "../SfxTypes/dbpp_TimePrm.h"
+
+namespace dbpp { // forward declaration
+class GlobalDiscretization;
+}
 
 namespace dbpp {
 /** Brief Model of a solver that find the solution for the
@@ -70,7 +75,10 @@ public:
    * @param aU state vector representing state variables
    */
   virtual void advance();
-
+  virtual void mainLoop(const GlobalDiscretization *aGblDiscr,
+                        const double aTimeTo) = 0;
+  virtual void initialize(const GlobalDiscretization *aGblDiscr,
+                          double aTime) = 0;
   /**
    *  Observer design pattern (attaching an observer)
    */
@@ -106,8 +114,8 @@ public:
    *   set initial solution (must be virtual, can be re-implemented by derived
    * class)
    */
-  virtual void setInitSln(const StateVector &aU,
-                          ListSectFlow *aListofSect = nullptr) = 0;
+  virtual void setInitSln(const StateVector &aU) = 0;
+  // ListSectFlow *aListofSect = nullptr) = 0;
 
 protected:
   /** advance the algorithm step-by-step (default implementation)

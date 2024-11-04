@@ -1,15 +1,14 @@
+// C++ includes
 #include <algorithm>
 #include <functional>
 #include <iterator>
-
-// Sfx_Base15
+// Library includes
 #include "dbpp_BaseMacros.h"     //  Shall include the include below to avoid
 #include "dbpp_ExceptionUtils.h" // Macro dependency
-
 #include "dbpp_scalarField.h"
 
 namespace dbpp {
-scalarField::scalarField(std::shared_ptr<gridLattice> &g,
+scalarField::scalarField(const std::shared_ptr<gridLattice> &g,
                          const std::string &name_) {
   grid_lattice = g;
   // allocate the grid_point_values array:
@@ -26,6 +25,21 @@ scalarField::scalarField(std::shared_ptr<gridLattice> &g,
   } else
     ; // three-dimensional fields are not yet supported...
   fieldname = name_;
+}
+
+scalarField::scalarField(const std::shared_ptr<gridLattice> &g,
+                         std::vector<double> aInitialValues,
+                         const std::string &name_) {
+  grid_lattice = g;
+  // allocate the grid_point_values array:
+  if (grid_lattice->getNoSpaceDim() == 1) {
+    grid_point_values.reset(new RealNumArray<double>(
+        grid_lattice->getDivisions(1), aInitialValues.data()));
+    fieldname = name_;
+  } else {
+    // Throw an exception with a string message
+    throw std::runtime_error("scalarField initialization error");
+  }
 }
 
 void scalarField::values(RealNumArray<double> &new_array) {

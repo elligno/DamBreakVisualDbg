@@ -136,7 +136,7 @@ ListSectFlow::~ListSectFlow() {
 // is it completed (i think what we do here,
 // we update sections from 0 to 99, domain of 100 nodes)
 // 101 node is the ghost node set by BC
-void ListSectFlow::update() {
+void ListSectFlow::update(/*const scalarField& aAfield*/) {
   // working variable to store A,Q values
 // 	   std::vector<double> w_U1;
 // 	   w_U1.reserve(m_NbSections); // why -1?
@@ -161,8 +161,9 @@ void ListSectFlow::update() {
   }
   // auto w_lastSect = m_listOfSect.back(); // 101 not part of computational
   // domain
-  auto w_msg = "Finished updating Section flow water depth";
-  Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+  // auto w_msg = std::string{"Finished updating Section flow water depth"};
+  Logger::instance()->OutputSuccess(
+      std::string{"Finished updating Section flow water depth"}.data());
 
   // 	   for (SectFlow* w_hVal : m_listOfSect)
   // 	   {

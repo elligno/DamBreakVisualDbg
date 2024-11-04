@@ -28,9 +28,9 @@ namespace bfs = boost::filesystem;
 class DbgLogger : public Singleton<DbgLogger> {
   // i am not sure what for?? ok, some of our writing
   /** method use a tuple to store data.*/
-  typedef std::tuple<unsigned, std::vector<double>, std::vector<double>>
-      tuplevec;
-  typedef std::tuple<int, double, double> tupleidd;
+  using tuplevec =
+      std::tuple<unsigned, std::vector<double>, std::vector<double>>;
+  // typedef std::tuple<int, double, double> tupleidd;
 
 public:
   /** open file for writing (file name as default)*/

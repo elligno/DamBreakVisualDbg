@@ -4,50 +4,28 @@
 // boost include
 #include <boost/range/iterator_range.hpp>
 // Package includes
-#include "../Numerics/dbpp_TestCalculFF.h"
+//#include "../Algorithm/dbpp_TestRhsImpl.h"
+//#include "../Numerics/dbpp_TestCalculFF.h"
+#include "../Numerics/dbpp_TwoStepsIntegrator.h"
 #include "../SfxTypes/dbpp_Simulation.h"
 #include "../Utility/dbpp_Hydro1DLogger.h"
-#include "../Utility/dbpp_TestLogger.h"
+//#include "../Utility/dbpp_TestLogger.h"
 #include "dbpp_TestEMcNeilVec.h"
 
 namespace dbpp {
-TestEMcNeilVec::TestEMcNeilVec()
-    : EMcNeil1D(),    // base class implementation
-      m_NbSections(0) // default value
-{
-  // is empty, if so give a default value
-  const unsigned NbSection = dbpp::Simulation::instance()->getNbSections();
-  m_NbSections = NbSection;
-
-  // Again, we need to do basic check, especially if U,U2
-  // check size of the U1 and U2
-  if (U1.empty()) {
-    m_U1p.resize(m_NbSections);
-  } else {
-    m_U1p.resize(U1.size());
-  }
-  if (m_U2p.empty()) {
-    m_U2p.resize(m_NbSections);
-  } else {
-    m_U2p.resize(U2.size());
-  }
-
-  //  dbpp::Logger::instance()->OutputSuccess(
-  //      "TestEMcNeilVec::TestEMcNeilVec() ctor");
-
-  //  dbpp::Logger::instance()->OutputSuccess(
-  //      "Using RHS Algorithm: TestRhsImpl ...");
-
-  auto w_msg =
-      "Active RHS Discretization: BaseNumTreatment with TestCalculFF flux ";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+TestEMcNeilVec::TestEMcNeilVec(SweRhsAlgorithm *aRhsAlgo, const Gamma &aBCnd)
+    : EMcNeil1D(),         // base class implementation
+      m_rhsAlgo{aRhsAlgo}, // default value
+      m_timePrm(0., 0., 0.), m_bc{aBCnd} {
+  //  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
 }
-
-// TestEMcNeilVec::~TestEMcNeilVec() {
-//  dbpp::Logger::instance()->OutputSuccess(
-//      "TestEMcNeilVec::TestEMcNeilVec() dtor");
-//  // must clear but i don't think it's needed
-//}
+TestEMcNeilVec::TestEMcNeilVec(SweRhsAlgorithm *aRhsAlgo,
+                               const TimePrm &aTimeprm)
+    : EMcNeil1D(),         // base class implementation
+      m_rhsAlgo{aRhsAlgo}, // default value
+      m_timePrm(aTimeprm), m_bc{} {
+  // add code here
+}
 
 // Design Note:
 // ------------
@@ -75,69 +53,65 @@ TestEMcNeilVec::TestEMcNeilVec()
 // on the right track.
 void TestEMcNeilVec::advance() {
   using namespace std;
-  using namespace boost;
 
-  // create a Rhs algorithm (actually it's more an implementation)
-  // in this algorithm a reconstruction procedure of type MUSCL
-  // (freconstr_vec() is version in use)
-  unique_ptr<SweRhsAlgorithm> w_ptr2SweRhs(new TestRhsImpl);
-
-  // create numerical discretization for this algorithm
-  // unique_ptr<BaseNumTreatmemt> w_rhsDiscr(new TestCalculFF);
-  TestCalculFF w_rhsDiscr;
+  // just to make sure we are on the right track
+  // current version we only support E. McNeil data
+  auto w_activeDiscr = Simulation::instance()->getActiveDiscretization();
+  if (DamBreakData::DiscrTypes::emcneil == w_activeDiscr) {
+    if (m_bc.getBCtype() == Gamma::eBCtypes::Hten_Qzero) {
+      // set b.c. nodes
+      m_rhsAlgo->setBCNodes(m_bc.getBCNodeAmont().Values(),
+                            m_bc.getBCNodeAval().Values());
+    }
+  }
 
   // apply algorithm (rhs numerical treatment of convective flux, source terms)
-  // fill the SWERHS structure (to be used in our time stepper from base class)
-  w_ptr2SweRhs->calculate(m_U12 /*, w_rhsDiscr*/);
+  m_rhsAlgo->calculate(m_U12);
 
-  // retrieve the rhs computed value, because we need it
-  // in the predictor step ()
-  //  typedef SweRhsAlgorithm::SWERHS swe_rhs;
-  m_rhs = w_ptr2SweRhs->getRHS();
+  // ++++++ half time step +++++++++++++
 
-  // U1p, U2p set bc values
-  setBC();
+  // Create step integrator (pass RHS as argument)
+  TwoStepsIntegrator w_timeStepper;
+  w_timeStepper.setInitSln(m_U12.first->values().to_stdVector(),
+                           m_U12.second->values().to_stdVector());
+  w_timeStepper.setIntegratorStep(
+      TwoStepsIntegrator::eIntegratorStep::predictorStep);
+  w_timeStepper.step(m_rhsAlgo, Simulation::instance()->simulationTimeStep());
 
   // step through time (n+1/2) by using Runge-Kutta family integrator
   // don't have much choice, because advance is call only once. If 2-steps
   // algorithm is needed we have toi do it inside.
-  predictor(); // U1p and U2p up-to-date, will be used for next step
+  // predictor(); // U1p and U2p up-to-date, will be used for next step
+
+  auto w_midState = w_timeStepper.getMidState();
+  auto m_U1p = w_midState.first->values().to_stdVector();
+  auto m_U2p = w_midState.second->values().to_stdVector();
 
   // write to debug file
   dbpp::DbgLogger::instance()->write2file_p(
-      std::make_tuple(m_NbSections, m_U1p, m_U2p));
+      std::make_tuple(static_cast<unsigned>(m_U1p.size()), m_U1p, m_U2p));
 
   // ++++++ final time step +++++++++++++
 
   // state vector for intermediate state (need to be updated)
-  auto &w_rU1p = m_U12p.first->values();
-  auto &w_rU2p = m_U12p.second->values();
+  std::shared_ptr<gridLattice> w_gridLattice( // notsure about this one
+      new gridLattice(w_midState.first->grid()));
 
-  // Jean Belanger test (April 2019)
-  // ifd this works, could replace std::copy, is it more efficient??
-  // 		jb::RealNumArray<real> w_TestCpy(m_U1p.size()-1,m_U1p.data());
-  // 		w_rU1p = w_TestCpy; // copy constructible?? not sure about this
-
-  // next step is to do the final step (n+1)
-  // it's not efficient, but we are not concern with efficiency for now
-  copy(m_U1p.cbegin(), m_U1p.cend() - 1,
-       w_rU1p.getPtr()); // last node not part of
-  copy(m_U2p.cbegin(), m_U2p.cend() - 1,
-       w_rU2p.getPtr()); // the computational domain
+  // sanity check
+  assert(w_gridLattice->getNoPoints() ==
+         w_midState.first->grid().getNoPoints());
 
   // apply algorithm (rhs numerical treatment of convective flux, source terms)
-  w_ptr2SweRhs->calculate(m_U12p /*, w_rhsDiscr.get()*/); // updated values
-
-  // rhs computed values
-  m_rhs = w_ptr2SweRhs->getRHS();
+  m_rhsAlgo->calculate(w_midState /*, w_rhsDiscr.get()*/); // updated values
 
   // n+1 time step
-  corrector();
+  // corrector();
 
   // notify all observers
   setState();
 }
 
+#if 0
 // those equations are evaluated over each cell
 // then for each cell we compute the cell face
 // numerical flux
@@ -180,13 +154,75 @@ void TestEMcNeilVec::corrector() {
                    + dt * m_rhs.m_S[j]);
   }
 }
+#endif
 
-void TestEMcNeilVec::setBC() {
-  //	Calcul des valeurs intermédiaires des variables d'état
-  m_U1p[0] = U1[0]; // w_amVal[0]
-  m_U2p[0] = U2[0]; // w_amVal[1]
+// void TestEMcNeilVec::setBC() {
+//  //	Calcul des valeurs intermédiaires des variables d'état
+//  m_U1p[0] = U1[0]; // w_amVal[0]
+//  m_U2p[0] = U2[0]; // w_amVal[1]
 
-  m_U1p[m_NbSections - 1] = U1[m_NbSections - 1]; // w_avVal[0]
-  m_U2p[m_NbSections - 1] = U2[m_NbSections - 1]; // w_avVal[1]
+//  m_U1p[m_NbSections - 1] = U1[m_NbSections - 1]; // w_avVal[0]
+//  m_U2p[m_NbSections - 1] = U2[m_NbSections - 1]; // w_avVal[1]
+//}
+
+void TestEMcNeilVec::mainLoop(const GlobalDiscretization *aGblDiscr,
+                              const double aTimeTo) {
+  const auto &w_bc = aGblDiscr->gamma();
+
+  // just to make sure we are on the right track
+  // current version we only support E. McNeil data
+  auto w_activeDiscr = Simulation::instance()->getActiveDiscretization();
+  if (DamBreakData::DiscrTypes::emcneil == w_activeDiscr) {
+    if (w_bc.getBCtype() == Gamma::eBCtypes::Hten_Qzero) {
+      // set b.c. nodes
+      m_rhsAlgo->setBCNodes(w_bc.getBCNodeAmont().Values(),
+                            w_bc.getBCNodeAval().Values());
+    }
+  }
+
+  // logical time (pdate all nodes)
+  TimePrm w_timePrm(0., 0.01, aTimeTo); // simulator set to 22.5
+  while (!w_timePrm.finished()) {
+    // apply algorithm (rhs numerical treatment of convective flux, source
+    // terms)
+    m_rhsAlgo->calculate(m_U12);
+  }
+}
+
+// just testing an implementation
+void TestEMcNeilVec::initialize(const GlobalDiscretization *aGblDiscr,
+                                double aTime) {
+  std::vector<double> w_U1;
+  w_U1.reserve(aGblDiscr->Uh().size());
+  aGblDiscr->to_stdVector(w_U1, GlobalDiscretization::NodalValComp::A);
+  std::vector<double> w_U2;
+  w_U1.reserve(aGblDiscr->Uh().size());
+  aGblDiscr->to_stdVector(w_U2, GlobalDiscretization::NodalValComp::Q);
+
+  std::shared_ptr<scalarField> w_U1shrptr{nullptr};
+  std::shared_ptr<scalarField> w_U2shrptr{nullptr};
+
+  DamBreakData w_activeData{Simulation::instance()->getActiveDiscretization()};
+  std::string w_gridprms{"d=1 [0,"};
+  w_gridprms += std::to_string(w_activeData.x_max()) +
+                std::string{"] [1:"}; // ui value int x-max coord ] [1:
+  w_gridprms += std::to_string(w_activeData.nbSections() - 1) +
+                std::string{"]"}; // ui value nbgridpoints
+
+  std::shared_ptr<gridLattice> w_grid1D =
+      std::make_shared<gridLattice>(w_gridprms);
+
+  // attach a field of values on the grid
+  w_U1shrptr.reset(new scalarField(w_grid1D, w_U1, std::string{"A"}));
+  w_U2shrptr.reset(new scalarField(w_grid1D, w_U1, std::string{"Q"}));
+
+  // what's going here?
+  StateVector w_pairAQ = {std::move(w_U1shrptr), std::move(w_U2shrptr)};
+
+  m_timePrm.setStartTime(aTime);
+  m_timePrm.setTimeStepMode(dbpp::TimePrm::TimeStepMode::VARIABLE_TIME_STEP);
+  m_timePrm.initTimeLoop(); // initialize simulation time
+  //  parameters m_tip->increaseTime(calculateDt()); // t1=t0+dt;
+  // dbpp::Simulation::instance()->setSimulationTimeStep(TimeStepCriteria(...));
 }
 } // namespace dbpp

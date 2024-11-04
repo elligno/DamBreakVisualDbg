@@ -6,7 +6,7 @@
 #include "../NumericalSchemes/dbpp_EMcNeil1d_mod.h"
 //#include "../NumericalSchemes/dbpp_TestBcSectF.h"
 //#include "Test/TestNewAlgo.h"
-//#include "TestEMcNeilVec.h"
+#include "../NumericalSchemes/dbpp_TestEMcNeilVec.h"
 //#include "TestNewAlgo.h"
 //#include "Test/TestCellFaceImpl.h"
 // concept of global discretization
@@ -36,25 +36,10 @@ EMcNeil1DFactory::EMcNeil1DFactory() {
 // known type
 ///////////////////////////////////////////////////////////////////////////////////////////////
 shrPtr2EMcNeil1D
-EMcNeil1DFactory::CreateSolver(EMcNeil1DFactory::EMcNeil1DType eType,
-                               const DamBreakData &rSettings) {
+EMcNeil1DFactory::CreateSolver(EMcNeil1DFactory::EMcNeil1DType eType) {
+  // const DamBreakData &rSettings) {
   //		CSolver* pSolver = NULL;
   switch (eType) {
-    // 		case EMcNeil1DFactory::EMcNeil1DType::EMCNEIL1D:
-    // 			{
-    // 			//	pSolver = new CMilsteinSolver(rSettings);
-    // 				shrPtr2EMcNeil1D w_numRep =
-    // std::make_shared<emcil::EMcNeil1D>();
-    // 				// sanity check
-    // 				if( w_numRep)
-    // 				{
-    // 					emcil::Logger::instance()->OutputSuccess("EMcNeil1D
-    // class created");
-    // 				}
-    // 				// not sure about this
-    // 				return w_numRep;
-    // 				break;
-    // 			}
   case EMcNeil1DFactory::EMcNeil1DType::EMCNEIL1D_MOD: {
     //		pSolver = new CRungeKuttaSolver(rSettings);
     shrPtr2EMcNeil1D w_numRep = std::make_shared<dbpp::EMcNeil1d_mod>();
@@ -78,21 +63,17 @@ EMcNeil1DFactory::CreateSolver(EMcNeil1DFactory::EMcNeil1DType eType,
     return w_numRep;
     break;
   }
-    // 		case EMcNeil1DFactory::EMcNeil1DType::TESTEMCNEILVEC:
-    // 			{
-    // 		//		pSolver = new CEMSolver(rSettings);
-    // 				shrPtr2EMcNeil1D w_numRep =
-    // std::make_shared<dbapp::TestEMcNeilVec>();
-    //
-    // 				if( w_numRep)
-    // 				{
-    // 					dbapp::Logger::instance()->OutputSuccess("TestEMcNeilVec
-    // class created");
-    // 				}
-    //
-    // 				return w_numRep;
-    // 				break;
-    // 			}
+    //  case EMcNeil1DFactory::EMcNeil1DType::TESTEMCNEILVEC: {
+    //    // 	pSolver = new CEMSolver(rSettings);
+    //    shrPtr2EMcNeil1D w_numRep = std::make_shared<dbpp::TestEMcNeilVec>();
+
+    //    if (w_numRep) {
+    //      dbpp::Logger::instance()->OutputSuccess(
+    //          std::string{"TestEMcNeilVec class created "}.data());
+    //    }
+    //    return w_numRep;
+    //    break;
+    //  }
     //     case EMcNeil1DType::TESTBCSECTF:
     //       {
     //         // create an instance
@@ -100,19 +81,6 @@ EMcNeil1DFactory::CreateSolver(EMcNeil1DFactory::EMcNeil1DType eType,
     //         std::make_shared<dbpp::TestBcSectF>(); if( w_numRep)
     //         {
     //           dbpp::Logger::instance()->OutputSuccess("TestBcSectF class
-    //           created");
-    //         }
-    //
-    //         return w_numRep;
-    //         break;
-    //       }
-    //     case EMcNeil1DType::TESTNEWALGO:
-    //       {
-    //         // create an instance
-    //         shrPtr2EMcNeil1D w_numRep =
-    //         std::make_shared<dbapp::TestNewAlgo>(); if( w_numRep)
-    //         {
-    //           dbapp::Logger::instance()->OutputSuccess("TestNewAlgo class
     //           created");
     //         }
     //
@@ -138,9 +106,9 @@ EMcNeil1DFactory::CreateSolver(EMcNeil1DFactory::EMcNeil1DType eType,
 // Outputs:     return              pointer to the new solver or NULL if not a
 // known type
 ///////////////////////////////////////////////////////////////////////////////////////////////
-shrPtr2EMcNeil1D EMcNeil1DFactory::CreateSolver(const std::string &rstrType,
-                                                const DamBreakData &rSettings) {
-  return CreateSolver(GetType(rstrType), rSettings);
+shrPtr2EMcNeil1D EMcNeil1DFactory::CreateSolver(const std::string &rstrType) {
+  // const DamBreakData &rSettings) {
+  return CreateSolver(GetType(rstrType) /*, rSettings*/);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,9 +154,11 @@ EMcNeil1DFactory::GetType(const std::string &rstrName) {
   // working variable that hold uppercase
   std::string w_strUpperCase{};
 
+  // lambda
+  // [](unsigned char c){ return std::toupper(c); }
   // make string upper case for comparison
   std::transform(rstrName.begin(), rstrName.end(),
-                 std::back_inserter(w_strUpperCase), ::toupper);
+                 std::back_inserter(w_strUpperCase), std::toupper);
 
   // 		if( w_strUpperCase == "EMCNEIL1D")
   // 		{
@@ -206,8 +176,11 @@ EMcNeil1DFactory::GetType(const std::string &rstrName) {
     return EMcNeil1DFactory::EMcNeil1DType::TESTNEWALGO;
   } else {
     // printf("Unrecognised solver name. Using EM\n");
-    auto w_msg = "Unrecognised solver name. Using EMcNeil1D\n";
-    dbpp::Logger::instance()->OutputError(const_cast<char *>(w_msg));
+    //  auto w_msg =
+    //     std::string{"Unrecognised solver name. Using EMcNeil1D\n"}.data();
+    dbpp::Logger::instance()->OutputError(
+        std::string{"Unrecognised solver name. Using EMcNeil1D\n"}.data());
+
     return EMcNeil1DFactory::EMcNeil1DType::EMCNEIL1D_MOD; // default
   }
 

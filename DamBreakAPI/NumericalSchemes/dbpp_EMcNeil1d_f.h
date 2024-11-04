@@ -49,6 +49,12 @@ public:
    */
   EMcNeil1d_f &operator=(const EMcNeil1d_f &) = delete;
 
+  // update all nodes
+  void mainLoop(const GlobalDiscretization *aGblDiscr,
+                const double aTimeTo) override final {}
+  void initialize(const GlobalDiscretization *aGblDiscr,
+                  double aTime) override final {}
+
 protected:
   /**
    *   time stepping algorithm
@@ -67,7 +73,8 @@ protected:
   /** @Brief ...
    *
    */
-  void setInitSln(const StateVector &aU, ListSectFlow *aListofSect) override;
+  void
+  setInitSln(const StateVector &aU /*, ListSectFlow *aListofSect*/) override;
 
   /** @Brief set boundary node (vector)
 * methods, it's left to the user how to implement

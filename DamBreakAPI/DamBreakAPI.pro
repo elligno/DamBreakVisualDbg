@@ -10,7 +10,6 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    Algorithm/dbpp_SweRhsAlgorithm.cpp \
     Algorithm/dbpp_TestRhsImpl.cpp \
     Discretization/dbpp_BCharacteristicSolver.cpp \
     Discretization/dbpp_BaseRhsDiscretization.cpp \
@@ -25,10 +24,12 @@ SOURCES += \
     NumericalSchemes/dbpp_EMcNeil1d_f.cpp \
     NumericalSchemes/dbpp_EMcNeil1d_mod.cpp \
     NumericalSchemes/dbpp_HLL_RK2_Algo_Vec.cpp \
-    NumericalSchemes/dbpp_TestBcSectF.cpp \
     NumericalSchemes/dbpp_TestEMcNeilVec.cpp \
+    Numerics/dbpp_SourceTermsAlgorithms.cpp \
     Numerics/dbpp_TestCalculFF.cpp \
     Numerics/dbpp_TimeStepCriteria.cpp \
+    Numerics/dbpp_TwoStepsIntegrator.cpp \
+    SfxTypes/VectorField.cpp \
     SfxTypes/dbpp_DamBreakData.cpp \
     SfxTypes/dbpp_EMcNeil1DFactory.cpp \
     SfxTypes/dbpp_ListSectFlow.cpp \
@@ -63,11 +64,13 @@ HEADERS += \
     NumericalSchemes/dbpp_EMcNeil1d_f.h \
     NumericalSchemes/dbpp_EMcNeil1d_mod.h \
     NumericalSchemes/dbpp_HLL_RK2_Algo_Vec.h \
-    NumericalSchemes/dbpp_TestBcSectF.h \
     NumericalSchemes/dbpp_TestEMcNeilVec.h \
+    Numerics/dbpp_SourceTermsAlgorithms.h \
     Numerics/dbpp_TestCalculFF.h \
     Numerics/dbpp_TimeStepCriteria.hpp \
+    Numerics/dbpp_TwoStepsIntegrator.h \
     Numerics/dbpp_UpwindScheme1st.hpp \
+    SfxTypes/VectorField.h \
     SfxTypes/dbpp_BaseMacros.h \
     SfxTypes/dbpp_DamBreakData.h \
     SfxTypes/dbpp_DamBreakStepFunc.hpp \
@@ -79,6 +82,7 @@ HEADERS += \
     SfxTypes/dbpp_Observer.h \
     SfxTypes/dbpp_PhyConstant.h \
     SfxTypes/dbpp_RealNumArray.h \
+    SfxTypes/dbpp_SharedPtrFactory.hpp \
     SfxTypes/dbpp_Simulation.h \
     SfxTypes/dbpp_Singleton.hpp \
     SfxTypes/dbpp_TimePrm.h \

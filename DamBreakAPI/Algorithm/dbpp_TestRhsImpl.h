@@ -15,19 +15,15 @@ namespace dbpp {
  */
 class TestRhsImpl : public SweRhsAlgorithm {
 public:
+  // Ctor
+  TestRhsImpl(ListSectFlow *aListSectFlow) : m_listSectFlow{aListSectFlow} {}
+
   /** an implementation of the algorithm based on Eric McNeil*/
   void calculate(const StateVector &aU) final override;
 
   /**Compute right hand side according to base numerical discretization*/
-  void calculate(const StateVector &aU,
-                 BaseNumTreatmemt *aBaseTreatment) override final;
-
-  /** compute water level for this step of the simulation (just don't get it?)
-   * nothing to with water level (deprecated)
-   *
-   * @param scalar field
-   */
-  void setH(const dbpp::scalarField &aA) override; // no sense!!!!
+  void calculate(const StateVector &aU, // shall pass the PhysicalSystem!!!
+                 const GlobalDiscretization *aGblDiscr) override final;
 
   /** An implementation of the boundary condition (A,Q,H format)
    *  (deprecated but not sure)
@@ -37,9 +33,13 @@ public:
   void setBCNodes(const std::tuple<double, double, double> &aBcnodeAM,
                   const std::tuple<double, double, double> &aBcnodeAV) override;
 
+  /** to be completed*/
+  ListSectFlow *getListPhysicsObjects() const { return m_listSectFlow; }
+
 private:
+  ListSectFlow *m_listSectFlow;
   // all that stuff is deprecated (don't make any sense)
-  std::vector<double> m_vH; /**< water level*/
+  // std::vector<double> m_vH; /**< water level*/
   std::tuple<double, double, double>
       m_bcnodeAM; /**< boundary condition at upstream*/
   std::tuple<double, double, double>

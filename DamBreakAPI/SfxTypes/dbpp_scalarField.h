@@ -38,8 +38,12 @@ public:
   ~scalarField() = default;
 
   // make a field from a grid and a fieldname
-  scalarField(std::shared_ptr<gridLattice> &aGrid,
+  scalarField(const std::shared_ptr<gridLattice> &aGrid,
               const std::string &aFieldName);
+
+  /** */
+  scalarField(const std::shared_ptr<gridLattice> &aGridLattice,
+              std::vector<double> aInitialValues, const std::string &name_);
 
   // enable access to grid-point values
   RealNumArray<double> &values() { return *grid_point_values; }
