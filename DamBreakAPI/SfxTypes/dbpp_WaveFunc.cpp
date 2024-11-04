@@ -65,6 +65,15 @@ void Flat::scan() {
 // Step1D
 //
 
+Step1D::Step1D(char funcname_ /*= ' '*/)
+    : m_Phi1{},     // E.McNeil as default
+      m_Phi0{},     // E.McNeil as default
+      m_shockPos{}, // E.McNeil as default
+      funcname{funcname_} {}
+
+Step1D::Step1D(double aPhi0, double aPhi1, double aShokLoc)
+    : m_Phi1{aPhi1}, m_Phi0{aPhi0}, m_shockPos{aShokLoc} {}
+
 // step function water level and shock position for this simulation
 // shock location shall read from simulation config? i am not sure?
 // let's say that we read it from command line for now
@@ -73,10 +82,20 @@ void Flat::scan() {
 void Step1D::scan() {
   // water level each side of the wall (in this project we are using E McNeil)
   // values and they are set in the cmd arg line (loaded at the startup).
-  m_Phi1 = 10.; // CmdLineArgs::read("-phi1", 1.);  E. McNeil = 10.
-  m_Phi0 = 1.;  // CmdLineArgs::read("-phi0", 1.);  E. McNeil = 1.
+  // m_Phi1 = 10.;  CmdLineArgs::read("-phi1", 1.);  E. McNeil = 10.
+  // m_Phi0 = 1.;   CmdLineArgs::read("-phi0", 1.);  E. McNeil = 1.
   // shock position (default value is set)
-  m_shockPos = 500.; // CmdLineArgs::read("-shock", 5.);  E. McNeil = 500.
+  // m_shockPos = 500.;  CmdLineArgs::read("-shockloc", 5.);  E. McNeil = 500.
+
+  if (0. == m_Phi0) {
+    m_Phi0 = CmdLineArgs::read("-phi0", 1.); // E.McNeil as default
+  }
+  if (0. == m_Phi1) {
+    m_Phi1 = CmdLineArgs::read("-phi\1", 10.); // ditto
+  }
+  if (0. == m_shockPos) {
+    m_shockPos = CmdLineArgs::read("-shockloc", 500.); // ditto
+  }
 }
 
 // Step function for dam-break
@@ -98,7 +117,7 @@ void Step1D::scan() {
 // dx is another variable calculated somewhere else, it is not
 // clear what is the min and max of the grid extent.
 //
-real Step1D::valuePt(real x, real y, real t /* = 0 */) {
+double Step1D::valuePt(double x, double y, double t /* = 0 */) {
   if (y < 0 || t < 0) // actually this is a patch, since inherit from
     return -1.;       // WaveFunc no choice to have 3 args
 

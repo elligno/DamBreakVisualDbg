@@ -19,11 +19,17 @@
 // Util package includes
 #include "../Numerics/dbpp_TimeStepCriteria.hpp"
 #include "../SfxTypes/dbpp_PhyConstant.h"
+#include "../SfxTypes/dbpp_SharedPtrFactory.hpp"
 #include "../SfxTypes/dbpp_Simulation.h"
 #include "../Utility/dbpp_CommandLineArgs.h"
 #include "../Utility/dbpp_Hydro1DLogger.h"
 #include "../Utility/dbpp_SimulationUtility.h"
 #include "../Utility/dbpp_TestLogger.h"
+// Numerical Schemes include
+#include "../NumericalSchemes/dbpp_TestEMcNeilVec.h"
+// need to include this because link error about
+// operator= unresolved symbol
+#include "../SfxTypes/dbpp_RealNumArray.h"
 
 namespace dbpp {
 
@@ -248,6 +254,7 @@ Wave1DSimulator::~Wave1DSimulator() {
 // create, read simulation parameters
 void Wave1DSimulator::scan() {
   using namespace dbpp;
+
   dbpp::Logger::instance()->OutputSuccess(
       std::string{"Wave1DSimulator::scan initialization started"}.data());
 
@@ -279,15 +286,17 @@ void Wave1DSimulator::scan() {
   if (func == 1) {
     m_H.reset(new GaussianBell('H'));
     m_I.reset(new GaussianBell('U'));
-    auto *w_msg = "We set DamBreak GaussianBell function";
-    Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
-  } else                     // in the current version of the Simulator
-  {                          // func = 0 in cmd line argument of the project
-    m_I.reset(new Flat{});   // we consider flat bed bathymetry
-    m_H.reset(new Step1D{}); // we set DamBreak step function
+    Logger::instance()->OutputSuccess(
+        std::string{"We set DamBreak GaussianBell function"}.data());
+  } else                   // in the current version of the Simulator
+  {                        // func = 0 in cmd line argument of the project
+    m_I.reset(new Flat{}); // we consider flat bed bathymetry
+    m_H.reset(new Step1D{m_Phi0, m_Phi1, // DamBreak initial wave profile
+                         m_shockLoc});   // we set DamBreak step function
 
     Logger::instance()->OutputSuccess(
         std::string{"We are considering flat bed topography"}.data());
+
     Logger::instance()->OutputSuccess(
         std::string{"We set DamBreak step function"}.data());
   }
@@ -297,9 +306,8 @@ void Wave1DSimulator::scan() {
   // an XML file with boost property tree.
   m_H->scan(); // water level according to dam-break parameters
   m_I->scan(); // initial surface (bed), which is flat bed
-
   // simulation time parameters
-  m_tip.reset(new TimePrm(0, 0., m_finalTime));
+  m_tip.reset(new TimePrm{0, 0., m_finalTime});
   // 0, 0.,                                       initial dt (time step)
   // CmdLineArgs::read("-tstop", m_finalTime)));  fixed time step as default
 
@@ -419,11 +427,16 @@ StateVector Wave1DSimulator::getIC() {
   for (auto i = 1; i <= w_U1->grid().getNoPoints(); i++) {
     // we assume that each section is unit width, this shall be
     // removed in the future version of the simulator
+    // this is the same as "Evaluation_A_Enfonction_H"
+    // m_I is the bottom topography and we substract water level
+    // from Z that gives water depth
+    // NOTE we have also m_lambda which i am not sure represent
+    // water depth
     w_U1val(i) = m_H->valuePt(m_grid->getPoint(1, i), 0.) -
                  m_I->valuePt(m_grid->getPoint(1, i), 0.);
   }
 
-  // RVO (return Value Optimization)
+  // RVO (Return Value Optimization)
   return StateVector{w_U1, w_U1};
 }
 
@@ -510,21 +523,15 @@ void Wave1DSimulator::solveProblem() {
 //  it is very handy because sometimes we just want to go one
 //  step at a time and check result of the simulation for some reasons.
 void Wave1DSimulator::initialize() {
-
   // initial condition are set at the scan process
   // startup phase (scan method).
   auto *w_msg = "Initial condition startup phase (scan method)";
   dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
 
-  // should be done by user
-  // Usage:
-  //   wavSim->setH(phi0, phi1);
-  //    wavSim->setIC();
-
   setH();  // initial depth array
   setIC(); // set initial conditions
 
-  // saveIC2File();          save initial data to file (no need to save that)
+  // saveIC2File();  save initial data to file (no need to save that)
   initTime(); // ...
 
   // NOTE this part is done in the factory method (same test is performed)
@@ -598,7 +605,7 @@ void Wave1DSimulator::initialize() {
 
   // rvalue reference???
   // Set solver initial condition
-  m_numRep->setInitSln(m_u, m_ListSectFlow);
+  m_numRep->setInitSln(m_u /*, m_ListSectFlow*/);
 
 #if 0
   if (isSaveResult2File()) {
@@ -637,18 +644,57 @@ void Wave1DSimulator::doOneStep() {
   m_numRep->advance(/*m_u*/); // variable is updated (pass as reference)
 
 #if 1 // next version (section flow updated at the end timeStep() when calling
-      // notify())
-  // i think that's the way it should be
-  std::transform(m_ListSectFlow->getList().begin(),
-                 m_ListSectFlow->getList().end(), m_lambda->values().begin(),
-                 std::bind(&SectFlow::H, std::placeholders::_1));
+      // notify()), i think that's the way it should be
+  // NOTE
+  //  Just don't need that!! because we have the state vector which is made
+  //  made of shared_ptr that we pass as initial solution to numerical scheme
+  //  which update these values, all we have to do (update water depth)
+  //  list of sections is an observer of numerical scheme and is updated
+  //  at each iteration (don't make sense)
+  //  std::transform(m_ListSectFlow->getList().begin(),
+  //                 m_ListSectFlow->getList().end(),
+  //                 m_lambda->values().begin(), std::bind(&SectFlow::H,
+  //                 std::placeholders::_1));
+
+  // that will do exactly the same (dependency of list of sections on numerical
+  // scheme can be removed)
+  // NOTE we have A (cross-section surface: wetted area) but we solve for h
+  // water depth for each cross-section.
+  // Important to know the following:
+  // 'H' is the water level measured about some threshold
+  // 'h' is the water depth measure from topography (bottom)
+  // we are solving swe for (h,hv) mass/momentum, so 'A' represent
+  // 'h' (H-Z) for now we have Z=0. flat bed
+  auto &w_hValues = m_u.first->values(); // A(h) water depth
+  // std::copy(w_hValues.begin(), w_hValues.end(), m_lambda->values().begin());
+  // could i do that copy ctor?? is it working?
+  // good test for the copy ctor of numericla array!!!
+  auto &lambdaArray = m_lambda->values();
+  lambdaArray = w_hValues; // no need to call copy algorithm
+
+  // now we have the water depth, but we need the water level
+  // then if we want to update sections flow we can do it here
+  auto w_sectUp2Date = m_ListSectFlow->getList(); // 100 or 101??
+  auto begList = w_sectUp2Date.begin();
+  // call Evaluation_H_
+  while (begList != w_sectUp2Date.end()) // computational domain
+  {                                      // but we need also the extra section
+    // Important to note
+    // section index 0...N-1
+    // numerical array 1...N
+    SectFlow *w_currSect = *begList++;
+    w_currSect->setH(HydroUtils::Evaluation_H_fonction_A(
+        w_hValues(w_currSect->getId() + 1), w_currSect->B(), w_currSect->Z()));
+  }
+
+  // not sure about this one
+//  std::transform(m_lambda->values().begin(), m_lambda->values().end(),
+//                 w_sectUp2Date.begin(),
+//                 [](double aH, SectFlow &aSection) { aSection.setH(aH); });
 #endif
 
   // save iteration result to file (more a debugging file, right we are not
-  // really using it) Design Note:
-  //  need to think about this call, in future version
-  //  H variable will be handled by the ListOfSectionFlow (?? not sure about
-  //  that)
+  // really using it)
   if (isSaveResult2File()) {
     // call m_numRep->getState() and pass list of section flow
     // saveResult(m_numRep->getState(), m_ListSectFlow, m_tip->time());
@@ -829,7 +875,7 @@ void Wave1DSimulator::timeLoop() // run equivalent
 }
 
 std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
-  // shared pointer for algorithm numerical representation (base class)
+  // shared pointer for numerical representation (base class)
   std::shared_ptr<dbpp::EMcNeil1D> w_num_rep{}; // set to nullptr
 
 #if 1 // dbpp::CmdLineArgs not supported for some reason
@@ -837,10 +883,10 @@ std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
   if (getSimulatorMode() == eSimulationMode::manualMode) {
     m_activeAlgo = dbpp::CmdLineArgs::read(
         "-algo" /*used defined*/,
-        std::string(
-            "EMcNeil1D_mod") /*default name if none is specified in cmd args*/);
-    for (const std::string &w_algoInUdse :
-         m_supportedAlgorithm) // compare with supported algorithm
+        std::string( // default name if none is specified in cmd args
+            "EMcNeil1D_mod"));
+    for (const std::string &w_algoInUdse : // why?? really need that?
+         m_supportedAlgorithm)             // compare with supported algorithm
     {
       if (w_algoInUdse == m_activeAlgo) {
         break; // supported algorithm by our simulator
@@ -851,17 +897,35 @@ std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
   }
 #endif
 
-  // Design Note
+  // Design Note (Deprecated!!!) use the new factory based on perfect
+  // forwarding
   //  Don't need to pass DamBreaData to ctor of the factory
   // Create EMcNeil1D type (using abstract factory design pattern)
-  dbpp::DamBreakData w_compileTest; // settings of the solver??? what exactly?
-  w_num_rep = dbpp::EMcNeil1DFactory::CreateSolver(m_activeAlgo, w_compileTest);
-  if (nullptr == w_num_rep) {
-    dbpp::Logger::instance()->OutputError(
-        std::string{"Unable to create solver with name: %f"}.data(),
-        m_activeAlgo.c_str());
+  // dbpp::DamBreakData w_compileTest;  settings of the solver??? what
+  // exactly? w_num_rep = dbpp::EMcNeil1DFactory::CreateSolver(m_activeAlgo);
+  if (m_activeAlgo == std::string{"EMcNeil1D_mod"}) {
+    // this is deprecated, a new factory method will be use
+    w_num_rep = dbpp::EMcNeil1DFactory::CreateSolver(m_activeAlgo);
 
-    return nullptr; // maybe throw an  exception, i think so!!
+    if (nullptr == w_num_rep) {
+      dbpp::Logger::instance()->OutputError(
+          std::string{"Unable to create solver with name: %s"}.data(),
+          m_activeAlgo.c_str());
+    }
+    // return nullptr;  maybe throw an  exception, i think so!!
+  } else if (m_activeAlgo == std::string{"TestEMcNeilVec"}) {
+    // temporary fix for now (we have a problem!!)
+    // in the current version list sections is an observer and takes
+    // base class (will be back later to complete implementation)
+    // this algorithm will selected by user from GUI
+    SweRhsAlgorithm *w_rhsTest = nullptr; // new TestRhsImpl(m_ListSectFlow);
+    // just for testing and debugging
+    w_num_rep = factoryCreator<TestEMcNeilVec>(w_rhsTest, TimePrm{0., 0., 0.});
+    //  return nullptr;
+  } else {
+    // log entry
+    dbpp::Logger::instance()->OutputError(
+        std::string{"Unrecognised solver name: %s"}.data());
   }
 
   dbpp::Logger::instance()->OutputSuccess(
@@ -869,6 +933,16 @@ std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
       m_activeAlgo.c_str());
 
   return w_num_rep;
+
+  // Re-factor this methodcheck active algorithm
+
+  if (m_activeAlgo == std::string{"EMcNeil1D_mod"}) {
+    return w_num_rep = dbpp::EMcNeil1DFactory::CreateSolver(m_activeAlgo);
+  } else if (m_activeAlgo == std::string{"EMcNeil1D_f"}) {
+    return w_num_rep = dbpp::EMcNeil1DFactory::CreateSolver(m_activeAlgo);
+  } else if (m_activeAlgo == std::string{"TESTEMCNEILVEC"}) {
+    return nullptr;
+  }
 }
 
 // really need it?
@@ -1020,7 +1094,8 @@ void Wave1DSimulator::createListSections() {
     // this means that if we are comparing with E. McNeil code
     // these number correspond to 0...99, but E. McNeil has
     // array of 101 values, here we have array of 100 (domain)
-    for (auto i = 1; i <= m_lambda->grid().getMaxI(1); i++) // node index
+    for (auto i = m_lambda->grid().getBase(1); i <= m_lambda->grid().getMaxI(1);
+         i++) // node index
     {
       // auto w_xCurr = m_lambda->grid().getPoint(1, i);
       // set water level to initial dam-break config (index i-1 because

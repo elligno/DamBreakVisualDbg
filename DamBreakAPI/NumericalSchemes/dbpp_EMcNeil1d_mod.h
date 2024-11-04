@@ -35,6 +35,12 @@ public:
   /** dtor*/
   //~EMcNeil1d_mod();
 
+  // update all nodes
+  void mainLoop(const GlobalDiscretization *aGblDiscr,
+                const double aTimeTo) override final {}
+  void initialize(const GlobalDiscretization *aGblDiscr,
+                  double aTime) override {}
+
   // copy and assignment ctor not accessible ()
   StateVector getState() const override { return m_currU; }
 
@@ -49,7 +55,7 @@ protected:
   void setAval(vecdbl &aU1, vecdbl &aU2);
 
   // set all parameters for the
-  void setInitSln(const StateVector &aU, ListSectFlow *aListofSect) override;
+  void setInitSln(const StateVector &aU) override;
 
 private:
   /** time-stepping algorithm (two-steps of Runge-Kutta family type)*/

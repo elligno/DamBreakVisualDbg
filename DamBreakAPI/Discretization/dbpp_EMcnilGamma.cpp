@@ -133,8 +133,8 @@ void Gamma::setAval() {
   // Aval, spécification du débit
   U2[NbSections - 1] = 0.; // because we reserve and set i=0,...,99
 
-  printf("Condition aval: A: %lf  Q: %lf\n", U1[NbSections - 2],
-         U2[NbSections - 2]);
+  //  printf("Condition aval: A: %lf  Q: %lf\n", U1[NbSections - 2],
+  //         U2[NbSections - 2]);
 
   const auto n1 = w_n; // n[NbSections-2];
   const auto V1 = U2[NbSections - 2] / U1[NbSections - 2];

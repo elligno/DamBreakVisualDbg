@@ -3,12 +3,11 @@
 // STL includes
 #include <list>
 #include <tuple>
-#include <vector>
+#include <valarray>
 // project includes
-//#include "dbpp_IFluxAlgoImpl.h"
+#include "../Discretization/dbpp_GlobalDiscretization.h"
 #include "../Utility/dbpp_HydroCodeDef.h"
 #include "../Utility/dbpp_TestLogger.h"
-//#include "../Discretization/dbpp_EmcilNumTreatment.h"
 
 // forward declaration
 namespace dbpp {
@@ -30,8 +29,7 @@ namespace dbpp {
  *   std::vector<>
  *   make this class with private copy and assignment ctor
  */
-class SweRhsAlgorithm //: public boost::noncopyable
-{
+class SweRhsAlgorithm {
 public:
   /**
    * some typedef for clarity
@@ -45,7 +43,8 @@ public:
    *   Based on STL container and provides similar interface
    *   Container variables for the rhs terms.
    */
-  struct SWERHS {
+#if 0
+    struct SWERHS {
     using tensorField =
         std::vector<std::pair<double, double>>;  /**< represent a tensor field*/
     using value_type = double;                   /**< double value*/
@@ -131,6 +130,16 @@ public:
     unsigned m_capacity;       /**< containers capacity*/
     unsigned m_Size;           /**< containers size*/
   };
+#endif
+  /** Brief struct that hold ... numerical of each term.
+   *   Based on STL container and provides similar interface
+   *   Container variables for the rhs terms.
+   */
+  struct SWERHS {
+    std::valarray<double> m_FF1;
+    std::valarray<double> m_FF2;
+    std::valarray<double> m_S;
+  };
 
 protected:
   // structure to hold computed information
@@ -140,44 +149,17 @@ public:
   // surely want a default ctor
   /** default ctor
    */
-  SweRhsAlgorithm() {
-    auto w_msg = "SweRhsAlgorithm default ctor";
-    dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+  SweRhsAlgorithm() : m_name{"SweRhsAlgorithm"} {
+    dbpp::Logger::instance()->OutputSuccess(
+        std::string{"SweRhsAlgorithm default ctor"}.data());
   }
-
-  /** Ctor from numerical discretization
-   */
-  // SweRhsAlgorithm(BaseNumTreatmemt* aNumTReatment);
-
-  // copy and assignment not allowed
-  // 		SweRhsAlgorithm( const SweRhsAlgorithm&) = delete;
-  // 		SweRhsAlgorithm& operator= ( const SweRhsAlgorithm&) = delete;
-
-  //	SweRhsAlgorithm(IRhsDiscretization* aRhsDiscr);
-  // 		virtual ~SweRhsAlgorithm()
-  // 		{
-  // 			dbpp::Logger::instance()->OutputSuccess("SweRhsAlgorithm
-  // dtor");
-  // 		}
-
-  // some implementation of this method, i am not sure yet,
-  // but it will be something like that (i am experimenting).
-  // 		virtual void calculate( BaseNumTreatmemt* aBnum, const
-  // std::vector<real>& aU1, 			const std::vector<real>& aU2,
-  // const std::vector<real>& aH);
-  //	virtual void calculate( BaseNumTreatmemt* aBasenum, const StateVector&
-  // aStateVec);
 
   /** algorithm for the spatial term (discretization)
    * @param state vector
    */
   virtual void calculate(const StateVector &aU) = 0;
   virtual void calculate(const StateVector &aU,
-                         BaseNumTreatmemt *aBaseTreatment) = 0;
-
-  /** set rhs discretization
-   */
-  //    void setRhsDiscr(BaseNumTreatmemt* aRhsDiscr) {m_numDiscr=aRhsDiscr;}
+                         const GlobalDiscretization *aGblDiscr) = 0;
 
   /** read/write access
    */
@@ -187,11 +169,11 @@ public:
 
   /** method returns info about this algorithm
    */
-  const std::string name() const { return m_name; }
+  std::string name() const { return m_name; }
 
   /** set water level at the beginning
    */
-  virtual void setH(const dbpp::scalarField &aA) = 0;
+  // virtual void setH(const dbpp::scalarField &aA) = 0;
 
   /** NOTE: 'H' is computed once at the beginning of the time step
    *       in the intermediate state H is not updated
@@ -205,15 +187,10 @@ public:
                           const bcvalues &aBcnodeAV) = 0;
 
 protected:
-  // field to reconstruct at cell face (face variable reconstructed)
-  // deprecated should be handled by a separate class
-  //     void reconstr_vec( const vecdbl& aU1, const vecdbl& aU2,
-  // 			vecULR& aVecU1LR, vecULR& aVecU2LR);
+  ListSectFlow *m_listSectionFlow{nullptr};
 
 private:
   std::string m_name; /*< rhs algorithm name*/
-  //   BaseNumTreatmemt* m_numDiscr; /*< numerical algorithm*/
   // 		IRhsDiscretization* m_rhsDiscr; // ??
-  // 		std::vector<IRhsDiscretization*> m_vecRhsDiscr; // ??
 };
 } // namespace dbpp

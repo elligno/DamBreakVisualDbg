@@ -10,7 +10,7 @@
 #include "../SfxTypes/dbpp_DamBreakData.h"
 
 namespace dbpp {
-/** Brief Just a prototype of a class that manage the simulation parameters.
+/** @brief Just a prototype of a class that manage the simulation parameters.
  *	 These parameters could be read from an XML file for example or any
  *other format. Use the CRTP (Curious Recursive Template Pattern) to implement
  *the simulation bean. Bean that represents a simulation in the framework. Many

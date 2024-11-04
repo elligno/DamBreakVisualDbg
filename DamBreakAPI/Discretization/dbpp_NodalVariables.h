@@ -10,8 +10,10 @@
 // boost includes
 #include <boost/assert.hpp>
 #include <boost/operators.hpp>
+// Library include
+#include "SfxTypes/dbpp_DefineTypes.h"
 
-// not in use but should replace existing code with a call to this oprator
+/** @brief Operator to print Nodal_Value (tuple representation)*/
 template <typename... Ts>
 std::ostream &operator<<(std::ostream &os, std::tuple<Ts...> const &theTuple) {
   std::apply(
@@ -41,19 +43,14 @@ namespace dbpp {
 class Nodal_Value {
 public:
   /**
-   *  Some typedefs to make code cleaner
+   *  Aliases to make code cleaner
    */
-  typedef int int32;      /**< integer type*/
-  typedef double float64; /**< double type*/
-  typedef std::pair<int32, float64>
-      nodeIdX; /**< represent node Id and coordinate*/
-  typedef std::tuple<float64 /*A*/, float64 /*Q*/, float64 /*H*/>
-      tuplevar; /**< represent (A,Q,H)*/
+  using nodeIdX =
+      std::pair<int32, float64>; /**< represent node Id and coordinate*/
+  using tuplevar = std::tuple<float64 /*A*/, float64 /*Q*/,
+                              float64 /*H*/>; /**< represent (A,Q,H)*/
 public:
-  /** default ctor (i am not sure about this one!!).
-   *
-   * set attributes values to default
-   */
+  /** @brief default ctor*/
   Nodal_Value();
   /** ctor
    *  @param pair of x-coord and node index
@@ -74,11 +71,13 @@ public:
   // Design Note: really need it??
 
   /** copy initialization*/
-  Nodal_Value(const Nodal_Value &aOther);
+  // Nodal_Value(const Nodal_Value &aOther);
+
   /** assignment ctor*/
-  Nodal_Value &operator=(const Nodal_Value &aOther);
+  // Nodal_Value &operator=(const Nodal_Value &aOther);
+
   /** force destructor to be virtual*/
-  virtual ~Nodal_Value() = default;
+  // virtual ~Nodal_Value() = default;
 
   /** node parameters
    * @result node number

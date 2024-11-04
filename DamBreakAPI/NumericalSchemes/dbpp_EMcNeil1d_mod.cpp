@@ -283,9 +283,9 @@ void EMcNeil1d_mod::setH(vecdbl &aH) {
 
 // not clear yet what we do here
 // Design note pass a type DamBreakIC (encapsulate initila cond.)
-void EMcNeil1d_mod::setInitSln(const StateVector &aU,
-                               ListSectFlow *aListofSect) {
-
+void EMcNeil1d_mod::setInitSln(const StateVector &aU)
+// ListSectFlow *aListofSect)
+{
   dbpp::Logger::instance()->OutputSuccess(
       std::string{"EMcNeil1d_mod initial solution"}.data());
 
@@ -296,6 +296,20 @@ void EMcNeil1d_mod::setInitSln(const StateVector &aU,
   //  assert(w_ptrCountBef== w_ptrCountAft);
   // auto checkAttr = m_U12.first.use_count();
 
+  // ctor
+  // gridLattice(int nx, int ny, double xmin_, double xmax_, double ymin_,
+  //            double ymax_);
+
+  // sanity check (debug purpose)
+  assert(100 == aU.first->grid().getNoPoints());
+  assert(0. == aU.first->grid().xMin(1));
+  assert(1000. == aU.first->grid().xMax(1));
+  auto testGridCtor = std::make_shared<dbpp::gridLattice>(
+      aU.first->grid().getNoPoints(), 0, aU.first->grid().xMin(1),
+      aU.first->grid().xMax(1), 0., 0.);
+
+  // don't need to call ctor with string initialization (hard coded and error
+  // prone, dependency on a given data, hard to debug!!!)
   // m_U12p = aU; or i should i do the following
   // create a grid with E. mcNeil discretization
   auto w_grid = // E McNeil discretization as default
@@ -306,7 +320,8 @@ void EMcNeil1d_mod::setInitSln(const StateVector &aU,
   m_U12p.second.reset(new dbpp::scalarField{w_grid, std::string("A2p")});
 
   // will be removed in the next version
-  m_listSections = aListofSect;
+  // m_listSections = aListofSect;
+  //  m_listSections = nullptr;
   // throw std::exception("Could create initial solution");
 }
 

@@ -9,7 +9,7 @@
 #include <boost/assert.hpp>
 #include <boost/range/iterator_range.hpp>
 // package includes
-#include "../SfxTypes/dbpp_PhyConstant.h"
+#include "../Utility/dbpp_AppConstant.hpp"
 #include "../Utility/dbpp_EMcNeilUtils.h"
 #include "../Utility/dbpp_TestLogger.h"
 #include "dbpp_GlobalDiscretization.h"
@@ -264,13 +264,20 @@ void ReconstrUtil::reconstrv_sv(const StateVector &aU, vecULR &aVecU1LR,
 
   // boundary condition to applied at both end
   Gamma &w_bc = GlobalDiscretization::instance()->gamma();
-  w_bc.applyBC();
-  const Nodal_Value &w_bcUpstream = w_bc.getBCNodeAmont();
-  const Nodal_Value &w_bcDownstream = w_bc.getBCNodeAval();
+  w_bc.applyBC(); //???
+  const auto &w_bcUpstream = w_bc.getBCNodeAmont();
+  const auto &w_bcDownstream = w_bc.getBCNodeAval();
 
   // apply B.C. upstream
-  w_vU1[0] = get<0>(w_bcUpstream.Values()); // A
-  w_vU2[0] = get<1>(w_bcUpstream.Values()); // Q
+  // w_vU1[0] = get<0>(w_bcUpstream.Values()); // A
+  // w_vU2[0] = get<1>(w_bcUpstream.Values()); // Q
+
+  std::valarray<double> w_vlU1(w_vU1.data(), w_vU1.size() + 1);
+  w_vlU1[0] = get<0>(w_bcUpstream.Values());              // A
+  w_vlU1[w_vU1.size()] = get<0>(w_bcDownstream.Values()); // A
+  std::valarray<double> w_vlU2(w_vU2.data(), w_vU2.size() + 1);
+  w_vlU2[0] = get<1>(w_bcUpstream.Values());              // Q
+  w_vlU2[w_vU2.size()] = get<1>(w_bcDownstream.Values()); // Q
 
   // need to do a push_back because the scalar field hold computational
   // node only. In the reconstruction process, in the case under study,
@@ -278,8 +285,8 @@ void ReconstrUtil::reconstrv_sv(const StateVector &aU, vecULR &aVecU1LR,
   // the computational domain, extrapolate)
 
   // apply B.C. downstream
-  w_vU1.push_back(get<0>(w_bcDownstream.Values())); // A
-  w_vU2.push_back(get<1>(w_bcDownstream.Values())); // Q
+  // w_vU1.push_back(get<0>(w_bcDownstream.Values())); // A
+  // w_vU2.push_back(get<1>(w_bcDownstream.Values())); // Q
 
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //
@@ -292,12 +299,12 @@ void ReconstrUtil::reconstrv_sv(const StateVector &aU, vecULR &aVecU1LR,
 
   // compute gradient at first order and apply the minmod slope limiter
   // based on the stl algorithm call adjacent_difference
-  std::vector<double> w_dU1(w_vU1.size());
-  std::vector<double> w_dU2(w_vU2.size());
+  std::valarray<double> w_dU1(w_vlU1.size());
+  std::valarray<double> w_dU2(w_vlU2.size());
 
   // Calculs préalables: évaluation des éléments du vecteur dU
-  w_dU1[0] = HydroUtils::minmod(w_vU1[1] - w_vU1[0], 0.);
-  w_dU2[0] = HydroUtils::minmod(w_vU2[1] - w_vU2[0], 0.);
+  w_dU1[0] = HydroUtils::minmod(w_vlU1[1] - w_vlU1[0], 0.);
+  w_dU2[0] = HydroUtils::minmod(w_vlU2[1] - w_vlU2[0], 0.);
 
   const unsigned NbSections = GlobalDiscretization::instance()->getNbSections();
   // change loop index because out-of-range error
@@ -321,6 +328,8 @@ void ReconstrUtil::reconstrv_sv(const StateVector &aU, vecULR &aVecU1LR,
   w_dU2[NbSections - 1] =
       HydroUtils::minmod(0., w_vU2[NbSections - 1] - w_vU2[NbSections - 2]);
 
+  auto test = std::next(std::begin(w_vlU1), 1);
+#if 0
   // actually we are looping over cell face (j+1/2) and not grid node
   // we first perform a reconstruction of state variable
   // at the interface by using a MUSCL interpolation type
@@ -340,6 +349,7 @@ void ReconstrUtil::reconstrv_sv(const StateVector &aU, vecULR &aVecU1LR,
     aVecU1LR.push_back(make_pair(U1L, U1R));
     aVecU2LR.push_back(make_pair(U2L, U2R));
   } // end of recontr procedure
+#endif
 }
 
 // under construction (need to be tested)
@@ -418,6 +428,7 @@ ReconstrUtil::reconstr_j12(const GlobalDiscretization *aGdiscr,
   assert(w_U1.size() == w_dU1.size()); // debugging purpose
   assert(w_U2.size() == w_dU2.size()); // ditto
 
+  // reconstruction
   auto w_U1L = w_U1 + 0.5 * w_dU1; // A at j+1/2
   auto w_U2L = w_U2 + 0.5 * w_dU2; // Q at j+1/2
 
@@ -439,10 +450,28 @@ ReconstrUtil::reconstr_j12(const GlobalDiscretization *aGdiscr,
       w_Avec.size());
   assert(w_U1r.size() == w_dU1r.size()); // debugging purpose
   assert(w_U2r.size() == w_dU2r.size()); // ditto
-  auto w_U1R = w_U1r - 0.5 * w_dU1r;     // A at j+1/2
-  auto w_U2R = w_U2r - 0.5 * w_dU2r;     // Q at j+1/2
+
+  // reconstruction
+  auto w_U1R = w_U1r - 0.5 * w_dU1r; // A at j+1/2
+  auto w_U2R = w_U2r - 0.5 * w_dU2r; // Q at j+1/2
 
   // loop to fill map of cell face variables
+#if 0
+  auto listCellFaces = aGdiscr->faces();
+  while (listCellFaces.begin() != listCellFaces.end()) {
+    // add code here
+    if (auto [pos, succeed] = w_cellFaceVar.insert(
+            {static_cast<unsigned>(i), {w_U1faceVar, w_U2faceVar}});
+        !succeed) {
+      std::cerr << "Couldn't insert cell face variablles into map\n";
+      Logger::instance()->OutputError(
+          std::string{"We set DamBreak step function"}.data());
+      // auto checkPos=*pos; iterator that hold position
+      // in this case it should be equal at end
+    } // if
+  }
+#endif
+
   mapofacesvar w_cellFaceVar;
   for (auto i = 1; i < EMCNEILNbSections::value; ++i) {
     cellFaceVariables w_U1faceVar{w_U1L[i - 1], w_U1R[i - 1],

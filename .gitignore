@@ -5,8 +5,7 @@
 *.user
 *.lib
 *.txt
-*.jpg
-*.lib
+moc_*.cpp
 DamBreakAPI/Makefile.Release
 DBppGuiAppl15/Makefile.Debug
 DBppGuiAppl15/Makefile.Release
@@ -34,3 +33,4 @@ DamBreakVisualDbg/Makefile.Debug
 DamBreakVisualDbg/Makefile.Release
 DamBreakVisualDbg/debug/moc_dambreakvisualdbg.cpp
 DamBreakVisualDbg/debug/moc_predefs.h
+DBppGuiAppl15/debug/moc_predefs.h

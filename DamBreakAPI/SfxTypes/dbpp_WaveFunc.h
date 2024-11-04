@@ -110,11 +110,10 @@ protected:
   char funcname;
 
 public:
-  Step1D(char funcname_ = ' ')
-      : m_Phi1(10.),      // E.McNeil as default
-        m_Phi0(1.),       // E.McNeil as default
-        m_shockPos(500.), // E.McNeil as default
-        funcname{funcname_} {}
+  Step1D(char funcname_ = ' ');
+  // Added a new ctor for GUI initialization
+  Step1D(double aPhi0, double aPhi1, double aShokLoc);
+
   real valuePt(real x, real y = 0., real t = 0.) override;
   void scan() override;
   // don't understand what for?

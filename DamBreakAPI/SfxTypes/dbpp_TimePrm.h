@@ -60,5 +60,6 @@ public:
   double getFinalTime() const { return stop; }
   void setStopTime(const double aStop) { stop = aStop; }
   double getStartTime() const { return m_start; }
+  void setStartTime(double aStartime) { m_start = aStartime; }
 };
 } // namespace dbpp

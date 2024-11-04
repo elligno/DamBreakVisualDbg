@@ -128,11 +128,13 @@ private:
  * Usage:
  *   To be used with
  */
-class GetA : public std::unary_function<Nodal_Value, float64> {
+class GetA {
 public:
+  using result_type = float64;
+  using argument_type = Nodal_Value;
+
   // default ctor
-  GetA() { /*nothing to do*/
-  }
+  GetA() = default;
   result_type operator()(const argument_type &aVar) const {
     return aVar[0]; // A
   }
@@ -143,11 +145,12 @@ public:
  * Usage:
  *   To be used with
  */
-class GetQ : public std::unary_function<Nodal_Value, float64> {
+class GetQ {
 public:
+  using result_type = float64;
+  using argument_type = Nodal_Value;
   // default ctor
-  GetQ() { /*nothing to do*/
-  }
+  GetQ() = default;
   result_type operator()(const argument_type &aVar) const {
     return aVar[1]; // Q
   }
@@ -155,11 +158,12 @@ public:
 
 /** Retrieve water level component from ...
  */
-class GetH : public std::unary_function<Nodal_Value, float64> {
+class GetH {
 public:
+  using result_type = float64;
+  using argument_type = Nodal_Value;
   // default ctor
-  GetH() { /*nothing to do*/
-  }
+  GetH() = default;
   result_type operator()(const argument_type &aVar) const {
     try {
       // throw an exception
