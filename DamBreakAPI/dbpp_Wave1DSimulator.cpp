@@ -33,157 +33,6 @@
 
 namespace dbpp {
 
-#if 0
-	// design Note: shall return a boolean to specify if
-	// creation was done successfully. If not may need to 
-	// notify user that result won't saved because of some problem.
-	// this is our first version of this functionality of creating 
-	// folders and files with the boost file system.
-	void Wave1DSimulator::createFolderAndFile()
-	{
-		// create a directory 
-		// set a namespace for clarity
-		namespace bfs = boost::filesystem;
-
-    // what we do here? create folder? no create the path
-    auto w_currrentWrkDirectory = setDbgWorkingDir();
-    w_currrentWrkDirectory.normalize(); // Windows standardize path "\\"
-
-    //bfs::path DirContainingFile11;  store founded file 
-
-		// just a test name (file already exist in directory) 
-		//const std::string w_activeAlgo("JeanB");
-
-		// corresponding file name to simulation result
-		auto w_fileName = CreateAlgoWrkFile();
-
-		// directory format is the following "myDir_2016-04-27"
-		//bfs::path w_destination(w_curDirString);
-		if( bfs::exists(w_currrentWrkDirectory))  // check if destination exist?
-		{                                               // date is same or different
-			//std::cerr << "Destination directory "   
-			//	<< w_destination.string()  
-			//	<< " already exists." << '\n';
-//       auto w_msg = std::string{ "Destination directory: " }+w_destination.string() + std::string{ " already exists." };
-//       dbpp::Logger::instance()->OutputSuccess(const_cast<char*>(w_msg.c_str()));
-      dbpp::Logger::instance()->OutputSuccess("Destination directory: %s %s", w_currrentWrkDirectory.string().c_str(), std::string{ " already exists." }.c_str());
-
-      if( bfs::exists(w_currrentWrkDirectory) && bfs::is_directory(w_currrentWrkDirectory))
-      {
-        const bfs::directory_iterator end;
-        const bfs::directory_iterator dir_iter(w_currrentWrkDirectory/*directory*/);
-        auto folder_dist = std::distance(dir_iter, end);
-        if( folder_dist==0) // empty, no files
-        {
-          // corresponding file name to simulation result
-          auto w_fileName = CreateAlgoWrkFile();
-        }
-        else // not empty, contains 
-        {
-          bfs::directory_entry& w_file = *dir_iter; // last file in directory
-          auto strName = w_file.path().filename().string(); // file name
-          std::vector<std::string> w_nameExt;
-          w_nameExt.reserve(2);
-          boost::split(w_nameExt, strName, boost::is_any_of(".")); // without extension
-          auto w_lastDigit = w_nameExt[0].back(); // last digit of file name
-          auto w_toInt = std::atoi(&w_lastDigit); // char to integer
-          w_toInt += 1;
-          auto& w_updatdInt = w_nameExt[0].back();
-          w_updatdInt = *const_cast<char*>(std::to_string(w_toInt).c_str());
-          auto w_newName = w_nameExt[0]; // update version number
-          w_newName += std::string{ "." }+w_nameExt[1];
-        }
-      }
-
-#if 0
-      // find file by recursive procedure
-			if( FindFile11( w_destination, DirContainingFile11, w_fileName))
-			{
-				// actually it's not what we want, format of our file is with underscore
-				// with a number, so we want to retrieve that number and increment it
-				size_t w_foundIt = w_fileName.find_last_of("_");
-				if (w_foundIt != std::string::npos)
-				{
-					// found one "_"
-					std::string::iterator w_beg = w_fileName.begin(); 
-					std::advance(w_beg,w_foundIt+1);  // version number location
-					const char w_char2look = *w_beg;  // what we are looking for
-					int versionNo = atoi(&w_char2look); // convert to an integer
-					do // search for last version saved
-					{
-						// replace version number by upgraded one
-						++versionNo; // next version
-						w_fileName.replace( w_foundIt+1,1,std::to_string(versionNo));
-					} while( FindFile11( w_destination, DirContainingFile11, w_fileName));
-				}
-
-         // testing ... ???
-				std::string w_save_file_name = w_curDirString+ "\\" +w_fileName;
-
-				// initialize the sole instance of the logger (global instance)
-				dbpp::DbgLogger* w_dbgLog = dbpp::DbgLogger::instance();
-				w_dbgLog->open( w_save_file_name);
-
-				// sanity check
-				if( !w_dbgLog->isOpen())
-				{
-					dbpp::Logger::instance()->OutputError("Problem to open a debug log file\n");
-				}
-			}
-			else // need to create a new file 
-			{
-				const std::string w_save_file_name = CreateAlgoWrkFile(w_curDirString);
-
-				// initialize the sole instance of the logger (global instance)
-				dbpp::DbgLogger* w_dbgLog = dbpp::DbgLogger::instance();
-				w_dbgLog->open( w_save_file_name);
-
-				// sanity check
-				if( !w_dbgLog->isOpen())
-				{
-					dbpp::Logger::instance()->OutputError("Problem to open a debug log file\n");
-				}
-			} // find file
-#endif
-		} // directory exist
-		else // need to create a new directory
-		{    // then save file in this directory
-// 			std::string w_newDate = getDateFormat();
-// 			bfs::path w_destDir(w_currrentWrkDirectory);
-
-			// Create the destination directory  
-			if( !bfs::create_directory(w_currrentWrkDirectory))
-			{  
-// 				std::cerr << "Unable to create destination directory"  
-// 					<< w_destDir.string() << '\n';  
-        //auto w_msg = std::string{ "Unable to create destination directory " }+w_destDir.string();
-        dbpp::Logger::instance()->OutputSuccess("Unable to create destination directory: %s", w_currrentWrkDirectory.string().c_str());
-        //dbpp::Logger::instance()->OutputError(const_cast<char*>(w_msg.c_str()));
-				return;  
-			}
-			else // new directory created
-			{
-#if 0
-				std::string w_save_file_name = CreateAlgoWrkFile(w_curDirString);
-
-				// initialize the sole instance of the logger (global instance)
-				dbpp::DbgLogger* w_dbgLog = dbpp::DbgLogger::instance();
-				w_dbgLog->open( w_save_file_name);
-
-				// sanity check
-				if( !w_dbgLog->isOpen())
-				{
-					dbpp::Logger::instance()->OutputError("Problem to open a debug log file\n");
-				}
-#endif
-			}
-		}
-
-		//std::cout << "Exiting of the boost test dir creation and find file\n";
-    dbpp::Logger::instance()->OutputSuccess("Exiting createFolderAndFile() dir creation and find file");
-	}
-#endif
-
 // default ctor (we shall use the ofstream of C++11)
 Wave1DSimulator::Wave1DSimulator(/*unsigned int aNbIterationsMax  =50 ,*/
                                  double aCFL /* =0.6 */)
@@ -214,8 +63,8 @@ Wave1DSimulator::Wave1DSimulator(/*unsigned int aNbIterationsMax  =50 ,*/
       std::string{"EMcNeil1D_f"}); // rvalue reference version
   m_supportedAlgorithm.push_back(std::string{"EMcNeil1D_mod"});
   m_supportedAlgorithm.push_back(std::string{"TestEMcNeilVec"});
-  m_supportedAlgorithm.push_back(std::string{"TestBcSectF"});
-  m_supportedAlgorithm.push_back(std::string{"TestNewAlgo"});
+  //  m_supportedAlgorithm.push_back(std::string{"TestBcSectF"});
+  //  m_supportedAlgorithm.push_back(std::string{"TestNewAlgo"});
 }
 
 Wave1DSimulator::~Wave1DSimulator() {
@@ -272,9 +121,6 @@ void Wave1DSimulator::scan() {
   std::get<1>(m_u).reset(new scalarField(m_grid, "Q"));
 
   m_lambda.reset(new scalarField(m_grid, "lambda_H"));
-
-  // NOTE need to initialize the command line args in the main
-  // to make it work, without this it will crash (argv and argc empty)
 
   //   the wave-function can be specified on the command line
   //   1: Gaussian function
@@ -340,8 +186,8 @@ void Wave1DSimulator::setH() {
   dbpp::Logger::instance()->OutputSuccess(
       std::string{"Wave1DSimulator::setH() completed"}.data());
 }
-
-// NOTE: ???  i do not remember
+#if 0
+// NOTE: ???  i do not remember NEED TO BE REMOVE
 // Design Note: it shouldn't be handled by the simulator (DEPRECATED!!!!)
 real Wave1DSimulator::calculateDt() {
   using namespace std;
@@ -362,12 +208,12 @@ real Wave1DSimulator::calculateDt() {
   // conflict. no choice we make use of big_dt When i include the EMcNeil1D.h
   // header file, that create he problem lot header are included that comes
   // from c language, it may the reason that create a compile time error.
-  // Finally i found it, the header file include the windows.h which windef.h
+  // Finally I found it, the header file include the windows.h which windef.h
   // that contains minmax macro. Resolve it by surrounding the function with
   // parenthese.
   // real dt = BIG_dt;
 
-  auto dt = (std::numeric_limits<real>::max)();
+  auto dt = (std::numeric_limits<double>::max)();
   for (auto j = 2; j <= w_nbPts; j++) // start j=2, i think j=1 is tied node
   {
     auto V = w_U2(j) / w_U1(j);        // ...
@@ -386,6 +232,7 @@ real Wave1DSimulator::calculateDt() {
   // call the increase time step in the main simulation time loop)
   return m_CFL * dt;
 }
+#endif
 
 StateVector Wave1DSimulator::getIC() {
   DamBreakData w_dbData(
@@ -520,16 +367,21 @@ void Wave1DSimulator::solveProblem() {
 //  it is very handy because sometimes we just want to go one
 //  step at a time and check result of the simulation for some reasons.
 void Wave1DSimulator::initialize() {
-  // initial condition are set at the scan process
-  // startup phase (scan method).
-  auto *w_msg = "Initial condition startup phase (scan method)";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+  // initial condition are set in the scan process
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"Initial condition startup phase (scan method)"}.data());
 
-  setH();  // initial depth array
-  setIC(); // set initial conditions
-
-  // saveIC2File();  save initial data to file (no need to save that)
+  setH();     // initial depth array
+  setIC();    // set initial conditions
   initTime(); // ...
+  // create section flow
+  if (nullptr != m_ListSectFlow) // from simulation GUI ON
+  {
+    delete m_ListSectFlow;
+    m_ListSectFlow = nullptr;
+  }
+
+  createListSections();
 
   // NOTE this part is done in the factory method (same test is performed)
   // check in which mode we are in the manual mode or we are using
@@ -563,22 +415,6 @@ void Wave1DSimulator::initialize() {
   }
   //}
 
-  // TODO: see Design Note inside and return a list of sections
-  // create section flow
-  if (nullptr != m_ListSectFlow) // from simulation GUI ON
-  {
-    delete m_ListSectFlow;
-    m_ListSectFlow = nullptr;
-  }
-
-  createListSections();
-
-  // TODO: ListSectionFlowObserver
-  // in the current version, this all done when creating
-  // list of sections flow (in ctor) which don't make sense.
-  //     m_numRep->attach(m_ListSectFlow); // why not do that?
-  //     m_ListSectFlow->setSubject(m_numRep);
-
   // DESIGN NOTE
   // Remove class attributes: m_u, m_up, m_grid don't need that
   // Shall be something like that m_numRep->setInitSln(getIC()); setIC return
@@ -600,9 +436,8 @@ void Wave1DSimulator::initialize() {
   // dbpp::Logger::instance()->OutputSuccess("Wave Simulator set initial
   // condition");
 
-  // rvalue reference???
   // Set solver initial condition
-  m_numRep->setInitSln(m_u /*, m_ListSectFlow*/);
+  m_numRep->setInitSln(m_u);
 
 #if 0
   if (isSaveResult2File()) {
@@ -665,9 +500,8 @@ void Wave1DSimulator::doOneStep() {
 void Wave1DSimulator::initTime() {
   // according to Eric McNeil result, the initial time step
   // shall be equal to t: 0.6058 (make sure ...)
-  // dbgui::Logger::instance()->OutputSuccess("Initial time step is: %f",
-  // m_tip->Delta());
   using namespace dbpp;
+
   // initial condition for t=0. is set, we are ready for
   // the next time step. So increase time before we go
   // into the main simulation loop. Then since in our
@@ -676,18 +510,9 @@ void Wave1DSimulator::initTime() {
   // changing stepping mode, we would like, for some stability
   // criteria to change to a variable time stepping
   m_tip->setTimeStepMode(dbpp::TimePrm::TimeStepMode::VARIABLE_TIME_STEP);
-  m_tip->initTimeLoop();              // initialize simulation time parameters
-  m_tip->increaseTime(calculateDt()); // t1=t0+dt;
-
-  // CFL shall be outside of the compute dt method
-  // IMPORTANT use 'm_u' to compute the initial time step
-  auto w_dt = calculateDt();
-
-  // debug check (take scalarField as argument)
-  const auto w_dtCheck =
-      m_CFL * TimeStepCriteria::timeStep(*m_u.first, *m_u.second);
-
-  assert(w_dt == w_dtCheck);
+  m_tip->initTimeLoop(); // initialize simulation time parameters
+  const auto w_dt = m_CFL * TimeStepCriteria::timeStep(*m_u.first, *m_u.second);
+  m_tip->increaseTime(w_dt); // t1=t0+dt;
 
   // Simulation parameters at start up (dt, Numerical scheme)
 
@@ -705,8 +530,8 @@ void Wave1DSimulator::initTime() {
     // previous simulation
     dbpp::Simulation::instance()->resetIterationNumber2Zero();
   }
-  dbpp::Simulation::instance()->incrIteration(); // ready for the first
-                                                 // iteration iteration = 1
+  // ready for the first iteration = 1
+  dbpp::Simulation::instance()->incrIteration();
   assert(Simulation::instance()->getIterationNumber() == 1);
 }
 
@@ -740,7 +565,6 @@ void Wave1DSimulator::timeLoop() // run equivalent
       w_sim->getIterationNumber() <=
       w_sim->getNbIterationMax()) // || mb iter != max iter not reached
   {
-
     dbpp::Logger::instance()->OutputNewline();
     dbpp::Logger::instance()->OutputSuccess(
         std::string{"+++++Simulation parameters for this time step+++++"}
@@ -769,15 +593,14 @@ void Wave1DSimulator::timeLoop() // run equivalent
     // 			}
 
     // t+=dt computed by CFL criteria
-    // auto w_dt =
-    //   m_CFL*TimeStepCriteria::timeStep(m_numrep->getState().first,
-    //                                    m_numrep->getState().second)
+    auto w_dt = TimeStepCriteria::timeStep(*m_numRep->getState().first,
+                                           *m_numRep->getState().second);
 
-    auto w_dt = calculateDt(); // just for check
+    //  auto w_dt = calculateDt(); // just for check
     // simulation time is updated
-    dbpp::Simulation::instance()->setSimulationTimeStep(w_dt);
+    dbpp::Simulation::instance()->setSimulationTimeStep(m_CFL * w_dt);
     dbpp::Simulation::instance()->incrIteration(); // ready for next iteration
-    m_tip->increaseTime(calculateDt());            // next time step t+=dt
+    m_tip->increaseTime(m_CFL * w_dt);             // next time step t+=dt
 
     // block execution thread for 3 sec let time to the gui
     // to display info in the editor window
@@ -849,16 +672,6 @@ std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
       m_activeAlgo.c_str());
 
   return w_num_rep;
-
-  // Re-factor this methodcheck active algorithm
-
-  //  if (m_activeAlgo == std::string{"EMcNeil1D_mod"}) {
-  //    return w_num_rep = dbpp::EMcNeil1DFactory::CreateSolver(m_activeAlgo);
-  //  } else if (m_activeAlgo == std::string{"EMcNeil1D_f"}) {
-  //    return w_num_rep = dbpp::EMcNeil1DFactory::CreateSolver(m_activeAlgo);
-  //  } else if (m_activeAlgo == std::string{"TESTEMCNEILVEC"}) {
-  //    return nullptr;
-  //  }
 }
 
 // really need it?
@@ -975,36 +788,17 @@ void Wave1DSimulator::saveResult(const StateVector &aStateVec,
   }
 }
 
-// DESIGN NOTE: we have already set "H" values (setH() in the solveProblem()).
-// Actually the "H" that we have set "setH()" correspond to m_lambda, which
-// was pass as an argument to advance, which is not the case anymore. Now we
-// using the GlobalDiscretization to retrieve the nodal variables that are
-// updated after each iteration. IMPORTANT: we are now considering 100 section
-// (domain discretization, at each node there is a section flow as it should
-// be)
-//  **It shall return a ListOfSections!! not void, it's a kind of factory
-//  method!!
-//    use of shared ptr for reference semantic??? maybe!
 // IMPORTANT
 //	Spécification des conditions initiales
 //	Dans la version finale, ces conditions initiales "devraient être"
 //	spécifiées sous la forme de l'élévation de la surface libre et
 //	du débit pour chaque section
 void Wave1DSimulator::createListSections() {
-  // this is temporary fix for debugging purpose
   if (nullptr == m_ListSectFlow) {
     // number of grid node(computational domain)
-    // NOTE m_lambda->values().size(); is probably more appropriate
-    // we have a section at each grid node (just some checks to make sure we
-    // we are on the right track) shall be removed in the future
     assert(m_lambda->values().size() == m_lambda->grid().getNoPoints());
     assert(m_lambda->grid().getMaxI(1) == m_lambda->grid().getNoPoints());
-    // number of sections should be equal to the number of grid
-    // of the computational domain
-    m_ListSectFlow =
-        new dbpp::ListSectFlow(m_numRep, m_lambda->grid().getMaxI(1));
-
-    // const auto w_xmax = m_grid->xMax(1); // dimension 1
+    m_ListSectFlow = new dbpp::ListSectFlow(m_lambda->grid().getMaxI(1));
 
     // Remember that we are indexing from 1 and not 0
     // this means that if we are comparing with E. McNeil code
@@ -1023,13 +817,6 @@ void Wave1DSimulator::createListSections() {
 
   // hard coded (debugging purpose) it should be 100
   assert(100 == m_ListSectFlow->size());
-
-  //  if (m_simulatorMode == Wave1DSimulator::eSimulationMode::manualMode) {
-  //    // debugging purpose (print all information about a section)
-  //    std::for_each(m_ListSectFlow->getList().cbegin(),
-  //                  m_ListSectFlow->getList().cend(),
-  //                  std::mem_fn(&dbpp::SectFlow::printSectionInfo));
-  //  }
 
   dbpp::Logger::instance()->OutputSuccess(
       std::string{"Created list of sections successfully"}.data());

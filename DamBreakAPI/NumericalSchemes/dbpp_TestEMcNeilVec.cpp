@@ -101,13 +101,13 @@ void TestEMcNeilVec::advance() {
   // notify all observers
   // setState();
   // update the global discretization
-  dbpp::GlobalDiscretization::instance()->update();
+  //  dbpp::GlobalDiscretization::instance()->update();
 
   // update boundary condition (need to check for this one)
-  dbpp::GlobalDiscretization::instance()->gamma().applyBC();
+  //  dbpp::GlobalDiscretization::instance()->gamma().applyBC();
 
   // update section flow (one element in the list)
-  m_listofObs.front()->update();
+  // m_listofObs.front()->update();
 }
 
 void TestEMcNeilVec::mainLoop(const GlobalDiscretization *aGblDiscr,

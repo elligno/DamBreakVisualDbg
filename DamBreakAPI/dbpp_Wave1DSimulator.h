@@ -302,7 +302,7 @@ public:
   // DEPRECATED
   // temporary fix, this will be removed in the next version
   // shall be done by the scheduler or something else
-  virtual real calculateDt(); // calculate optimal dt (the timestep)
+  // virtual real calculateDt();  calculate optimal dt (the timestep)
 
   StateVector getIC(); /**<  Initial condition*/
 protected:
