@@ -95,7 +95,6 @@ public:
    * @param z-coordinate up direction
    */
   void setH(double aH) { m_H = aH; }
-
   /** print some of the section parameters for debugging purpose
    *
    */

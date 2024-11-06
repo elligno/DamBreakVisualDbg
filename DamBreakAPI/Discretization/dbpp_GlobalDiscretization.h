@@ -19,7 +19,8 @@
 namespace dbpp {
 // forward declaration
 class EMcNeil1D;
-class SemiDiscreteModel;
+class Simulation;
+// class SemiDiscreteModel;
 
 /** Brief Object-Oriented Design and Analysis of Finite Volume Method.
  *
@@ -67,7 +68,7 @@ public:
   };
 
   /** initialize the global discretization*/
-  void init(const ListSectFlow *aListSections);
+  void init(const Simulation *aSimulationBean);
 
   // testing some concept of global discretization (prototype)
   /** Read-only instance of the numerical scheme.
@@ -93,12 +94,12 @@ public:
    *
    * @result vector of
    */
-  std::vector<double> Xcoord() {
-    return std::vector<double>(&X[0], &X[0] + NbGlobalNode);
-  }
-  std::vector<double> Zvalues() {
-    return std::vector<double>(&Z[0], &Z[0] + NbGlobalNode);
-  }
+  //  std::vector<double> Xcoord() {
+  //    return std::vector<double>(&X[0], &X[0] + NbGlobalNode);
+  //  }
+  //  std::vector<double> Zvalues() {
+  //    return std::vector<double>(&Z[0], &Z[0] + NbGlobalNode);
+  //  }
   std::vector<double> U1values() {
     return std::vector<double>(&U1[0], &U1[0] + NbGlobalNode);
   }
@@ -199,15 +200,15 @@ protected:
   ~GlobalDiscretization();
 
 private:
-  double *U1, *U2, *X, *H, *h; /**<section flow properties */
-  double *Z /*, *n*/;          /**<bathymetry */
-  int j, NbGlobalNode;         /**< number of global node*/
-  double B, dx;                /**< section width*/
-  double m_Phi1;               /**< water level at upstream*/
-  double m_Phi0;               /**< water level at downstream*/
-  double m_xmin;               /**< minimum x-coordinate*/
-  double m_xmax;               /**< maximum x-coordinate */
-  double m_shockLocation;      /**< dambreak shock location*/
+  double *U1, *U2, *H;    /**<section flow properties */
+                          // double *Z /*, *n*/;          /**<bathymetry */
+  int j, NbGlobalNode;    /**< number of global node*/
+  double B, m_dx;         /**< section width*/
+  double m_Phi1;          /**< water level at upstream*/
+  double m_Phi0;          /**< water level at downstream*/
+  double m_xmin;          /**< minimum x-coordinate*/
+  double m_xmax;          /**< maximum x-coordinate */
+  double m_shockLocation; /**< dambreak shock location*/
 
   boost::ptr_vector<Nodal_Value> m_nval;
   /**< nodal variables (A,Q,H)*/

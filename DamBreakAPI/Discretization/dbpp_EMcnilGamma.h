@@ -22,7 +22,7 @@ class Gamma {
 public:
   enum class eBCtypes { // b.c. H/Q are fixed at both ends
     Hten_Qzero = 0,     // what for? EMCneil b.c. values
-    Hone_Qzero = 1,     // Hudson b.c. values
+    Hone_Qzero5 = 1,    // Hudson b.c. values
     all_fixed = 2
   };
 
@@ -32,8 +32,10 @@ public:
     // const Nodal_Value& w_bndAmont = aNval[0];
   }
 
-  //
+  // version in use
   void applyBC();
+  // version under construction
+  // this class need a serious refactoring
   void applyBC() const;
 
   /** returns boundary nodes (returning what exactly)

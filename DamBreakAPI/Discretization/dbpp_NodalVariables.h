@@ -30,10 +30,6 @@ std::ostream &operator<<(std::ostream &os, std::tuple<Ts...> const &theTuple) {
 namespace dbpp {
 /** Brief Nodal type that hold variable value.
  *
- * Design Note
- *  Unit test!! it's a must, just do some basic one to check
- *  basic functionality.
- *
  * Concept
  * -------
  *   Nodal_Value type is a model of node variable, in a simulation
@@ -57,7 +53,8 @@ public:
    *  @param degree of liberty of the node
    *  @param flag to node status (boundary condition)
    */
-  Nodal_Value(nodeIdX aNodeXId, int aNumOfAttr, int aTieNode = -1);
+  Nodal_Value(nodeIdX aNodeXId, int aNumOfAttr, int32 aTiedNodeNo = 1,
+              bool aTiedNode = false);
   /** default ctor (i am not sure about this one!!).
    *  @param pair of x-coordinate  and node index
    *  @param degree of liberty of the node
@@ -65,19 +62,7 @@ public:
    *  @param flag to node status (boundary condition)
    */
   Nodal_Value(nodeIdX aNodeXId, int aNumAttr, tuplevar aTuple,
-              int aTiedNode = -1);
-
-  //		Nodal_Value( unsigned aId, int aNumAttr, int aTiedNode=-1);
-  // Design Note: really need it??
-
-  /** copy initialization*/
-  // Nodal_Value(const Nodal_Value &aOther);
-
-  /** assignment ctor*/
-  // Nodal_Value &operator=(const Nodal_Value &aOther);
-
-  /** force destructor to be virtual*/
-  // virtual ~Nodal_Value() = default;
+              int32 aTiedNode = 0, bool aTieNode = false);
 
   /** node parameters
    * @result node number
@@ -103,7 +88,7 @@ public:
   /** check if we have a tied node
    * @result
    */
-  bool isTiedNode() const { return m_TieNode_No == -1; }
+  bool isTiedNode() const { return m_isTiedNode; }
 
   /** check if we have a ghost node
    * @result
@@ -231,6 +216,8 @@ protected:
   int32 m_TieNode_No;   /**< degree of liberty that is fix*/
   nodeIdX m_nodeIdX;    /**< identifier of the node (node number and coord.)*/
   tuplevar m_Node3Data; /**< hold state variable value (A,Q,H)*/
+  bool m_isTiedNode;
+
 private:
   bool m_ghostNode;
 };
@@ -250,8 +237,10 @@ public:
   /**
    *
    */
-  GNode(int32 aId, float64 aXcoord, int32 aTiedNode = -1, unsigned aNumAttr = 1)
-      : Nodal_Value(std::make_pair(aId, aXcoord), aNumAttr, aTiedNode) {
+  GNode(int32 aId, float64 aXcoord, int32 aTiedNode = -1, unsigned aNumAttr = 1,
+        bool aIsTiedNode = false)
+      : Nodal_Value(std::make_pair(aId, aXcoord), aNumAttr, aTiedNode,
+                    aIsTiedNode) {
     // nothing else to do
   }
   /** for now we check the x coordinate equality

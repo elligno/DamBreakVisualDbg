@@ -65,12 +65,8 @@ void EMcNeil1d_mod::timeStep() {
   // clear vector before filling with new values
   // write to debug file (m_U1p, m_U2p are both vectors)
   w_U1p.clear(); // size set to zero
-                 // m_currU.first->values().to_stdVector(w_U1p);
-
   w_U1p = m_currU.first->values().to_stdVector();
   w_U2p.clear();
-
-  // m_currU.second->values().to_stdVector(w_U2p);
   w_U2p = m_currU.second->values().to_stdVector();
 
   assert(w_U1p.size() == w_U2p.size());
@@ -84,7 +80,17 @@ void EMcNeil1d_mod::timeStep() {
 
   // notify list of section flow and update GlobalDiscretization and
   // BoundaryCondition
-  setState();
+  // setState(); // deprecated
+  // now done in wave simulator doOneStep()
+  //  GlobalDiscretization::instance()->update();
+  //  GlobalDiscretization::instance()->gamma().applyBC();
+
+  // This is done in WaveSimulator in doOneStep()
+  //  auto w_vecH = GlobalDiscretization::instance()->Hvalues();
+  //  auto w_listSections = static_cast<ListSectFlow *>(m_listofObs.front());
+  //  for (SectFlow *w_sectF : *w_listSections) {
+  //    w_sectF->setH(w_vecH[w_sectF->getId()]);
+  //  }
 
   // release respource
   if (dbpp::DbgLogger::instance()->isOpen()) {
@@ -146,16 +152,6 @@ void EMcNeil1d_mod::predictor(const RhsStruct &aRhs) {
   const auto w_nbGridPts = m_U12p.first->grid().getDivisions(1);
   const auto dt = dbpp::Simulation::instance()->simulationTimeStep();
 
-  // working variable for numerical algorithm
-  // 			std::vector<double> w_U1p; //w_U1p.reserve(
-  // m_U12.first->values().size()); 			std::vector<double>
-  // w_U2p;
-  // //w_U2p.reserve( m_U12.first->values().size());
-
-  // shall be done in the advance() method before calling predictor
-  // predictor-step w_U1p[0]?? what we gonna do? might as well to set it
-  // to the boundary condition?
-
   // temporary = move semantic (swap resources) no copy
   vecdbl w_U1p(
       m_U12p.first->values().to_stdVector().size()); // prvalue, call move ctor
@@ -192,24 +188,6 @@ void EMcNeil1d_mod::predictor(const RhsStruct &aRhs) {
 
   // current solution of the integrator
   m_currU = m_U12p;
-
-  // set bc
-  // global discretization nbSections=101
-  //     const Nodal_Value w_bcAval = w_bc.getBCNodeAval();
-  //     m_U1p[w_nbGridPts] = w_bcAval[0];
-  //     m_U2p[w_nbGridPts] = w_bcAval[1];
-
-  // 		// set value to scalarField
-  // 		dbpp::RealNumArray<real>& w_realU1 = m_U12p.first->values();
-  // 		dbpp::RealNumArray<real>& w_realU2 = m_U12p.second->values();
-  // 		for( int i=0;i<w_realU1.size();++i) // set scalarField values
-  // 		{
-  // 			w_realU1(i+1)=m_U1p[0];
-  // 		}
-  //
-  // 		// writing to file for validation and debugging (shall be to the
-  // data store) 		dbgui::DbgLogger::instance()->write2file_p(
-  // std::make_tuple( U1p.size(),U1p,U2p));
 }
 
 void EMcNeil1d_mod::corrector(const RhsStruct &aRhs) {
@@ -266,20 +244,20 @@ void EMcNeil1d_mod::corrector(const RhsStruct &aRhs) {
   m_currU = m_U12;
 }
 
-void EMcNeil1d_mod::setH(vecdbl &aH) {
-  // shall we throw an exception?
-  if (nullptr == m_listSections) {
-    return;
-  }
-  // create the vector of H
-  //	std::vector<double> w_H;
-  //		aH.reserve(m_listSections->getList().size());
-  // Design Note
-  //  Shall we set the
-  std::transform(m_listSections->getList().begin(),
-                 m_listSections->getList().end(), std::back_inserter(aH),
-                 std::bind(&SectFlow::H, std::placeholders::_1));
-}
+// void EMcNeil1d_mod::setH(vecdbl &aH) {
+//  // shall we throw an exception?
+//  if (nullptr == m_listSections) {
+//    return;
+//  }
+//  // create the vector of H
+//  //	std::vector<double> w_H;
+//  //		aH.reserve(m_listSections->getList().size());
+//  // Design Note
+//  //  Shall we set the
+//  std::transform(m_listSections->getList().begin(),
+//                 m_listSections->getList().end(), std::back_inserter(aH),
+//                 std::bind(&SectFlow::H, std::placeholders::_1));
+//}
 
 // not clear yet what we do here
 // Design note pass a type DamBreakIC (encapsulate initila cond.)
@@ -351,13 +329,10 @@ EMcNeil1d_mod::createRhsDiscretization(const StateVector &aU) {
   vecdbl U1 = aU.first->values().to_stdVector();
   vecdbl U2 = aU.second->values().to_stdVector();
 
-  // gradient dU (evaluated  inside of the flux algorithm)
-  vecdbl w_dU1(GlobalDiscretization::instance()
-                   ->U1values()
-                   .size()); // ghost node (calculFF() reconstruction)
-  vecdbl w_dU2(GlobalDiscretization::instance()
-                   ->U2values()
-                   .size()); // ghost node (calculFF() reconstruction)
+  // gradient dU (evaluated inside of the flux algorithm)
+  // ghost node (calculFF() reconstruction)
+  vecdbl w_dU1(GlobalDiscretization::instance()->U1values().size());
+  vecdbl w_dU2(GlobalDiscretization::instance()->U2values().size());
 
   // apply boundary condition at both end
   setAmont(U1, U2); // now we have 101 pts

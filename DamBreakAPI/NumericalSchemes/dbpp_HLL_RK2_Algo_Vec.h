@@ -132,7 +132,7 @@ protected:
   //		StateVector m_U12p;              /**< state vector for mid time
   // step*/
 
-private:
+  // private:
   // shall be part of a separate class with the following signature
   // checkGdiscrWithVec(vector<double>&, vector<double>&)
   // void checkGdiscrWithVec();
@@ -148,7 +148,7 @@ private:
   // char NomFichierResultat[256]; /**< deprecated*/
 
   // flag for file status (still using this?)
-  bool m_opened; // false is default value
-  bool m_dbgOpen;
+  // bool m_opened; // false is default value
+  // bool m_dbgOpen;
 };
 } // namespace dbpp

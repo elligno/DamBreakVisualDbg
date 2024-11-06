@@ -45,8 +45,8 @@ void Gamma::setAmont() {
   auto U1 = GlobalDiscretization::instance()->U1values();
   auto U2 = GlobalDiscretization::instance()->U2values();
   auto H = GlobalDiscretization::instance()->Hvalues();
-  auto Z = GlobalDiscretization::instance()->Zvalues();
-
+  // auto Z = GlobalDiscretization::instance()->Zvalues();
+  std::vector<double> Z(U1.size());
   const auto w_n = 0.;  // w_sectUp->N();
   const auto S0av = 0.; // w_sectUp->getS0av();
   const auto B = 1.;    // w_sectUp->B();
@@ -64,12 +64,12 @@ void Gamma::setAmont() {
   const auto R1 = HydroUtils::R(U1[1], B); // hydraulic radius
   const auto Y1 = H[1] - Z[1];             // water depth
 
-  // because we are considering a rectangular channel
+  // because we are considering a rectangular channel of unit width
   // see reference (Modeling Of Open Channel Flow, chapter #2)
   const auto CB = ::sqrt(PhysicalConstant::sGravity * U1[1] / HydroUtils::T(B));
 
   // Manning formula (see documentation)
-  const auto Sf1 = n1 * n1 * V1 * ::fabs(V1) / ::pow(R1, 4. / 3.);
+  const auto Sf1 = n1 * n1 * V1 * std::fabs(V1) / std::pow(R1, 4. / 3.);
 
   // simulation current time step
   const auto dt = Simulation::instance()->simulationTimeStep();
@@ -186,5 +186,26 @@ void Gamma::applyBC() {
   GlobalDiscretization::instance()->Hvalues()[w_nbsect] = m_aval[2];
 
   // Nodal_Value& w_nval2 = GlobalDiscretization::instance()->Uh()[100];
+}
+
+// Nov 24
+// NOTE this is not complete!! not sure if i'm going to use it in the future
+//  There is a new implementation (refactoring) that i want to test
+void Gamma::applyBC() const {
+  // call setAmont() and setAval() in a row
+  // setAmont();
+  // setAval();
+  // amont
+  GlobalDiscretization::instance()->U1values()[0] = m_amont[0];
+  GlobalDiscretization::instance()->U2values()[0] = m_amont[1];
+  GlobalDiscretization::instance()->Hvalues()[0] = m_amont[2];
+
+  // ...
+  unsigned w_nbsect = GlobalDiscretization::instance()->getNbSections() - 1;
+
+  // aval
+  GlobalDiscretization::instance()->U1values()[w_nbsect] = m_aval[0];
+  GlobalDiscretization::instance()->U2values()[w_nbsect] = m_aval[1];
+  GlobalDiscretization::instance()->Hvalues()[w_nbsect] = m_aval[2];
 }
 } // namespace dbpp

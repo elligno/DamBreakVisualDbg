@@ -15,28 +15,27 @@ namespace dbpp {
 Nodal_Value::Nodal_Value()
     : m_NumOfAttr(3),
       //	  m_NodeNumber(   0 ),
-      m_TieNode_No(-1), m_ghostNode(false) {
+      m_TieNode_No(0), m_isTiedNode{false}, m_ghostNode(false) {
   m_nodeIdX.first = 0;           // node id
   m_nodeIdX.second = 0.;         // node x-coord.
   std::get<0>(m_Node3Data) = 0.; // A
   std::get<1>(m_Node3Data) = 0.; // Q
   std::get<2>(m_Node3Data) = 0.; // H
 }
-Nodal_Value::Nodal_Value(nodeIdX aNodeId, int32 aNumOfAttr,
-                         int32 aTieNode /*=-1*/)
+Nodal_Value::Nodal_Value(nodeIdX aNodeId, int32 aNumOfAttr, int32 aTiedNode,
+                         bool aIsTieNode /*=false*/)
     : //	  m_NodeNumber(   aNodeId.first),
-      m_NumOfAttr(aNumOfAttr), m_TieNode_No(aTieNode), m_nodeIdX(aNodeId),
-      m_ghostNode(false) {
+      m_NumOfAttr(aNumOfAttr), m_TieNode_No(aTiedNode),
+      m_nodeIdX(aNodeId), m_isTiedNode{aIsTieNode}, m_ghostNode(false) {
   std::get<0>(m_Node3Data) = 0.; // A
   std::get<1>(m_Node3Data) = 0.; // Q
   std::get<2>(m_Node3Data) = 0.; // H
 }
 
 Nodal_Value::Nodal_Value(nodeIdX aNodeXId, int aNumAttr, tuplevar aTuple,
-                         int aTiedNode /*=-1*/)
-    : // 		m_NodeNumber( m_nodeIdX.first),
-      m_NumOfAttr(aNumAttr), m_TieNode_No(aTiedNode), m_nodeIdX(aNodeXId),
-      m_Node3Data(aTuple), m_ghostNode(false) {
+                         int32 aTiedNode /*= 0*/, bool aIsTiedNode /*= false*/)
+    : m_NumOfAttr(aNumAttr), m_TieNode_No(aTiedNode), m_nodeIdX(aNodeXId),
+      m_Node3Data(aTuple), m_isTiedNode{aIsTiedNode}, m_ghostNode(false) {
   // not much to do for now
 }
 

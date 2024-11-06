@@ -20,8 +20,6 @@ public:
 public:
   TwoStepsIntegrator() = default; //??
 
-  eIntegratorStep getIntegratorStep() const { return m_integratorStep; }
-
   void setInitSln(const std::vector<double> &aU1,
                   const std::vector<double> &aU2) {
     // NOTE we need first to initialize the scalar field,
@@ -48,13 +46,21 @@ public:
   }
 
   // design note: what about move semantic?? in some situation ...
-  // to be completed ...
-  void setInitSln(std::vector<double> &&aU1, std::vector<double> &&aU2) {
-    // not sure how to do it??? can i do it?? just assign without move?
-    auto U1 = std::move(aU1); // use move version of operator=??
-    auto U2 = std::move(aU2); // use move version of operator=??
+  // to be completed ... not sure about this one!!
+  void setInitSln(const StateVector &aStateVecInit) {
+    auto nbPts = aStateVecInit.first->grid().getNoPoints();
+    auto maxGrid = aStateVecInit.first->grid().xMax(1);
+    auto minGrid = aStateVecInit.first->grid().xMin(1);
 
-    // RealNumArray<double()
+    auto w_grid1D =
+        std::make_shared<gridLattice>(nbPts, 0, minGrid, maxGrid, 0., 0.);
+
+    // reset pointer
+    m_currState.first.reset(
+        new scalarField{w_grid1D, std::string{"Mid State A"}});
+
+    m_currState.second.reset(
+        new scalarField{w_grid1D, std::string{"Mid State A"}});
   }
 
   // 2-step integrator that belongs to Runge-Kutta family (second-order)
@@ -65,14 +71,17 @@ public:
     m_integratorStep = aIntegratorStep;
   }
 
+  eIntegratorStep getIntegratorStep() const { return m_integratorStep; }
+
   StateVector getCurrentState() const { return m_currState; }
   StateVector getMidState() const { return m_prevState; }
 
   void setStep(const double aStep) { m_step = aStep; }
   double getStep() const { return m_step; }
+
   // ...
-  void predictor(double dt /*, RHS*/);
-  void corrector(double dt /*, RHS*/);
+  //  void predictor(double dt /*, RHS*/);
+  //  void corrector(double dt /*, RHS*/);
 
   // Since C++17 "Copy Elison is Mandatory"
   //(unmaterialize to "xvalue" eXpiring)

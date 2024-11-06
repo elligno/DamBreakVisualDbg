@@ -7,9 +7,9 @@
 //#include "../Utility/dbpp_SimulationUtility.h"
 #include "../Utility/dbpp_EnvVarMgr.h"
 
-namespace dbpp {
-ListSectFlow *g_ListSectFlow;
-}
+// namespace dbpp {
+// ListSectFlow *g_ListSectFlow;
+//}
 namespace dbpp {
 // default
 // NOTE: algo name has changed since last month

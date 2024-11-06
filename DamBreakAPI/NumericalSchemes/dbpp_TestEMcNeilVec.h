@@ -11,7 +11,11 @@ class SweRhsAlgorithm;
 }
 
 namespace dbpp {
-// re-implement advance() with the new type for the Rhs
+/** @brief
+ * We are using the new concept of the RHS algorithm (step of the algo)
+ * wrapped inside of the algo, this way we can make different algorithm
+ * base on the numerical representation (treatment of the rhs).
+ */
 class TestEMcNeilVec : public EMcNeil1D {
   using swe_rhs = SweRhsAlgorithm::SWERHS;
 
@@ -22,6 +26,7 @@ public:
   void advance() override final;
   void mainLoop(const GlobalDiscretization *aGblDiscr,
                 const double aTimeTo) override final;
+
   void initialize(const GlobalDiscretization *aGblDiscr,
                   double aTime) override final;
 
@@ -30,6 +35,9 @@ public:
   {
     m_U12 = aU; // just trying something
   }
+
+  // not completed (return by copy, C++17 copy elison is mandatory)
+  StateVector getState() const override { return m_U12; }
 
 protected:
   void timeStep() override final {}

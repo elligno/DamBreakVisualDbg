@@ -42,7 +42,7 @@ public:
                   double aTime) override {}
 
   // copy and assignment ctor not accessible ()
-  StateVector getState() const override { return m_currU; }
+  StateVector getState() const override { return m_U12; }
 
 protected:
   /** physical algorithm (more the numerical algorithm)*/
@@ -77,8 +77,8 @@ private:
   StateVector m_U12;   /**< state vector that hold state variables (U1,U2)*/
   StateVector m_U12p;  /**< state vector for mid time step*/
   StateVector m_currU; /**< state vector for current step*/
-  ListSectFlow *m_listSections; /**< List of sections flow*/
-  void setH(vecdbl &aVecofH);   /**< ... */
+  // ListSectFlow *m_listSections; /**< List of sections flow*/
+  void setH(vecdbl &aVecofH); /**< ... */
 
   // i like this concept (could be wrapped in a class for prototyping purpose)
   RhsStruct
