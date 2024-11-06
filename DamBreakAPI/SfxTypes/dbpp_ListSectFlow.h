@@ -6,16 +6,12 @@
 // stl includes
 #include <algorithm>
 #include <vector>
-// package includes
-#include "../SfxTypes/dbpp_Observer.h"
 
 namespace dbpp {
-/** Brief Model of hydraulic cross-section.
+/** @brief Model of hydraulic cross-section.
  *    Represent the cross section (solve the st-Venant equations).
  *    It has the hydraulic properties such radius, wetted perimeter
  *    that define ... to be completed
- *
- *    Design Note
  */
 class SectFlow // boost 'operator' library such as
 {
@@ -113,37 +109,12 @@ public:
 
 // forward declaration
 class EMcNeil1D;
-// class SemiDiscreteModel;
-
-// don't need an const_iterator, because it is read-only, need to re-work
-// this need to be inside the class (more test to do)
-//	typedef boost::iterator_range<std::list<SectFlow*>::const_iterator>
-// ListIterator;
-// some test types (just experimenting some concept)
-// class IITereable { virtual ListIterator getListIterator() const = 0;};
-// class Observer { virtual void update()=0;};
-
-// Usage:
-//   This concept of forward list implement traversing from top to bottom
-//   Global instance or sole instance of this class since
-//   it can't be any more than one list of section flow ON.
-//  Iterate through the collection with out knowing
-//   ListSectFlow w_test;
-// 	BOOST_FOREACH(ListSectFlow::ListIterator::reference w_sect,
-// w_test.getEnumerator())
-// 	{
-// 		w_sect.setH(12);
-// 		//std::cout << str << "\n";
-// 	}
-// 	Design Note:
-
-// TODO: this class needs a serious refactoring
-//  Observer pattern i a big mess
 
 /** Brief List of all section flow for the simulation.
- *   The list of section is an observer (design pattern) and implemented
- *   as a vector STL-like (can be used with most of algorithm) by providing
- *   methods that returns iterator.
+ *   This concept of forward list implement traversing from top
+ *   to bottom and implemented as a vector STL-like
+ *   (can be used with most of algorithm) y providing methods
+ *   that returns iterator.
  *
  *   Implemented as a pointer-container for reference semantic.
  *   Design Note:
@@ -151,10 +122,6 @@ class EMcNeil1D;
  *      (it will be implemented in the next version of the application)
  *
  * Usage:
- *   This concept of forward list implement traversing from top to bottom
- *   Global instance or sole instance of this class since
- *   it can't be any more than one list of section flow ON.
- *
  *   Below an example of how to use it (iterate through the collection)
  *
  *   Iterate through the collection with out knowing
@@ -165,11 +132,10 @@ class EMcNeil1D;
  * 		w_sect.setH(12);
  * 	}
  */
-class ListSectFlow : public Observer {
+class ListSectFlow {
 public:
-  // incomplete type (forward declaration)
   /**
-   * some typedef for code clarity
+   * Some typedef for code clarity
    */
   using vec_sizetype =
       std::vector<SectFlow *>::size_type; /**< container size type*/
@@ -193,30 +159,17 @@ public:
   /**
    * default constructor (Ctor from subject)
    */
-  ListSectFlow(std::shared_ptr<EMcNeil1D> aSubj,
-               size_t aNbSections = 101 /*jb::Wave1DSimulator* aSubj*/);
+  explicit ListSectFlow(size_t aNbSections = 101);
   /**
    *   destructor
    */
   virtual ~ListSectFlow();
 
-  /** Copy ctor
-   *
-   */
+  /** Copy ctor*/
   ListSectFlow(const ListSectFlow &aOther);
 
-  /** Assignment ctor
-   *
-   */
+  /** Assignment ctor */
   ListSectFlow &operator=(const ListSectFlow &aOther);
-
-  //
-  // Move semantic
-  //
-  // 		ListSectFlow( const ListSectFlow&& aOther)
-  // 		{
-  // 			// what to do (not completed)
-  // 		}
 
   /** Add the section to the list.
    *  pass by pointer since we want a reference semantic
@@ -307,22 +260,9 @@ public:
    */
   std::vector<SectFlow *> &getList() { return m_listOfSect; }
 
-  /** Observer implementation
-   *  Update section parameter (water level) in Observer design pattern
-   *  should call getState() from Subject
-   */
-  void update() override;
-
 private:
   // shall use the shared_ptr type to make sure the clean-up is done
-  // std::vector<SectFlow*>::size_type m_NbSections; /**< number of sections*/
   std::vector<SectFlow *> m_listOfSect; /**< list of sections*/
-  std::shared_ptr<EMcNeil1D> m_subj;    /**< */
-
-  bool deleteIt(); // helper function to clean-up the list
-                   //		SemiDiscreteModel* m_modelSubj;
+  bool deleteIt(); /**< helper function to clean-up the list*/
 };
-// global variable (initialized at the beginning
-// of the simulation in the main function).
-//	extern ListSectFlow* g_ListSectFlow;
 } // namespace dbpp
