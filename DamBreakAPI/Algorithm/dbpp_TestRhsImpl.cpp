@@ -20,45 +20,32 @@ namespace dbpp {
 // procedure is done by a separate function, this way we isolate the
 // extrapolation algorithm from the algorithm.
 //
-//  Question: boundary condition has been applied on StateVector?
-//  in this version we still use EMcNeil1D class in which with std
-//  vector and boundary applied to U1,U2 and H. "StateVector"
-//
-//  Usage:
-//    Create algorithm
-//    SweRhsAlgorithm* w_rhs = new TestRhsImpl();
-//    w_rhs->setH(aScalarField); // set water level H for this step
-//    w_rhs->calculate(aStateVec);
-//    predictor();
-//    w_rhs->calculate(aStateVec);
-//    corrector();
-//
-//    Implement the E.McNeil calculFF() version
-//
 void TestRhsImpl::calculate(const StateVector &aU) {
   using namespace std;
   using namespace std::placeholders;
 
   // sanity check (debugging purpose)
   assert(aU.first->values().size() == 100);
+  assert(aU.first->values().size() == static_cast<int>(m_listSectFlow->size()));
 
-  // computational domain
+  // computational domain (retrieve values)
   const auto &w_U1 = aU.first->values();
   const auto &w_U2 = aU.second->values();
 
   // +++++++++++++++++++++++++++++++++++++++++
   // When i do that i just resize or size the vector with default value (yeap!)
   // reserve memory to store data, size=0 since no elements
-  vector<pair<real, real>> w_U1LR; // A (reconstructed variable at cell face)
+  vector<pair<double, double>>
+      w_U1LR; // A (reconstructed variable at cell face)
   w_U1LR.reserve(w_U1.size());
-  vector<pair<real, real>> w_U2LR; // Q (ditto)
+  vector<pair<double, double>> w_U2LR; // Q (ditto)
   w_U2LR.reserve(w_U2.size());
 
   // for passing to the right hand side numerical treatment
   // for now we use legacy code which take as argument vector
   // we need to create temporary vector and set ...
-  vector<real> w_vU1(w_U1.getPtr(), w_U1.getPtr() + w_U1.size());
-  vector<real> w_vU2(w_U2.getPtr(), w_U2.getPtr() + w_U2.size());
+  vector<double> w_vU1(w_U1.getPtr(), w_U1.getPtr() + w_U1.size());
+  vector<double> w_vU2(w_U2.getPtr(), w_U2.getPtr() + w_U2.size());
 
   // apply B.C. upstream
   w_vU1[0] = get<0>(m_bcnodeAM); // A
@@ -98,14 +85,11 @@ void TestRhsImpl::calculate(const StateVector &aU) {
   ReconstrUtil::reconstr_vec(w_vU1, w_vU2, w_U1LR, w_U2LR);
 
   // Jean B (August 2024)
-  // All the lines above could be replaced by these
-  // b.c. and all other should be handled by the reconstruction algo
-  // i mean its user responsibilities to implement the way he wants it
-  // API expose signature with scalarField and other types, not stl!!
   // Encapsulate reponsibilities avoid cross dependencies
   // MusclReonstruction w_muslcl;
   // call ReconstrUtil::reconstr_vec if user has decided to implement
-  // w_muslcl.reconstr(aU.first,aU.second,GlobalDiscretization, cellFaceVar);
+  // return extrapolated (reconstructed) variables at cell face j+1/2
+  // cellFaceVar = w_muslcl.reconstr(aU.first,aU.second,GlobalDiscretization);
   // +++++++++++++++++++++++++++++++++++++++++++++++++
 
   // compute cell face flux (HLL algorithm)
@@ -230,61 +214,4 @@ void TestRhsImpl::setBCNodes(
   m_bcnodeAM = aBcnodeAM;
   m_bcnodeAV = aBcnodeAV;
 }
-
-#if 0
-// Remark:
-//   Water level is set at the beginning of the time step,
-//   not updated at mid state level, use same value
-//   updated at the end of the time step to be ready for
-//   next time step.
-//
-void TestRhsImpl::setH(const dbpp::scalarField &aA) {
-  using namespace std;
-  using namespace std::placeholders;
-
-  // create vector of A values
-  vector<double> w_vU1(aA.values().getPtr(),
-                       aA.values().getPtr() + aA.values().size());
-
-  // (initialize with default value 0)
-  vector<real> z(aA.values().size() + 1); // NbSections in original code
-
-  if (!all_of(z.cbegin(), z.cend(), // range
-              bind(equal_to<real>(), _1, 0.)) == true) {
-    // fill it with zero value (make sure it's zero initialized)
-    fill(z.begin(), z.end(), 0.);
-  }
-
-  // retrieve current discretization parameters
-  DamBreakData w_McnilDat(DamBreakData::DiscrTypes::emcneil);
-  double w_sectionWidth = 1.; // as default value
-  if (!w_McnilDat.isUnitSectionWidth()) {
-    // force to be unit width
-    w_sectionWidth = 1.;
-  }
-
-  // what we do here?
-  if (m_vH.size() == 0) {
-    // apply B.C. upstream
-    w_vU1[0] = get<0>(m_bcnodeAM); // A
-    // apply B.C. downstream (actually we add the ghost node)
-    w_vU1.push_back(get<0>(m_bcnodeAV)); // A
-
-    // just to make sure
-    assert(w_vU1.size() == z.size());
-
-    // size the vector and apply boundary cnd at the end
-    m_vH.resize(aA.values().size() + 1);
-  }
-
-  // H=A-Z (water depth) computation
-  std::transform(
-      w_vU1.begin(), w_vU1.end(), z.begin(), m_vH.begin(),
-      bind(&HydroUtils::Evaluation_H_fonction_A, _1, w_sectionWidth, _2));
-
-  // apply bc to H make sure we have fix
-  m_vH[0] = get<2>(m_bcnodeAM);
-  m_vH[aA.values().size()] = get<2>(m_bcnodeAV); // supposed to be at i=100
-}
-#endif
 } // namespace dbpp

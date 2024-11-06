@@ -445,9 +445,6 @@ StateVector Wave1DSimulator::getIC() {
 void Wave1DSimulator::setIC() {
   using namespace dbpp;
 
-  // number of points in x-direction
-  // const int nx = m_grid->getMaxI(1);
-
   // fill the field for the current time period
   // with values from the appropriate function
   auto &w_U1 = m_u.first->values();  // reference to modify it (A)
@@ -625,39 +622,9 @@ void Wave1DSimulator::doOneStep() {
   using namespace std;
   using namespace dbpp;
 
-  // 		dbpp::Logger::instance()->OutputNewline();
-  // 		// write to log file instead of writing to console. Use Regex to
-  // find information 		dbpp::Logger::instance()->OutputSuccess(
-  // "Iteration number is: %d",         m_tip->getTimeStepNo());
-  // 		dbpp::Logger::instance()->OutputSuccess( "Time step computed is:
-  // %f", m_tip->Delta()); 		dbpp::Logger::instance()->OutputSuccess(
-  // "Simulation time computed is: %f", m_tip->time());
+  // update all nodes
+  m_numRep->advance();
 
-  //*****************
-  // Design Note the signature of this method shall be somthing like
-  // advance(t0,t1,dt,timestepCriteria) time loop is done inside
-  // see "Dsn_FiniteDifferenceModel" advance method, its the way
-  // it shall be done. In this method a call is made to explicit integrator
-  // but this wrong, the model create the ODESolver, this must be replaced
-  // by odeSolver->solve(...) which is more natural.
-  // sanity check about the numerical algorithm that is running
-  m_numRep->advance(/*m_u*/); // variable is updated (pass as reference)
-
-#if 1 // next version (section flow updated at the end timeStep() when calling
-      // notify()), i think that's the way it should be
-  // NOTE
-  //  Just don't need that!! because we have the state vector which is made
-  //  made of shared_ptr that we pass as initial solution to numerical scheme
-  //  which update these values, all we have to do (update water depth)
-  //  list of sections is an observer of numerical scheme and is updated
-  //  at each iteration (don't make sense)
-  //  std::transform(m_ListSectFlow->getList().begin(),
-  //                 m_ListSectFlow->getList().end(),
-  //                 m_lambda->values().begin(), std::bind(&SectFlow::H,
-  //                 std::placeholders::_1));
-
-  // that will do exactly the same (dependency of list of sections on numerical
-  // scheme can be removed)
   // NOTE we have A (cross-section surface: wetted area) but we solve for h
   // water depth for each cross-section.
   // Important to know the following:
@@ -666,35 +633,28 @@ void Wave1DSimulator::doOneStep() {
   // we are solving swe for (h,hv) mass/momentum, so 'A' represent
   // 'h' (H-Z) for now we have Z=0. flat bed
   auto &w_hValues = m_u.first->values(); // A(h) water depth
-  // std::copy(w_hValues.begin(), w_hValues.end(), m_lambda->values().begin());
-  // could i do that copy ctor?? is it working?
-  // good test for the copy ctor of numericla array!!!
   auto &lambdaArray = m_lambda->values();
   lambdaArray = w_hValues; // no need to call copy algorithm
 
   // now we have the water depth, but we need the water level
-  // then if we want to update sections flow we can do it here
   auto w_sectUp2Date = m_ListSectFlow->getList(); // 100 or 101??
   auto begList = w_sectUp2Date.begin();
-  // call Evaluation_H_
+  //
   while (begList != w_sectUp2Date.end()) // computational domain
   {                                      // but we need also the extra section
     // Important to note
-    // section index 0...N-1
-    // numerical array 1...N
+    // section index 0...N-1, numerical array 1...N
+    // compute water level
     SectFlow *w_currSect = *begList++;
     w_currSect->setH(HydroUtils::Evaluation_H_fonction_A(
         w_hValues(w_currSect->getId() + 1), w_currSect->B(), w_currSect->Z()));
   }
+  // Global nodes values updated
+  GlobalDiscretization::instance()->update();
+  // Set b.c. (physical boundary condition)
+  GlobalDiscretization::instance()->gamma().applyBC();
 
-  // not sure about this one
-//  std::transform(m_lambda->values().begin(), m_lambda->values().end(),
-//                 w_sectUp2Date.begin(),
-//                 [](double aH, SectFlow &aSection) { aSection.setH(aH); });
-#endif
-
-  // save iteration result to file (more a debugging file, right we are not
-  // really using it)
+  // save iteration result to file
   if (isSaveResult2File()) {
     // call m_numRep->getState() and pass list of section flow
     // saveResult(m_numRep->getState(), m_ListSectFlow, m_tip->time());
@@ -769,30 +729,8 @@ void Wave1DSimulator::timeLoop() // run equivalent
   // and file ready to be open for writing
   dbpp::DbgLogger::instance()->setDbgWorkingFile();
 
-  // EMcNeilAlgo timestep()
-  // Symetry: open/close at same location you write
-  // initialize the sole instance of the logger (global instance)
-  // dbpp::DbgLogger *w_dbgLog = dbpp::DbgLogger::instance();
-  //  auto w_fileName = Simulation::instance()->getAlgorithmName();
-  //  w_fileName += ".txt";
-  //  w_dbgLog->open(
-  //      w_fileName
-  // w_save_file_name);  be careful because this is a default arg
-  // which is not valid anymore but still in use
-  // sanity check
-  //  if (!w_dbgLog->isOpen()) {
-  //    dbpp::Logger::instance()->OutputError(
-  //        std::string{"Problem to open the debug log file\n"}.data());
-  //  }
-
   // for code clarity
   dbpp::Simulation *w_sim = dbpp::Simulation::instance();
-
-  // debugging purpose (correspond to the original number of iteration
-  // for 22.5 sec) w_sim->setNbIterationMax(1);  temporary fix (set on the GUI
-  // side)
-  // assert(10 == w_sim->getNbIterationMax());  shall be put in a unit test
-  //  auto check = w_sim->getNbIterationMax();
 
   // we are at first iteration and time is time step
   // initial cnd are has been set and we are ready
@@ -802,24 +740,7 @@ void Wave1DSimulator::timeLoop() // run equivalent
       w_sim->getIterationNumber() <=
       w_sim->getNbIterationMax()) // || mb iter != max iter not reached
   {
-    // for now we use it in the global discretization boundary cnd.
-    // emcil::Simulation::instance()->setSimulationTimeStep(w_dt);
-    //
-    // 			std::cout << "\n";
-    // 			std::cout << "+++++++++++++Simulation parameters
-    // for this time
-    // step++++++++++++++\n"; 			std::cout << "Time step
-    // computed is:
-    // "
-    // << m_tip->Delta() << "\n"; 			std::cout << "Simulation
-    // time computed is: " <<
-    // m_tip->time() << "\n"; 			std::cout << "Iteration
-    // number is:
-    // "
-    // << m_tip->getTimeStepNo() << "\n"; 			std::cout <<
-    // "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
 
-#if 1
     dbpp::Logger::instance()->OutputNewline();
     dbpp::Logger::instance()->OutputSuccess(
         std::string{"+++++Simulation parameters for this time step+++++"}
@@ -832,7 +753,6 @@ void Wave1DSimulator::timeLoop() // run equivalent
         std::string{"Iteration number is: %d"}.data(),
         w_sim->getIterationNumber());
     dbpp::Logger::instance()->OutputNewline();
-#endif
 
     doOneStep(); // time step (advance numerical algorithm)
 
@@ -863,15 +783,6 @@ void Wave1DSimulator::timeLoop() // run equivalent
     // to display info in the editor window
     std::this_thread::sleep_for(std::chrono::seconds(5));
   } // while loop (time loop)
-
-  // finish writing, close file
-  // open is done in Wave1DSimulator::createFolderAndFile() because
-  // we need to set filename which is defined in this method
-  // Design Note: something wrong with this, should use a string
-  // to store file name for writing and then at some place open
-  // with this file name. In its actual version, its hard to find
-  // out where the open call is done.
-  //  dbpp::DbgLogger::instance()->close();
 }
 
 std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
@@ -918,10 +829,15 @@ std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
     // in the current version list sections is an observer and takes
     // base class (will be back later to complete implementation)
     // this algorithm will selected by user from GUI
-    SweRhsAlgorithm *w_rhsTest = nullptr; // new TestRhsImpl(m_ListSectFlow);
+    // SweRhsAlgorithm *w_rhsTest = new TestRhsImpl(m_ListSectFlow);
     // just for testing and debugging
-    w_num_rep = factoryCreator<TestEMcNeilVec>(w_rhsTest, TimePrm{0., 0., 0.});
-    //  return nullptr;
+    w_num_rep = factoryCreator<TestEMcNeilVec>(new TestRhsImpl(m_ListSectFlow),
+                                               TimePrm{0., 0., 0.});
+    if (nullptr == w_num_rep) {
+      dbpp::Logger::instance()->OutputError(
+          std::string{"Unable to create solver with name: %s"}.data(),
+          m_activeAlgo.c_str());
+    }
   } else {
     // log entry
     dbpp::Logger::instance()->OutputError(
@@ -936,13 +852,13 @@ std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
 
   // Re-factor this methodcheck active algorithm
 
-  if (m_activeAlgo == std::string{"EMcNeil1D_mod"}) {
-    return w_num_rep = dbpp::EMcNeil1DFactory::CreateSolver(m_activeAlgo);
-  } else if (m_activeAlgo == std::string{"EMcNeil1D_f"}) {
-    return w_num_rep = dbpp::EMcNeil1DFactory::CreateSolver(m_activeAlgo);
-  } else if (m_activeAlgo == std::string{"TESTEMCNEILVEC"}) {
-    return nullptr;
-  }
+  //  if (m_activeAlgo == std::string{"EMcNeil1D_mod"}) {
+  //    return w_num_rep = dbpp::EMcNeil1DFactory::CreateSolver(m_activeAlgo);
+  //  } else if (m_activeAlgo == std::string{"EMcNeil1D_f"}) {
+  //    return w_num_rep = dbpp::EMcNeil1DFactory::CreateSolver(m_activeAlgo);
+  //  } else if (m_activeAlgo == std::string{"TESTEMCNEILVEC"}) {
+  //    return nullptr;
+  //  }
 }
 
 // really need it?

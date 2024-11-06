@@ -84,7 +84,8 @@ public:
   /**
    * @return number o f section flow for this simulation
    */
-  unsigned getNbSections() { return m_NbSections; }
+  unsigned getNbSections() const { return m_NbSections; }
+
   void setNbSections(const unsigned aNbSect) { m_NbSections = aNbSect; }
 
   /** read form simulation settings (GUI interface)
@@ -94,6 +95,9 @@ public:
   void readParams() const {
     // not implemented yet
   }
+
+  bool useFlatBed() const { return true; }
+  bool isSectionFlowUnitWidth() const { return true; }
 
   /**
    * @return

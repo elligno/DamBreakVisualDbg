@@ -37,13 +37,10 @@ std::function<int(int)> make_offsetter(int aOffset) {
 }
 
 GlobalDiscretization::GlobalDiscretization()
-    : U1{nullptr}, U2{nullptr}, X{nullptr}, H{nullptr}, Z{nullptr},
-      NbGlobalNode{101}, // Eric cMcNeil default value don't make sense!!
-      dx{10.}            //  Eric cMcNeil default value??? don't get it!!
-{
-  // create nodal variables and initialize it
-  // m_subj->attach(this);  ??? deprecated
-}
+    : U1{nullptr}, U2{nullptr}, H{nullptr},
+      NbGlobalNode{101}, // Eric cMcNeil default value
+      m_dx{10.}          //  Eric cMcNeil default value
+{}
 GlobalDiscretization::~GlobalDiscretization() {
   // free memory when releasing
   if (U1) {
@@ -52,16 +49,9 @@ GlobalDiscretization::~GlobalDiscretization() {
   if (U2) {
     free(U2);
   }
-  if (X) {
-    free(X);
-  }
   if (H) {
     free(H);
   }
-  if (Z) {
-    free(Z);
-  }
-
   if (!m_listFaces.empty()) {
     m_listFaces.clear();
   }
@@ -71,67 +61,17 @@ GlobalDiscretization::~GlobalDiscretization() {
   if (!m_nval.empty()) {
     m_nval.clear();
   }
-  // section flow
-  // need to call the DeleteIt method
-  // 		emcil::ListIterator
-  // w_listIter=emcil::g_ListSectFlow->getListIterator(); 		while (
-  // w_listIter.begin()!=w_listIter.end())
-  // 		{
-  // 			std::cout << "We are deleting Section flow\n";
-  // 			emcil::SectFlow* w_sectF=w_listIter.front();
-  // 			delete w_sectF;
-  // 			w_sectF=nullptr;
-  // 			// return iterator range (i think it's a subrange of the
-  // initial range)
-  // 			// i am not sure if this make sense???
-  // 			w_listIter.advance_begin(1); // next in the list??
-  // 		}
-
-  // check if list of section flow was deleted
-  // 		if (!m_ListSectFlow->isEmpty())
-  // 		{
-  // 			std::cout << "Wave1DSimulator dtor is deleting the list
-  // of section flow\n"; 			m_ListSectFlow->deleteIt();
-  // if( m_ListSectFlow->isEmpty())
-  // 			{
-  // 				std::cout << "List of section flow not empty\n";
-  // 			}
-  // 		}
 
   std::cout << "Stepping out of the Wave1DSimu7lator dtor\n";
 }
 
-#if 0  
-	// initialize the field with some initial values
-	// for our test, we use the dam-break problem
-	void GlobalDiscretization::DamBreakInit()
-	{
-		using namespace std;
-		using namespace std::placeholders;
-
-		// spatial discretization
-        // IMPORTANT 
-		//    DiscrInfo is deprecated we will use the DamBreakData
-		//    DiscrInfo use Phi0 and Phi1 values in wrong order
-		//    Phi0 is downstream and phi1 is upstream. But in the 
-		//    actual version it's the inverse which lead to wrong
-		//    initial condition.
-		DiscrInfo w_Disrc; // check default ctor, not sure of it
-
-		// initializer (unary functor) which set initial values 
-		DamBreakStepFunc w_testForeachptr(w_Disrc);
-
-		// initialization of nodal values (H,Q)
-		for_each( m_nval.begin(), m_nval.end(), w_testForeachptr);
-
-		// section flow unit width and flat bed (then we can set A=H)
-		for_each( m_nval.begin(), m_nval.end(), // range
-			[](Nodal_Value& aNodeVal){aNodeVal[0]=aNodeVal[2];});
-	}
-#endif
-
 void GlobalDiscretization::createNodalVal() {
   m_nval.reserve(NbGlobalNode);
+
+  auto w_grid1D = m_numRep->getState().first->grid();
+  auto w_x = w_grid1D.xMin(1);
+  m_xmin = w_x;
+  m_dx = w_grid1D.Delta(1);
 
   // loop on the number of sections
   for (int32 i = 0; i < NbGlobalNode; ++i) {
@@ -142,8 +82,10 @@ void GlobalDiscretization::createNodalVal() {
       // m_nval.push_back( new Nodal_Value(
       // std::make_pair(i,X[i]),std::make_tuple(U1[i],U2[i],H[i]),3)); maybe we
       // shall start at index=1
-      m_nval.push_back(new Nodal_Value(std::make_pair(i, X[i]), 3));
+      m_nval.push_back(new Nodal_Value(std::make_pair(i, w_x), 3, 0, true));
+      w_x += w_grid1D.Delta(1); // ready for next step
     } else if (i == (NbGlobalNode - 1)) {
+      m_xmax = w_x;
       // Set last node as ghost node (in the current version of the solver
       // we only support a single algorithm based on ghost node)
       //	m_nval[NbGlobalNode-1].setAsGhostNode();
@@ -152,14 +94,14 @@ void GlobalDiscretization::createNodalVal() {
       // m_nval.push_back( new Nodal_Value(
       // std::make_pair(i,X[i]),std::make_tuple(U1[i],U2[i],H[i]),3)); set last
       // node has tied (ghost node)
-      m_nval.push_back(new Nodal_Value(std::make_pair(i, X[i]), 3));
+      m_nval.push_back(new Nodal_Value(std::make_pair(i, w_x), 3, 100, true));
 
       // just testing
       // auto w_lastNode = m_nval.back(); back return a reference, but reference
       // is stripped away
       auto &w_lastNode = m_nval.back(); // force auto to be a reference
       // check value category
-      if (std::is_lvalue_reference<decltype(w_lastNode)>::value) {
+      if (std::is_lvalue_reference_v<decltype(w_lastNode)>) {
         w_lastNode.setAsGhostNode();
       }
       // else {
@@ -172,18 +114,19 @@ void GlobalDiscretization::createNodalVal() {
       // m_nval.push_back( new Nodal_Value(
       // std::make_pair(i,X[i]),std::make_tuple(U1[i],U2[i],H[i]),3)); not tied
       // node (interior nodes)
-      m_nval.push_back(new Nodal_Value(std::make_pair(i, X[i]), 3, 0));
+      m_nval.push_back(new Nodal_Value(std::make_pair(i, w_x), 3,
+                                       std::make_tuple(10., 0., 10.)));
+      w_x += w_grid1D.Delta(1); // ready for next step
     }
   } // for-loop
 
   // sanity check (one before last)
   assert(101 == m_nval.size());
-
-  // initialize nodal variables with dam-break initial solution
-  // IMPORTANT
-  //   DamBreakStepFunc use DiscrInfo which is deprecated. We will
-  //   use the DamBreakData type ()
-  //	DamBreakInit();
+  update();
+  // last node (ghost node) set to previous one (tied node)
+  // NOTE in the update method, we update only computational
+  //      domain 0,...,99. The ghost node is not set.
+  m_nval[100] = m_nval[99];
 
   // Design Note
   // ------------
@@ -191,103 +134,33 @@ void GlobalDiscretization::createNodalVal() {
   //   because we want to use E. McNeil initialization code.
   //   Also, DiscrInfo is deprecated (used byDamBreakInit),
 
-  unsigned i = 0;
-  // using lambda function
-  for_each(m_nval.begin(), m_nval.end(), [=, &i](Nodal_Value &aNval) {
-    // set nodal value
-    aNval[0] = U1[i];  // A
-    aNval[1] = U2[i];  // Q
-    aNval[2] = H[i++]; // H
-  });
+  //  unsigned i = 0;
+  //  // using lambda function
+  //  for_each(m_nval.begin(), m_nval.end(), [=, &i](Nodal_Value &aNval) {
+  //    // set nodal value
+  //    aNval[0] = U1[i];  // A
+  //    aNval[1] = U2[i];  // Q
+  //    aNval[2] = H[i++]; // H
+  //  });
 }
 
-// TODO: add signature
-void GlobalDiscretization::init(const ListSectFlow *aListSections) {
+//
+void GlobalDiscretization::init(const Simulation *aSim) {
+  NbGlobalNode = aSim->getNbSections();
 
-  // NO need of this!!! Only need ListOfSections and we have all we need
-  // Note: actually a class attribute with same name is initialized in ctor
-  // (NbSections) i don't see why we should declare locally, but this is the
-  // original code
-  // 		const DamBreakData w_dbData(
-  // dbpp::Simulation::instance()->getActiveDiscretization()); 		if(
-  // w_dbData.getDType()==DamBreakData::DiscrTypes::emcneil)
-  // 		{
-  //       //TODO: use a logger
-  // 			std::cout << "Active discretization used by
-  // GlobalDiscretization is: " << std::string("EMcNeil") << "\n";
-  // 		}
-
-  // DIM+1
-  const auto NbSections = aListSections->size() + 1; // w_dbData.nbSections();
-
-  //	Allocation de mémoire pour les variables d'état
-  //	et les termes de pression/convection
-  // NbSections = 101;
-  U1 = (double *)malloc(NbSections * sizeof(double));
-  U2 = (double *)malloc(NbSections * sizeof(double));
+  // Allocation de mémoire pour les variables d'état
+  // et les termes de pression/convection
+  U1 = (double *)malloc(NbGlobalNode * sizeof(double));
+  U2 = (double *)malloc(NbGlobalNode * sizeof(double));
   //	Allocation de mémoire des paramètres du modèle hydrodynamique
-  H = (double *)malloc(NbSections * sizeof(double));
+  H = (double *)malloc(NbGlobalNode * sizeof(double));
   //  h = (double *)malloc(NbSections * sizeof(double));
-  X = (double *)malloc(NbSections * sizeof(double));
-  Z = (double *)malloc(NbSections * sizeof(double));
-  // n = (double *) malloc( NbSections * sizeof (double));
-
-  //	Caractérisation des paramètres pour les sections d'écoulement
-  // dx = 10.;  //spatial discretization
-  //	B = 1.;    section width
-
-  // for now will do
-  //     auto checkDx = aListSections->getList()[99]->X() -
-  //     aListSections->getList()[98]->X(); const auto dx = checkDx;
-  //     //w_dbData.dx(); assert(10. == dx); //debugging purpose
-
-  // IMPORTANT
-  // need to const cast to remove the 'const' of ListSectFlow
-  // because we have 'const_iterator' which is incompatible with &X
-  // not const. Also, a const_iterator can't be dereferenced.
-  // Since C++14, cannot modify the object of the container
-  // const_iterator return const T&.
-  ListSectFlow *w_lis = const_cast<ListSectFlow *>(aListSections);
-  // Initialize x-coord with section
-  std::transform(w_lis->getList().begin(), w_lis->getList().end(), &X[0],
-                 std::bind(&SectFlow::X, std::placeholders::_1));
-
-  //     auto i = 0;
-  //     auto begIter = aListSections->getList().begin();
-  //     auto endIter = aListSections->getList().end();
-  //     while( i!= aListSections->getList().size())
-  //     {
-  //    //   auto val = aListSections->getList()[i]->X();
-  //       X[i++] = aListSections->getList()[i]->X();
-  //     //  auto val1 = X[i - 1];
-  //     }
-  //     auto ddx = X[99] - X[98];
-
-  // Ghost node (DIM+1)
-  X[aListSections->getList().size()] =
-      X[aListSections->getList().size() - 1] + dx;
-  //   assert(1000.== X[100]); // sanity check
-
-  // 		for( j = 0; j < NbSections; j++)
-  // 			X[j] = dx*boost::numeric_cast<double>(j);
-
-  // 		for (j = 0; j < NbSections; j++)
-  // 			n[j] = 0.0;
-
-  std::fill(&Z[0], &Z[0] + NbSections, 0.);
-  // 		for( j = 0; j < NbSections; j++)
-  // 			Z[j] = 0.0;//(1000.-X[j]) * 0.0001;
-
-  //     std::transform( aListSections.getList().begin(),
-  //     aListSections.getList().end(),
-  //       &Z[0], std::bind(&SectFlow::Z, std::placeholders::_1));
-  //	S0am = S0av = 0.;
 
   // IMPORTANT (remove the hard coded value)
   //	Spécification des conditions initiales
-  //	Dans la version finale, ces conditions initiales "devraient être"
-  //	spécifiées sous la forme de l'élévation de la surface libre et
-  //	du débit pour chaque section
+  //	Dans la version finale, ces conditions initiales
+  //"devraient être" 	spécifiées sous la forme de l'élévation de
+  // la surface libre et 	du débit pour chaque section
 #if 0
 		for (j = 0; j < NbSections; j++)
 		{ 
@@ -298,16 +171,21 @@ void GlobalDiscretization::init(const ListSectFlow *aListSections) {
 
 			U2[j] = 0.;       // discharge (at rest)
 		}
-#endif
-  std::fill(&U2[0], &U2[0] + NbSections, 0.); // at rest Q=0 (discharge)
-  std::transform(w_lis->getList().begin(), w_lis->getList().end(), &H[0],
-                 std::bind(&SectFlow::H, std::placeholders::_1));
+//#endif
+                 std::fill(&U2[0], &U2[0] + NbSections,
+                           0.); // at rest Q=0 (discharge)
+                 std::transform(w_lis->getList().begin(),
+                                w_lis->getList().end(), &H[0],
+                                std::bind(&SectFlow::H, std::placeholders::_1));
 
-  // DIM+1 (global spatial)
-  H[aListSections->getList().size()] = H[aListSections->getList().size() - 1];
-  for (unsigned j = 0; j < NbSections; j++) // wetted area
-    U1[j] = HydroUtils::Evaluation_A_fonction_H(H[j], Z[j], 1. /*B*/);
-#if 1
+                 // DIM+1 (global spatial)
+                 H[aListSections->getList().size()] =
+                     H[aListSections->getList().size() - 1];
+                 for (unsigned j = 0; j < NbSections; j++) // wetted area
+                   U1[j] = HydroUtils::Evaluation_A_fonction_H(H[j], Z[j],
+                                                               1. /*B*/);
+
+//#if 0
   // debugging purpose (WaveSimulator)
   //     assert( m_grid->getPoint(1,48) == 470.);
   //     assert( m_grid->getPoint(1,49) == 480.);
@@ -447,35 +325,10 @@ void GlobalDiscretization::update() {
   using namespace std::placeholders;
   using namespace dbpp;
 
-#if 0
-		// retrieve the final state (i ma not sure of the size)
-		std::vector<double> w_U1vec; w_U1vec.reserve( m_nval.size());
-		std::vector<double> w_U2vec; w_U2vec.reserve( m_nval.size());
-
-		// assume that m_numrep has been initialized in the EMcNeil1D ctor
-		// with the meyhod num_rep() ...
-		// computational nodes which is 1,...,100 in field lattice
-		// correspond to 0,...,99 in std::vector
-		m_numRep->getFinalState( w_U1vec, w_U2vec);
-
-		// sanity check
-		if( w_U1vec.empty())
-		{
-			std::cerr << "GDiscr::update() empty U1 state\n";
-			dbpp::Logger::instance()->OutputError("GDiscr::update() empty U1 state\n");
-		}
-		if( w_U2vec.empty())
-		{
-			std::cerr << "GDiscr::update() empty U2 state\n";
-			dbpp::Logger::instance()->OutputError("GDiscr::update() empty U2 state\n");
-		}
-#endif
-
   // Don't really need to start from 0, ...
   // because 0 and N (boundary node has been set by boundary condition)
   // when you call Gamma::applyBC() these 2 values are set
   // we need also to update the U1/U2 variables
-#if 1 // next version
 
   const auto w_stateVec = m_numRep->getState();
   auto w_vec1 = w_stateVec.first->values().to_stdVector();
@@ -484,26 +337,12 @@ void GlobalDiscretization::update() {
   std::copy(w_boostIter.begin(), w_boostIter.end(), &U1[0]);
   auto w_boostIter2 = boost::make_iterator_range(w_vec2.begin(), w_vec2.end());
   std::copy(w_boostIter2.begin(), w_boostIter2.end(), &U2[0]);
-#endif
-
-#if 0
-    // Don't need that stuff
-		unsigned ii=0;
-		unsigned jj=0;
-		for( double w_val1 : w_U1vec) //A-variable
-		{
-			U1[ii++]=w_val1;
-		}
-		for( double w_val2 : w_U2vec) //Q-variable
-		{
-			U2[jj++]=w_val2;
-		}
-#endif
 
   // set H water level (using utility hydro stuff)
-  constexpr auto B = 1.; // section width (temporary fix)
+  constexpr auto B = 1.;                 // section width (temporary fix)
+  std::vector<double> w_Z(NbGlobalNode); // set to zero
   // H=A-Z (water depth) flat bed
-  std::transform(&U1[0], &U1[0] + NbGlobalNode, &Z[0], &H[0],
+  std::transform(&U1[0], &U1[0] + NbGlobalNode, w_Z.cbegin(), &H[0],
                  std::bind(&HydroUtils::Evaluation_H_fonction_A, _1, B, _2));
 
   // updating nodal values at grid node
@@ -511,7 +350,8 @@ void GlobalDiscretization::update() {
   // retrieve A/Q values from nodal_value
   auto w_nvalBeg = m_nval.begin();
   auto w_nvalEnd = m_nval.end();
-  while (w_nvalBeg != w_nvalEnd) {
+  // computational domain 100 nodes
+  while (w_nvalBeg != w_nvalEnd - 1) {
     Nodal_Value &w_nval = m_nval[i];
     w_nval[0] = U1[i];  // A
     w_nval[1] = U2[i];  // Q

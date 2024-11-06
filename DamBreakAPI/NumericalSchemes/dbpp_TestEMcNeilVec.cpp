@@ -6,6 +6,7 @@
 // Package includes
 //#include "../Algorithm/dbpp_TestRhsImpl.h"
 //#include "../Numerics/dbpp_TestCalculFF.h"
+#include "../Discretization/dbpp_EMcNeilBCimpl.h"
 #include "../Numerics/dbpp_TwoStepsIntegrator.h"
 #include "../SfxTypes/dbpp_Simulation.h"
 #include "../Utility/dbpp_Hydro1DLogger.h"
@@ -16,9 +17,8 @@ namespace dbpp {
 TestEMcNeilVec::TestEMcNeilVec(SweRhsAlgorithm *aRhsAlgo, const Gamma &aBCnd)
     : EMcNeil1D(),         // base class implementation
       m_rhsAlgo{aRhsAlgo}, // default value
-      m_timePrm(0., 0., 0.), m_bc{aBCnd} {
-  //  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
-}
+      m_timePrm(0., 0., 0.), m_bc{aBCnd} {}
+
 TestEMcNeilVec::TestEMcNeilVec(SweRhsAlgorithm *aRhsAlgo,
                                const TimePrm &aTimeprm)
     : EMcNeil1D(),         // base class implementation
@@ -27,24 +27,6 @@ TestEMcNeilVec::TestEMcNeilVec(SweRhsAlgorithm *aRhsAlgo,
   // add code here
 }
 
-// Design Note:
-// ------------
-//  In this implementation we are using the 'predictor' and 'corrector'
-//  implementation of the base class (use std::vector). But another
-//  implementation could make use of of an integrator (explicit)
-//  in which the rhs is pass as argument.
-// some implementation of advance (i am just exploring some design
-// and testing).
-// We are using the new concept of the RHS algorithm (step of the algo)
-// wrapped inside of the algo, this way we can make different algorithm
-// base on the numerical representation (treatment of the rhs).
-//
-// 		std::cout << "Upstream bc values: " << U1[0] << " " << U2[0] <<
-// "
-// "
-// << H[0] << "\n"; 		std::cout << "Downstream bc values: " << U1[100]
-// << " " << U2[100] << " " << H[100] << "\n";
-//
 // DESIGN NOTE: this algorithm need to be re-factored, there is a lot of crapt.
 // Basically the skeleton of the way it should be is there, in the future we
 // manipulate the SweRhsAlgorithm that is responsible for applying the physical
@@ -65,6 +47,13 @@ void TestEMcNeilVec::advance() {
     }
   }
 
+  TestRhsImpl *w_downCast = dynamic_cast<TestRhsImpl *>(m_rhsAlgo);
+  // check if it succeed
+  assert(nullptr != w_downCast);
+  auto w_listOfSections = w_downCast->getListPhysicsObjects();
+  // EMcNeilBCImpl getUpStream/DownStream
+  EMcNeilBCimpl w_testImpl{w_listOfSections};
+
   // apply algorithm (rhs numerical treatment of convective flux, source terms)
   m_rhsAlgo->calculate(m_U12);
 
@@ -74,15 +63,13 @@ void TestEMcNeilVec::advance() {
   TwoStepsIntegrator w_timeStepper;
   w_timeStepper.setInitSln(m_U12.first->values().to_stdVector(),
                            m_U12.second->values().to_stdVector());
+
   w_timeStepper.setIntegratorStep(
       TwoStepsIntegrator::eIntegratorStep::predictorStep);
+  // advance one time-step
   w_timeStepper.step(m_rhsAlgo, Simulation::instance()->simulationTimeStep());
 
   // step through time (n+1/2) by using Runge-Kutta family integrator
-  // don't have much choice, because advance is call only once. If 2-steps
-  // algorithm is needed we have toi do it inside.
-  // predictor(); // U1p and U2p up-to-date, will be used for next step
-
   auto w_midState = w_timeStepper.getMidState();
   auto m_U1p = w_midState.first->values().to_stdVector();
   auto m_U2p = w_midState.second->values().to_stdVector();
@@ -93,77 +80,35 @@ void TestEMcNeilVec::advance() {
 
   // ++++++ final time step +++++++++++++
 
-  // state vector for intermediate state (need to be updated)
-  std::shared_ptr<gridLattice> w_gridLattice( // notsure about this one
-      new gridLattice(w_midState.first->grid()));
-
-  // sanity check
-  assert(w_gridLattice->getNoPoints() ==
-         w_midState.first->grid().getNoPoints());
-
   // apply algorithm (rhs numerical treatment of convective flux, source terms)
-  m_rhsAlgo->calculate(w_midState /*, w_rhsDiscr.get()*/); // updated values
+  m_rhsAlgo->calculate(w_midState); // updated values
 
   // n+1 time step
-  // corrector();
+  w_timeStepper.setIntegratorStep(
+      TwoStepsIntegrator::eIntegratorStep::correctorStep);
+
+  // advance one time-step
+  w_timeStepper.step(m_rhsAlgo, Simulation::instance()->simulationTimeStep());
+
+  auto w_finalState = w_timeStepper.getCurrentState();
+  auto m_U1 = w_finalState.first->values().to_stdVector();
+  auto m_U2 = w_finalState.second->values().to_stdVector();
+
+  // write to debug file
+  dbpp::DbgLogger::instance()->write2file_p(
+      std::make_tuple(static_cast<unsigned>(m_U1.size()), m_U1p, m_U2));
 
   // notify all observers
-  setState();
+  // setState();
+  // update the global discretization
+  dbpp::GlobalDiscretization::instance()->update();
+
+  // update boundary condition (need to check for this one)
+  dbpp::GlobalDiscretization::instance()->gamma().applyBC();
+
+  // update section flow (one element in the list)
+  m_listofObs.front()->update();
 }
-
-#if 0
-// those equations are evaluated over each cell
-// then for each cell we compute the cell face
-// numerical flux
-void TestEMcNeilVec::predictor() {
-  // predictor step of the Runge-Kutta family
-  // deprecated, in future version use a separate class
-  // that is responsible for time stepping algorithm
-  // time step at ...
-  const auto dt = dbpp::Simulation::instance()->simulationTimeStep();
-  // const int NbSections = m_rhs.m_FF1.size(); // debugging purpose
-  const auto dx = m_U12.first->grid().Delta(1);
-
-  // predictor-step (this loop doesn't make sense)
-  // so confusing, actually we are looping on grid node
-  // and at each grid node there is a section flow
-  // associated with it (that what it is)
-  for (unsigned j = 1; j < m_rhs.m_FF1.size(); j++) {
-    m_U1p[j] = U1[j] - dt / dx * (m_rhs.m_FF1[j] - m_rhs.m_FF1[j - 1]);
-    m_U2p[j] = U2[j] - dt / dx * (m_rhs.m_FF2[j] - m_rhs.m_FF2[j - 1]) +
-               dt * m_rhs.m_S[j];
-  }
-}
-
-void TestEMcNeilVec::corrector() {
-  // time step at ...
-  const auto dt = dbpp::Simulation::instance()->simulationTimeStep();
-  // const int NbSections = m_rhs.m_FF1.size(); // debugging purpose
-  const auto dx = m_U12.first->grid().Delta(1);
-
-  //	Calcul des valeurs des variables d'état (compute U1, U2)
-  for (unsigned j = 1; j < m_rhs.m_FF1.size();
-       j++) // computational node except i=0 which is set by B.C.
-  {
-    U1[j] = 0.5 * (U1[j] + m_U1p[j] -
-                   dt / dx * (m_rhs.m_FF1[j] - m_rhs.m_FF1[j - 1]));
-    U2[j] = 0.5 * (U2[j] + m_U2p[j] -
-                   dt / dx * (m_rhs.m_FF2[j] - m_rhs.m_FF2[j - 1])
-                   //- dt/dx * (PF2[j] - PF2[j-1]) not considering pressure for
-                   // this simulation
-                   + dt * m_rhs.m_S[j]);
-  }
-}
-#endif
-
-// void TestEMcNeilVec::setBC() {
-//  //	Calcul des valeurs intermédiaires des variables d'état
-//  m_U1p[0] = U1[0]; // w_amVal[0]
-//  m_U2p[0] = U2[0]; // w_amVal[1]
-
-//  m_U1p[m_NbSections - 1] = U1[m_NbSections - 1]; // w_avVal[0]
-//  m_U2p[m_NbSections - 1] = U2[m_NbSections - 1]; // w_avVal[1]
-//}
 
 void TestEMcNeilVec::mainLoop(const GlobalDiscretization *aGblDiscr,
                               const double aTimeTo) {

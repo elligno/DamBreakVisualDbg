@@ -235,7 +235,7 @@ template <typename T> dbpp::RealNumArray<T>::RealNumArray(int n1, T *aValues) {
 
 template <typename T> RealNumArray<T>::RealNumArray(int n1 /*=5*/) {
   A = allocate(n1);
-  initArray1D();
+  // initArray1D(); useless since we initialize the array to zero in allocate
 }
 
 template <typename T> RealNumArray<T>::RealNumArray(int n1, int n2) {

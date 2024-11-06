@@ -114,10 +114,10 @@ DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
 
   // validating GUI (numerical algorithm)
   ui->numalgo_combo->addItem(QString{"EMcNeil1D_mod"});
-  ui->numalgo_combo->addItem(QString{"EMcNeil1D_f"});
+  // ui->numalgo_combo->addItem(QString{"EMcNeil1D_f"});
   ui->numalgo_combo->addItem(QString{"TestEMcNeilVec"});
-  ui->numalgo_combo->addItem(QString{"TestBcSectF"});
-  ui->numalgo_combo->addItem(QString{"TestNewAlgo"});
+  // ui->numalgo_combo->addItem(QString{"TestBcSectF"});
+  // ui->numalgo_combo->addItem(QString{"TestNewAlgo"});
 
   ui->reconstr_comboBox->addItem(QString{"MUSCL Slope Limiter"});
   ui->rhsalgo_combo->addItem(QString{"TestRhsImpl"});
@@ -338,9 +338,9 @@ void DBppGuiAppl15::initSim() {
   // the global discretization responsibility to provides an
   // interface (access point) to component of the global discr.
   //  const dbpp::ListSectFlow* w_test = m_waveSim->getListSectionFlow();
-  dbpp::GlobalDiscretization::instance()->init(m_waveSim->getListSectionFlow());
-  auto w_msg1 = "Global Discretization initialization completed";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg1));
+  dbpp::GlobalDiscretization::instance()->init(dbpp::Simulation::instance());
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"Global Discretization initialization completed"}.data());
 
   // debug purpose IMPORTANT!!!! Call boundary cond. applyBC()? b.c. is used in
   // the numerical scheme need to set amont/aval nodal values!!! this need to be
