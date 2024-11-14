@@ -27,12 +27,20 @@ scalarField::scalarField(const std::shared_ptr<gridLattice> &g,
   fieldname = name_;
 }
 
+// NOTE this is deprecated and will be removedd in next version
+// by a scalar field based on std valarray (keep it for now)
 scalarField::scalarField(const std::shared_ptr<gridLattice> &g,
                          std::vector<double> aInitialValues,
                          const std::string &name_) {
   grid_lattice = g;
   // allocate the grid_point_values array:
+  // NOTE
   if (grid_lattice->getNoSpaceDim() == 1) {
+    grid_point_values.reset(new RealNumArray<double>(
+        grid_lattice->getDivisions(1), aInitialValues.data()));
+    fieldname = name_;
+  } else if (grid_lattice->getNoSpaceDim() == 2 &&
+             (grid_lattice->xMin(2) == grid_lattice->xMax(2))) {
     grid_point_values.reset(new RealNumArray<double>(
         grid_lattice->getDivisions(1), aInitialValues.data()));
     fieldname = name_;

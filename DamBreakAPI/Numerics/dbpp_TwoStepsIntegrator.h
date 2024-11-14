@@ -6,6 +6,7 @@
 #include <vector>
 // Lib includes
 #include "Algorithm/dbpp_SweRhsAlgorithm.h"
+#include "SfxTypes/dbpp_Simulation.h"
 
 namespace dbpp {
 //
@@ -18,21 +19,36 @@ public:
   enum class eIntegratorStep { predictorStep = 0, correctorStep = 1 };
 
 public:
-  TwoStepsIntegrator() = default; //??
+  TwoStepsIntegrator() = default; // nullptr state vector? step=0.??
 
   void setInitSln(const std::vector<double> &aU1,
                   const std::vector<double> &aU2) {
     // NOTE we need first to initialize the scalar field,
     // at this point it is set to nullptr
-    // need to do something like that
-    // auto w_activeDiscr = Simulation::instance()->getActiveDiscretization();
-    //  if (DamBreakData::DiscrTypes::emcneil == w_activeDiscr) {
-    //  }
-    //  m_currState.first.reset(make_shared<gridLattice>(100,0.,1000.),name,vector);
-    auto &w_U1array = m_currState.first->values();
-    std::copy(aU1.cbegin(), aU1.cend(), w_U1array.begin());
-    auto &w_U2array = m_currState.second->values();
-    std::copy(aU2.cbegin(), aU2.cend(), w_U2array.begin());
+    if (nullptr == m_currState.first) { // just to make sure
+      const auto w_activeDiscr =
+          Simulation::instance()->getActiveDiscretization();
+      if (DamBreakData::DiscrTypes::emcneil == w_activeDiscr) {
+        auto w_dbData = Simulation::instance()->getActiveDBdata();
+        auto w_emcilExtent = w_dbData.domainExtent();
+        auto nx = w_dbData.nbSections() - 1;
+        assert(100 == nx); // sanity check
+        auto w_grid1d = std::make_shared<gridLattice>(
+            nx, 0, w_emcilExtent.first, w_emcilExtent.second, 0., 0.);
+        // sanity check (E. MCNeil values)
+        assert(0. == w_emcilExtent.first);
+        assert(1000. == w_emcilExtent.second);
+        // re-initialize smart pointer
+        m_currState.first.reset(
+            new scalarField(w_grid1d, aU1, std::string{"A-var"}));
+        m_currState.second.reset(
+            new scalarField(w_grid1d, aU2, std::string{"Q-var"}));
+        m_prevState.first.reset(
+            new scalarField(w_grid1d, std::string{"Ap-var"}));
+        m_prevState.second.reset(
+            new scalarField(w_grid1d, std::string{"Qp-var"}));
+      }
+    }
   }
   void setInitSln(const double *aU1, const double *aU2, const unsigned aSize) {
     // design note: add a check on the size of both vector, must be equal
@@ -99,11 +115,5 @@ private:
   StateVector m_prevState;
   //  StateVector m_finalState;
   StateVector m_currState;
-  //  std::vector<double> U1; //**< initial cnd*/
-  //  std::vector<double> U2; //**< */
-
-  //  std::vector<double> m_vH;  //**< water level*/
-  //  std::vector<double> m_U1p; //**< imtermediate state */
-  //  std::vector<double> m_U2p; //**< */
 };
 } // namespace dbpp

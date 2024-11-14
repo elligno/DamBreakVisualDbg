@@ -28,11 +28,11 @@ class DamBreakData //: boost::noncopyable
    * Structure that hold initial condition for teh simualtion
    */
   struct IC {
-    std::vector<float64> m_U1; /**<A (wetted area) */
-    std::vector<float64> m_U2; /**Q (discharge)*/
-    std::vector<float64> m_H;  /**H (water level */
-    std::vector<float64> m_Z;  /**Z (bathymetry)*/
-    std::vector<float64> m_N;  /**  (Manning)*/
+    std::vector<float64> m_U1; /**< A (wetted area) */
+    std::vector<float64> m_U2; /**< Q (discharge)*/
+    std::vector<float64> m_H;  /**< H (water level */
+    std::vector<float64> m_Z;  /**< Z (bathymetry)*/
+    std::vector<float64> m_N;  /**< N (Manning)*/
   } m_IC;
 
 public:
@@ -51,9 +51,10 @@ public:
   DamBreakData(DamBreakData::DiscrTypes aDiscrType =
                    DiscrTypes::hudson); // these are default parameters when
                                         // validating (Hudson)
-  DamBreakData(int32 aNx, const std::pair<float64, float64>
-                              aVal = // default value of the domain extent
-                          std::make_pair(0., 1.));
+
+  //  DamBreakData(int32 aNx, const std::pair<float64, float64>
+  //                             aVal = // default value of the domain extent
+  //                        std::make_pair(0., 1.));
 
   // spatial discretization parameters (it need to be part of the dam-break
   // data?) it is more the spatial discretization
@@ -68,7 +69,7 @@ public:
   /**
    * @result x coordinate
    */
-  std::vector<float64> X() const { return m_X; }
+  // std::vector<float64> X() const { return m_X; }
   /**
    * @result slope upstream
    */
@@ -84,7 +85,7 @@ public:
   /**
    * @result spatial stepping
    */
-  float64 dx() const { return m_dX; }
+  // float64 dx() const { return m_dX; }
   /**
    * @result numeber of cross-sectional
    */
@@ -112,6 +113,7 @@ public:
   bool isFlatBed() const { return m_flatBed; }
   std::vector<double> getManning() const { return m_IC.m_N; }
   std::vector<double> getBathy() const { return m_IC.m_Z; }
+  // NOTE Since C++17 copy elison is mandatory, maybe return by value!!!
   const IC &getIC() const { return m_IC; }
 
   /** returning a string description of the discretization
@@ -135,28 +137,27 @@ public:
 private:
   std::pair<float64, float64> m_domainExtent;   // [min,max]
   std::pair<float64, float64> m_dambreakExtent; // []
-  std::vector<float64> m_X;                     /**< ... */
-  float64 m_S0am;                               /**< ...*/
-  float64 m_S0av;                               /**< ...*/
-  float64 m_dX;                                 /**< spatial step */
-  float64 m_Phi0;                               /**< water level at upstream*/
-  float64 m_Phi1;                               /**< water level at downstream*/
-  float64 m_cfl;                /**< Courant-Friedrich-Levy number*/
-  int32 m_NbSects;              /**< number of computational nodes*/
-  float64 m_Xmin;               /**< x-coordinate of the left bound. node*/
-  float64 m_Xmax;               /**< x-coordinate of the right bound. node*/
-  float64 m_sectWidth;          /**< section flow width*/
-  bool m_unitSectWidth;         /**< Section width*/
-  bool m_frictionLess;          /**< no-friction (Manning coefficient is zero)*/
+  //  std::vector<float64> m_X;                     /**< ... */
+  float64 m_S0am;       /**< ...*/
+  float64 m_S0av;       /**< ...*/
+                        //  float64 m_dX;                 /**< spatial step */
+  float64 m_Phi0;       /**< water level at upstream*/
+  float64 m_Phi1;       /**< water level at downstream*/
+  float64 m_cfl;        /**< Courant-Friedrich-Levy number*/
+  int32 m_NbSects;      /**< number of computational nodes*/
+  float64 m_Xmin;       /**< x-coordinate of the left bound. node*/
+  float64 m_Xmax;       /**< x-coordinate of the right bound. node*/
+  float64 m_sectWidth;  /**< section flow width*/
+  bool m_unitSectWidth; /**< Section width*/
+  bool m_frictionLess;  /**< no-friction (Manning coefficient is zero)*/
   std::string m_resultFilename; /**< result filename*/
 
-  /** initialize discretization parameters */
+  /** Initialize discretization parameters */
   void discrInit();
   DiscrTypes m_discrType; /**< ...*/
   bool m_flatBed;         /**< bottom topography flag*/
-  /**
-   *  set initial condition data
-   */
+
+  /** Set initial condition data*/
   void setIC();
 };
 } // namespace dbpp

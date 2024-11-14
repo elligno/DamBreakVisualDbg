@@ -44,6 +44,9 @@ public:
   // copy and assignment ctor not accessible ()
   StateVector getState() const override { return m_U12; }
 
+  // not sure about this, is that make sense?
+  void setInitSln(StateVector &&aU) override final { m_U12 = std::move(aU); }
+
 protected:
   /** physical algorithm (more the numerical algorithm)*/
   void timeStep() override; // solve(could more appropriate)

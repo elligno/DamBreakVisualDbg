@@ -326,6 +326,14 @@ void DBppGuiAppl15::initSim() {
   m_waveSim->setSimulatorMode(dbpp::Wave1DSimulator::eSimulationMode::guiMode);
   m_waveSim->scan(); // we set some parameters of the simulation
 
+  // QString w_phi0{std::to_string(m_waveSim->getPhi0()).c_str()};
+  // QString w_phi1{std::to_string(m_waveSim->getPhi1()).c_str()};
+  // log information
+  ui->_msgText->append(QString{"Phi0 value is: "} +
+                       QString::number(m_waveSim->getPhi0()));
+  ui->_msgText->append(QString{"Phi1 value is: "} +
+                       QString::number(m_waveSim->getPhi0()));
+
   // basically set water level and state variables init values
   // Also create list of sections and numerical scheme/method
   // NOTE no sense to create those things inside
@@ -369,8 +377,14 @@ void DBppGuiAppl15::setInitialWaveProfile() {
   // to do add code here
 }
 
-void DBppGuiAppl15::setUpstream(double aPhi1) { m_waveSim->setPhi1(aPhi1); }
-void DBppGuiAppl15::setDownstream(double aPhi0) { m_waveSim->setPhi0(aPhi0); }
+void DBppGuiAppl15::setUpstream(double aPhi1) {
+  m_waveSim->setPhi1(aPhi1);
+  std::cout;
+}
+void DBppGuiAppl15::setDownstream(double aPhi0) {
+  m_waveSim->setPhi0(aPhi0);
+  std::cout;
+}
 
 void DBppGuiAppl15::setShockLoc(double aShockValue) {
   m_waveSim->setShockLocation(aShockValue /*ui->_shockloc->value()*/);

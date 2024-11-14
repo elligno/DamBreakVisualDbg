@@ -26,16 +26,17 @@ private:
 
 public:
   // need it from vector field class
-  scalarField() = default;
+  // scalarField() = default;
 
   // copy ctor
-  scalarField(const scalarField &aOther) = default;
+  // scalarField(const scalarField &aOther) = default;
 
   // assignment ctor ?? default will do i guess.
-  scalarField &operator=(const scalarField &aOther) = default;
+  // scalarField &operator=(const scalarField &aOther) = default;
 
   // destructor
-  ~scalarField() = default;
+  // NOTE by doing this disable move semantic!!
+  //~scalarField() = default;
 
   // make a field from a grid and a fieldname
   scalarField(const std::shared_ptr<gridLattice> &aGrid,

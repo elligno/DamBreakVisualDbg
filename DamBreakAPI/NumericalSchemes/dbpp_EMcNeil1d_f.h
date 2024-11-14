@@ -54,6 +54,8 @@ public:
                 const double aTimeTo) override final {}
   void initialize(const GlobalDiscretization *aGblDiscr,
                   double aTime) override final {}
+  // not sure about this, is that make sense?
+  void setInitSln(StateVector &&aU) override final { m_U12 = std::move(aU); }
 
 protected:
   /**

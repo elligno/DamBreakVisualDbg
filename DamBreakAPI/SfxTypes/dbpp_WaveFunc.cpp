@@ -88,10 +88,10 @@ void Step1D::scan() {
   // m_shockPos = 500.;  CmdLineArgs::read("-shockloc", 5.);  E. McNeil = 500.
 
   if (0. == m_Phi0) {
-    m_Phi0 = CmdLineArgs::read("-phi0", 1.); // E.McNeil as default
+    m_Phi0 = CmdLineArgs::read("-phi0", 10.); // E.McNeil as default
   }
   if (0. == m_Phi1) {
-    m_Phi1 = CmdLineArgs::read("-phi\1", 10.); // ditto
+    m_Phi1 = CmdLineArgs::read("-phi1", 1.); // ditto
   }
   if (0. == m_shockPos) {
     m_shockPos = CmdLineArgs::read("-shockloc", 500.); // ditto
