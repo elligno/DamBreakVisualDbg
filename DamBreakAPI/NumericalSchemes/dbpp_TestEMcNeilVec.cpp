@@ -14,16 +14,17 @@
 #include "dbpp_TestEMcNeilVec.h"
 
 namespace dbpp {
-TestEMcNeilVec::TestEMcNeilVec(SweRhsAlgorithm *aRhsAlgo, const Gamma &aBCnd)
-    : EMcNeil1D(),         // base class implementation
-      m_rhsAlgo{aRhsAlgo}, // default value
-      m_timePrm(0., 0., 0.), m_bc{aBCnd} {}
+// TestEMcNeilVec::TestEMcNeilVec(
+//    SweRhsAlgorithm *aRhsAlgo /*, const Gamma &aBCnd*/)
+//    : EMcNeil1D(),         // base class implementation
+//      m_rhsAlgo{aRhsAlgo}, // default value
+//      m_timePrm(0., 0., 0.) /*, m_bc{aBCnd}*/ {}
 
 TestEMcNeilVec::TestEMcNeilVec(SweRhsAlgorithm *aRhsAlgo,
                                const TimePrm &aTimeprm)
     : EMcNeil1D(),         // base class implementation
       m_rhsAlgo{aRhsAlgo}, // default value
-      m_timePrm(aTimeprm), m_bc{} {
+      m_timePrm(aTimeprm) {
   // add code here
 }
 
@@ -33,31 +34,68 @@ TestEMcNeilVec::TestEMcNeilVec(SweRhsAlgorithm *aRhsAlgo,
 // algorithm (for example Nujic take into ... and introduce a new concept of
 // compatibility relationship). All of this is under construction, but we are
 // on the right track.
-void TestEMcNeilVec::advance() {
+void TestEMcNeilVec::advance(/*GlobalDiscretization aGbl*/) {
+
   using namespace std;
+
+  // require resource
+  dbpp::DbgLogger::instance()->open();
+  // sanity check
+  if (!dbpp::DbgLogger::instance()->isOpen()) {
+    dbpp::Logger::instance()->OutputError( // C++17 return char* and not const
+        std::string{"Couldn't open file for writing debug info\n"}.data());
+  }
+
+#if 0
+  // debugging
+  std::vector<double> w_U1;
+  w_U1.reserve(GlobalDiscretization::instance()->Uh().size());
+  GlobalDiscretization::instance()->to_stdVector(
+      w_U1, GlobalDiscretization::NodalValComp::A);
+  std::vector<double> w_U2;
+  w_U1.reserve(GlobalDiscretization::instance()->Uh().size());
+  GlobalDiscretization::instance()->to_stdVector(
+      w_U2, GlobalDiscretization::NodalValComp::Q);
+#endif
 
   // just to make sure we are on the right track
   // current version we only support E. McNeil data
   auto w_activeDiscr = Simulation::instance()->getActiveDiscretization();
   if (DamBreakData::DiscrTypes::emcneil == w_activeDiscr) {
+    // Design Note
+    //  this method signature is deprecated
+    auto &m_bc = GlobalDiscretization::instance()->gamma();
     if (m_bc.getBCtype() == Gamma::eBCtypes::Hten_Qzero) {
       // set b.c. nodes
       m_rhsAlgo->setBCNodes(m_bc.getBCNodeAmont().Values(),
                             m_bc.getBCNodeAval().Values());
     }
+  } else {
+    return; // for now not supporting other
   }
 
-  TestRhsImpl *w_downCast = dynamic_cast<TestRhsImpl *>(m_rhsAlgo);
-  // check if it succeed
-  assert(nullptr != w_downCast);
-  auto w_listOfSections = w_downCast->getListPhysicsObjects();
-  // EMcNeilBCImpl getUpStream/DownStream
-  EMcNeilBCimpl w_testImpl{w_listOfSections};
+  // IMPORTANT
+  // this is a temporary fix, only for debugging purpose
+  // set m_U12 values!! based on global discretization
+  // these are updated at each iteration
+  // initialize(GlobalDiscretization::instance(), 0.);
 
-  // apply algorithm (rhs numerical treatment of convective flux, source terms)
+  // just testing a new impl of b.c.
+  // TestRhsImpl *w_downCast = dynamic_cast<TestRhsImpl *>(m_rhsAlgo);
+  // check if it succeed
+  //  assert(nullptr != w_downCast);
+  //  auto w_listOfSections = w_downCast->getListPhysicsObjects();
+  // EMcNeilBCImpl getUpStream/DownStream
+  // need to pass a shared_ptr, need a review
+  //  EMcNeilBCimpl w_testImpl{w_listOfSections};
+
+  auto checkU1 = m_U12.first->values().to_stdVector();
+  auto checkU2 = m_U12.second->values().to_stdVector();
+
+  // (rhs numerical treatment of convective flux, source terms)
   m_rhsAlgo->calculate(m_U12);
 
-  // ++++++ half time step +++++++++++++
+  // ++++++ half time step (predictor) +++++++++++++
 
   // Create step integrator (pass RHS as argument)
   TwoStepsIntegrator w_timeStepper;
@@ -74,11 +112,18 @@ void TestEMcNeilVec::advance() {
   auto m_U1p = w_midState.first->values().to_stdVector();
   auto m_U2p = w_midState.second->values().to_stdVector();
 
-  // write to debug file
+  // write state values for debugging purpose
+  const auto w_iterNostr =
+      std::to_string(Simulation::instance()->getIterationNumber());
+  dbpp::DbgLogger::instance()->write2file(
+      std::string{"++++ Iteration number: "} + w_iterNostr);
   dbpp::DbgLogger::instance()->write2file_p(
       std::make_tuple(static_cast<unsigned>(m_U1p.size()), m_U1p, m_U2p));
+  // write to debug file
+  // dbpp::DbgLogger::instance()->write2file_p(
+  //     std::make_tuple(static_cast<unsigned>(m_U1p.size()), m_U1p, m_U2p));
 
-  // ++++++ final time step +++++++++++++
+  // ++++++ final time step (corrector) +++++++++++++
 
   // apply algorithm (rhs numerical treatment of convective flux, source terms)
   m_rhsAlgo->calculate(w_midState); // updated values
@@ -95,21 +140,18 @@ void TestEMcNeilVec::advance() {
   auto m_U2 = w_finalState.second->values().to_stdVector();
 
   // write to debug file
-  dbpp::DbgLogger::instance()->write2file_p(
-      std::make_tuple(static_cast<unsigned>(m_U1.size()), m_U1p, m_U2));
+  dbpp::DbgLogger::instance()->write2file(
+      std::make_tuple(static_cast<unsigned>(m_U1.size()), m_U1, m_U2));
 
-  // notify all observers
-  // setState();
-  // update the global discretization
-  //  dbpp::GlobalDiscretization::instance()->update();
+  // update solution
+  // since we don't need the final state anymore
+  m_U12 = std::move(w_finalState); //('move' xvalue: eXpiring value)
 
-  // update boundary condition (need to check for this one)
-  //  dbpp::GlobalDiscretization::instance()->gamma().applyBC();
-
-  // update section flow (one element in the list)
-  // m_listofObs.front()->update();
+  // release respource
+  if (dbpp::DbgLogger::instance()->isOpen()) {
+    dbpp::DbgLogger::instance()->close();
+  }
 }
-
 void TestEMcNeilVec::mainLoop(const GlobalDiscretization *aGblDiscr,
                               const double aTimeTo) {
   const auto &w_bc = aGblDiscr->gamma();
@@ -125,18 +167,44 @@ void TestEMcNeilVec::mainLoop(const GlobalDiscretization *aGblDiscr,
     }
   }
 
+  // Create step integrator (pass RHS as argument)
+  TwoStepsIntegrator w_timeStepper; // only one supported
+
   // logical time (pdate all nodes)
   TimePrm w_timePrm(0., 0.01, aTimeTo); // simulator set to 22.5
   while (!w_timePrm.finished()) {
-    // apply algorithm (rhs numerical treatment of convective flux, source
-    // terms)
+
+    // rhs numerical treatment of convective flux, source terms
     m_rhsAlgo->calculate(m_U12);
+
+    // ++++++ half time step (predictor) +++++++++++++
+    w_timeStepper.setInitSln(m_U12.first->values().to_stdVector(),
+                             m_U12.second->values().to_stdVector());
+
+    w_timeStepper.setIntegratorStep(
+        TwoStepsIntegrator::eIntegratorStep::predictorStep);
+    // advance one time-step
+    w_timeStepper.step(m_rhsAlgo, Simulation::instance()->simulationTimeStep());
+
+    // ++++++ final time step (corrector) +++++++++++++
+
+    StateVector w_midState{nullptr, nullptr}; // debugging purpose
+    // rhs numerical treatment of convective flux, source terms
+    m_rhsAlgo->calculate(w_midState); // updated values
+
+    // n+1 time step
+    w_timeStepper.setIntegratorStep(
+        TwoStepsIntegrator::eIntegratorStep::correctorStep);
+
+    // advance one time-step
+    w_timeStepper.step(m_rhsAlgo, Simulation::instance()->simulationTimeStep());
   }
 }
 
 // just testing an implementation
 void TestEMcNeilVec::initialize(const GlobalDiscretization *aGblDiscr,
                                 double aTime) {
+  assert(aTime == 0.); // debugging purpose
   std::vector<double> w_U1;
   w_U1.reserve(aGblDiscr->Uh().size());
   aGblDiscr->to_stdVector(w_U1, GlobalDiscretization::NodalValComp::A);
@@ -162,12 +230,15 @@ void TestEMcNeilVec::initialize(const GlobalDiscretization *aGblDiscr,
   w_U2shrptr.reset(new scalarField(w_grid1D, w_U1, std::string{"Q"}));
 
   // what's going here?
-  StateVector w_pairAQ = {std::move(w_U1shrptr), std::move(w_U2shrptr)};
+  // StateVector w_pairAQ = {std::move(w_U1shrptr), std::move(w_U2shrptr)};
+  m_U12 = {std::move(w_U1shrptr), std::move(w_U2shrptr)};
 
+#if 0 // for now we don't need that
   m_timePrm.setStartTime(aTime);
   m_timePrm.setTimeStepMode(dbpp::TimePrm::TimeStepMode::VARIABLE_TIME_STEP);
   m_timePrm.initTimeLoop(); // initialize simulation time
   //  parameters m_tip->increaseTime(calculateDt()); // t1=t0+dt;
   // dbpp::Simulation::instance()->setSimulationTimeStep(TimeStepCriteria(...));
+#endif
 }
 } // namespace dbpp

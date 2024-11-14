@@ -21,6 +21,7 @@
 #include "../SfxTypes/dbpp_PhyConstant.h"
 #include "../SfxTypes/dbpp_SharedPtrFactory.hpp"
 #include "../SfxTypes/dbpp_Simulation.h"
+#include "../Utility/dbpp_AppConstant.hpp" //DIM cte
 #include "../Utility/dbpp_CommandLineArgs.h"
 #include "../Utility/dbpp_Hydro1DLogger.h"
 #include "../Utility/dbpp_SimulationUtility.h"
@@ -38,10 +39,7 @@ Wave1DSimulator::Wave1DSimulator(/*unsigned int aNbIterationsMax  =50 ,*/
                                  double aCFL /* =0.6 */)
     : m_lambda{nullptr}, m_tip{nullptr}, m_H{nullptr}, m_I{nullptr},
       m_ListSectFlow{nullptr},           // Section flow collection
-      Sf1{}, S0am{}, S0av{},             // ...
       m_CFL{aCFL},                       // Courant-Friedrich-Levy
-      m_xmin{0.},                        // E. McNeil default value
-      m_xmax{1000.},                     // E. McNeil default value
       FichierResultat{nullptr},          // vs2012 we have nullptr
       m_opened{false},                   // result file
       m_activeAlgo{"EMcNeil1D_mod"},     // default value
@@ -71,22 +69,17 @@ Wave1DSimulator::~Wave1DSimulator() {
   // save final result to file
   if (m_opened == true) {
     // simulation has terminated, might as well save result
-    // to file for visualizing and plot
-    //	saveResult(m_u,m_lambda,m_tip->time());  debugging purpose ()
-
     // delete the file result not needed
     if (FichierResultat) {
       // close it
       errno_t err = fclose(FichierResultat);
       if (err == 0) {
-        // printf( "The file 'EMcNeil1D_Result.txt' was closed\n" );
-        auto *w_msg = "The file 'EMcNeil1D_Result.txt' was closed";
-        Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
-        // FichierResultat=nullptr;
+        Logger::instance()->OutputSuccess(
+            std::string{"The file 'EMcNeil1D_Result.txt' was closed"}.data());
       } else {
-        // printf( "The file 'EMcNeil1D_Result.txt' was not closed\n" );
-        auto *w_msg = "The file 'EMcNeil1D_Result.txt' was not closed";
-        Logger::instance()->OutputError(const_cast<char *>(w_msg));
+        Logger::instance()->OutputError(
+            std::string{"The file 'EMcNeil1D_Result.txt' was not closed"}
+                .data());
       }
     }
   } // if m_opened
@@ -113,14 +106,16 @@ void Wave1DSimulator::scan() {
                 std::string{"] [1:"}; // ui value int x-max coord ] [1:
   w_gridprms += std::to_string(w_activeData.nbSections() - 1) +
                 std::string{"]"}; // ui value nbgridpoints
-  m_grid.reset(new gridLattice(w_gridprms));
+  // one-dimensional; grid x=0,...,1000
+  std::shared_ptr<dbpp::gridLattice> w_grid1D;
+  w_grid1D.reset(new gridLattice(w_gridprms));
 
   // DEPRECATED! will be removed in future version
   // attach a field of values on the grid
-  std::get<0>(m_u).reset(new scalarField(m_grid, "A"));
-  std::get<1>(m_u).reset(new scalarField(m_grid, "Q"));
+  //  std::get<0>(m_u).reset(new scalarField(w_grid1D, "A"));
+  //  std::get<1>(m_u).reset(new scalarField(w_grid1D, "Q"));
 
-  m_lambda.reset(new scalarField(m_grid, "lambda_H"));
+  m_lambda.reset(new scalarField(w_grid1D, "lambda_H"));
 
   //   the wave-function can be specified on the command line
   //   1: Gaussian function
@@ -141,10 +136,11 @@ void Wave1DSimulator::scan() {
                          m_shockLoc});   // we set DamBreak step function
 
     Logger::instance()->OutputSuccess(
-        std::string{"We are considering flat bed topography"}.data());
+        std::string{"DamBreak initial Phi0 and Phi1 set to: %f %f"}.data(),
+        m_Phi0, m_Phi1);
 
     Logger::instance()->OutputSuccess(
-        std::string{"We set DamBreak step function"}.data());
+        std::string{"We are considering flat bed topography"}.data());
   }
 
   // initialize the parameters in the functions.
@@ -169,80 +165,37 @@ void Wave1DSimulator::scan() {
 // to evaluate lambda - now we just look the value up in an array):
 void Wave1DSimulator::setH() {
   using namespace dbpp;
-
+#if 0
   // debug check (assume that were set by GUI)
-  assert(10. == m_Phi0);
-  assert(1. == m_Phi1);
+  assert(1. == m_Phi0);
+  assert(10. == m_Phi1);
   assert(500. == m_shockLoc);
+#endif
 
   // set reference this way we modify the original values
   auto &w_lambda = m_lambda->values();
   // initial cnd: 10.|1. E. McNeil
-  assert(100 == w_lambda.size());
-  std::fill_n(w_lambda.begin(), (w_lambda.size() / 2) + 1, m_Phi0);
+  assert(100 == w_lambda.size()); // number of grid points (set from GUI)
+  std::fill_n(w_lambda.begin(), (w_lambda.size() / 2) + 1, m_Phi1);
   std::fill_n(std::next(w_lambda.begin(), w_lambda.size() / 2),
-              w_lambda.size() / 2, m_Phi1);
+              w_lambda.size() / 2, m_Phi0);
 
   dbpp::Logger::instance()->OutputSuccess(
       std::string{"Wave1DSimulator::setH() completed"}.data());
 }
-#if 0
-// NOTE: ???  i do not remember NEED TO BE REMOVE
-// Design Note: it shouldn't be handled by the simulator (DEPRECATED!!!!)
-real Wave1DSimulator::calculateDt() {
-  using namespace std;
-  using namespace dbpp;
-
-  // real maxValue = 0;
-  const auto &w_U1 = m_u.first->values();  // (A)
-  const auto &w_U2 = m_u.second->values(); // (Q)
-  // const int w_nx = m_grid->getBase(1); // index of the first grid node
-  const int w_nbPts = m_grid->getNoPoints();
-  const auto dx = m_grid->Delta(1); // in x-direction (shall be 10)
-
-  // dt = BIG_dt;  huge double value (debugging)
-  const double w_grav = dbpp::PhysicalConstant::sGravity;
-
-  // NOTE (important) for some reason the numeric_limits compile time error
-  // it seems it doesn't recognize the max() method. I think there is a
-  // conflict. no choice we make use of big_dt When i include the EMcNeil1D.h
-  // header file, that create he problem lot header are included that comes
-  // from c language, it may the reason that create a compile time error.
-  // Finally I found it, the header file include the windows.h which windef.h
-  // that contains minmax macro. Resolve it by surrounding the function with
-  // parenthese.
-  // real dt = BIG_dt;
-
-  auto dt = (std::numeric_limits<double>::max)();
-  for (auto j = 2; j <= w_nbPts; j++) // start j=2, i think j=1 is tied node
-  {
-    auto V = w_U2(j) / w_U1(j);        // ...
-    auto c = ::sqrt(w_grav * w_U1(j)); // unit width
-    auto dtc = dx / (::fabs(V) + c);   // ...
-    dt = std::min<double>(dtc, dt);    // ...
-  }
-
-  // debugging purpose don't really need to do that, actually this is not
-  // as important as the simulation time, since we are comparing with E.
-  // McNeil source code (see file 'debug de la fonction de controle') cout <<
-  // "\nAutomatic variable adjustment of time step to " << dt << endl;
-
-  // Calcul de dt (shall be done outside the method, this method
-  // compute time step, multiplication by cfl number not here, when
-  // call the increase time step in the main simulation time loop)
-  return m_CFL * dt;
-}
-#endif
 
 StateVector Wave1DSimulator::getIC() {
   DamBreakData w_dbData(
       dbpp::Simulation::instance()->getActiveDiscretization());
-  if (w_dbData.getDType() == DamBreakData::DiscrTypes::emcneil) {
-    dbpp::Logger::instance()->OutputSuccess(
-        std::string{"Wave1DSimulator::setIC() done successfully"}.data());
 
-    std::cout << "Active discretization used by GlobalDiscretization is: "
-              << std::string("EMcNeil") << "\n";
+  if (w_dbData.getDType() == DamBreakData::DiscrTypes::emcneil) {
+    //    dbpp::Logger::instance()->OutputSuccess(
+    //        std::string{"Wave1DSimulator::setIC() done successfully"}.data());
+
+    dbpp::Logger::instance()->OutputSuccess(
+        std::string{"Active data discretization for this simulation: %s"}
+            .data(),
+        std::string("EMcNeil").data());
   }
 
   // auto w_grid = std::make_shared<gridLattice>( new gridLattice{
@@ -252,7 +205,6 @@ StateVector Wave1DSimulator::getIC() {
   std::shared_ptr<scalarField> w_U1{new scalarField{w_grid1D, "A"}};
   std::shared_ptr<scalarField> w_U2{new scalarField{w_grid1D, "Q"}};
 
-  // fill the field for the current time period
   // with values from the appropriate function
   auto &w_U1val = w_U1->values(); // reference to modify it (A)
   auto &w_U2val = w_U2->values(); // reference to modify it (Q)
@@ -261,15 +213,13 @@ StateVector Wave1DSimulator::getIC() {
   std::fill(w_U2val.getPtr() /*begin range*/,
             w_U2val.getPtr() + w_U2val.size() /*end range*/, 0. /*value*/);
 
-  // sanity check
-  if (std::all_of(w_U2val.getPtr() /*begin range*/,
-                  w_U2val.getPtr() + w_U2val.size() /*end range*/,
-                  std::bind(std::greater_equal<real>(), std::placeholders::_1,
-                            0.)) == true) {
-
-    dbpp::Logger::instance()->OutputSuccess(
-        std::string{"Wave1DSimulator::setIC() done successfully"}.data());
-  }
+  // sanity check set to zero
+  //  if (std::all_of(w_U2val.getPtr() /*begin range*/,
+  //                  w_U2val.getPtr() + w_U2val.size() /*end range*/,
+  //                  std::bind(std::greater_equal<double>(),
+  //                  std::placeholders::_1,
+  //                            0.)) == true) {
+  //  }
 
   for (auto i = 1; i <= w_U1->grid().getNoPoints(); i++) {
     // we assume that each section is unit width, this shall be
@@ -279,14 +229,29 @@ StateVector Wave1DSimulator::getIC() {
     // from Z that gives water depth
     // NOTE we have also m_lambda which i am not sure represent
     // water depth
-    w_U1val(i) = m_H->valuePt(m_grid->getPoint(1, i), 0.) -
-                 m_I->valuePt(m_grid->getPoint(1, i), 0.);
+    w_U1val(i) = m_H->valuePt(w_grid1D->getPoint(1, i), 0.) -
+                 m_I->valuePt(w_grid1D->getPoint(1, i), 0.);
   }
 
+  dbpp::Logger::instance()->OutputSuccess(
+      std::string{"Wave1DSimulator Initial Condition done successfully"}
+          .data());
+
+  // debugging check (to be removed)
+  assert(w_U1val(1) == 10.);
+  assert(w_U1val(49) == 10.);
+  assert(w_U1val(50) == 10.);
+  assert(w_U1val(2) == 10.);
+  assert(w_U1val(51) == 1.);
+  assert(w_U1val(3) == 10.);
+  assert(w_U1val(52) == 1.);
+  assert(w_U1val(100) == 1.);
+
   // RVO (Return Value Optimization)
-  return StateVector{w_U1, w_U1};
+  return StateVector{w_U1, w_U2};
 }
 
+#if 0
 // use the pre-defined function to set initial condition
 // TODO: return StateVector
 void Wave1DSimulator::setIC() {
@@ -321,10 +286,10 @@ void Wave1DSimulator::setIC() {
 #endif
 
   // initial cnd: 10.|1. E. McNeil
-  std::fill_n(w_U1.begin(), (w_U1.size() / 2) + 1, m_Phi0); // m_Phi0
+  std::fill_n(w_U1.begin(), (w_U1.size() / 2) + 1, m_Phi1); // m_Phi0
   //  std::fill_n(w_U1.begin(), std::prev(w_U1.end(), 50), 10.);
   std::fill_n(std::next(w_U1.begin(), w_U1.size() / 2), w_U1.size() / 2,
-              m_Phi1); // m_Phi1
+              m_Phi0); // m_Phi1
 
   // debugging check
   assert(w_U1(1) == 10.);
@@ -336,6 +301,7 @@ void Wave1DSimulator::setIC() {
   assert(w_U1(52) == 1.);
   assert(w_U1(100) == 1.);
 }
+#endif
 
 // Design Note: need method with at max 5 lines of code, that's it!!
 // just don't know if we really need it!!
@@ -371,8 +337,8 @@ void Wave1DSimulator::initialize() {
   dbpp::Logger::instance()->OutputSuccess(
       std::string{"Initial condition startup phase (scan method)"}.data());
 
-  setH();     // initial depth array
-  setIC();    // set initial conditions
+  setH(); // initial depth array
+  // setIC();     set initial conditions
   initTime(); // ...
   // create section flow
   if (nullptr != m_ListSectFlow) // from simulation GUI ON
@@ -383,37 +349,17 @@ void Wave1DSimulator::initialize() {
 
   createListSections();
 
-  // NOTE this part is done in the factory method (same test is performed)
-  // check in which mode we are in the manual mode or we are using
-  // the GUI to manage the simulation
-  //  if (getSimulatorMode() == Wave1DSimulator::eSimulationMode::manualMode)
-  //  {
-  //    // creating our algorithm for this simulation
-  //    m_numRep = createEMcNeil1DAlgo(); // algorithm name from comd line
-  //    args if (m_numRep != nullptr) {
-  //      auto *w_msg = "Created Numerical Scheme for manual mode";
-  //      dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
-  //    } else {
-  //      auto *w_msg = "Could not create Numerical Scheme for manual mode";
-  //      dbpp::Logger::instance()->OutputError(const_cast<char *>(w_msg));
-  //    }
-  //  } else // GUI mode
-  //  {
   if (nullptr == m_numRep) {
     // create from user selection
     m_numRep = createEMcNeil1DAlgo(); // algorithm name from user selection
-    if (m_numRep != nullptr) {
-      dbpp::Logger::instance()->OutputSuccess(
-          std::string{"Created Numerical Scheme for GUI mode"}.data());
-    } else {
-      dbpp::Logger::instance()->OutputError(
-          std::string{"Could not create Numerical Scheme for GUI mode"}.data());
+    if (m_numRep == nullptr) {
+      dbpp::Logger::instance()->OutputError(std::string{
+          "Could not create Numerical Scheme, must stop application"}
+                                                .data());
 
-      exit(EXIT_FAILURE); // no numerical method no simulation!!! no point to
-                          // go further
+      exit(EXIT_FAILURE); // no numerical method no simulation!!!
     }
   }
-  //}
 
   // DESIGN NOTE
   // Remove class attributes: m_u, m_up, m_grid don't need that
@@ -437,7 +383,7 @@ void Wave1DSimulator::initialize() {
   // condition");
 
   // Set solver initial condition
-  m_numRep->setInitSln(m_u);
+  m_numRep->setInitSln(getIC()); // debugging purpose
 
 #if 0
   if (isSaveResult2File()) {
@@ -467,7 +413,8 @@ void Wave1DSimulator::doOneStep() {
   // 'h' is the water depth measure from topography (bottom)
   // we are solving swe for (h,hv) mass/momentum, so 'A' represent
   // 'h' (H-Z) for now we have Z=0. flat bed
-  auto &w_hValues = m_u.first->values(); // A(h) water depth
+  // auto &w_hValues = m_u.first->values();  A(h) water depth
+  auto &w_hValues = m_numRep->getState().first->values();
   auto &lambdaArray = m_lambda->values();
   lambdaArray = w_hValues; // no need to call copy algorithm
 
@@ -493,7 +440,7 @@ void Wave1DSimulator::doOneStep() {
   if (isSaveResult2File()) {
     // call m_numRep->getState() and pass list of section flow
     // saveResult(m_numRep->getState(), m_ListSectFlow, m_tip->time());
-    saveResult(m_u, m_lambda, m_tip->time());
+    saveResult(m_numRep->getState(), m_lambda, m_tip->time());
   }
 }
 
@@ -511,7 +458,35 @@ void Wave1DSimulator::initTime() {
   // criteria to change to a variable time stepping
   m_tip->setTimeStepMode(dbpp::TimePrm::TimeStepMode::VARIABLE_TIME_STEP);
   m_tip->initTimeLoop(); // initialize simulation time parameters
-  const auto w_dt = m_CFL * TimeStepCriteria::timeStep(*m_u.first, *m_u.second);
+
+  // deprecated stuff
+  auto w_IC = getIC();
+  const auto w_dtmp =
+      m_CFL * TimeStepCriteria::timeStep(*w_IC.first, *w_IC.second);
+  // const auto w_dt = m_CFL * TimeStepCriteria::timeStep(*m_u.first,
+  // *m_u.second);
+
+  // check
+  auto chectDiscr = Simulation::instance()->getActiveDiscretization();
+  assert(chectDiscr == dbpp::DamBreakData::DiscrTypes::emcneil);
+
+  // create from a vector  (DamBreak Data) temporary fix
+  DamBreakData w_dbData(DamBreakData::DiscrTypes::emcneil);
+  auto w_grid2Str = w_dbData.toString(DamBreakData::DiscrTypes::emcneil);
+  scalarField w_A{std::make_shared<gridLattice>(w_grid2Str),
+                  std::vector<double>(w_dbData.getIC().m_U1.begin(),
+                                      std::prev(w_dbData.getIC().m_U1.end())),
+                  std::string{"A"}}; // initialize scalar field
+
+  // set to zero (Q discharge) according to E. McNeil data
+  scalarField w_Q{std::make_shared<gridLattice>(w_grid2Str),
+                  std::vector<double>(DIM::value), "A"}; // Computational Domain
+
+  const auto w_dt = m_CFL * TimeStepCriteria::timeStep(w_A, w_Q);
+
+  // sanity check for sake of comparison (both compute with different data)
+  assert(w_dtmp == w_dt);
+
   m_tip->increaseTime(w_dt); // t1=t0+dt;
 
   // Simulation parameters at start up (dt, Numerical scheme)
@@ -613,7 +588,7 @@ std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
   std::shared_ptr<dbpp::EMcNeil1D> w_num_rep{}; // set to nullptr
 
 #if 1 // dbpp::CmdLineArgs not supported for some reason
-  // Check which mode simulator is running (manual/gui)
+      // Check which mode simulator is running (manual/gui)
   if (getSimulatorMode() == eSimulationMode::manualMode) {
     m_activeAlgo = dbpp::CmdLineArgs::read(
         "-algo" /*used defined*/,
@@ -654,8 +629,10 @@ std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
     // this algorithm will selected by user from GUI
     // SweRhsAlgorithm *w_rhsTest = new TestRhsImpl(m_ListSectFlow);
     // just for testing and debugging
+    assert(nullptr != m_ListSectFlow);
     w_num_rep = factoryCreator<TestEMcNeilVec>(new TestRhsImpl(m_ListSectFlow),
                                                TimePrm{0., 0., 0.});
+
     if (nullptr == w_num_rep) {
       dbpp::Logger::instance()->OutputError(
           std::string{"Unable to create solver with name: %s"}.data(),
@@ -674,6 +651,7 @@ std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
   return w_num_rep;
 }
 
+#if 0
 // really need it?
 // save initial cnd. to file. It's not the final; version of this
 // method, ... not completed!!! name missing (not sure about this??)
@@ -699,10 +677,13 @@ void Wave1DSimulator::saveIC2File() {
   }
 
   // save result to file
-  saveResult(m_u, m_lambda, 0.);
+  saveResult(getIC(), m_lambda, 0.);
 }
+#endif
 
 // loop index has been changed ...
+//  Design Note
+//   Use std::filesystem (C++17 feature) and not string to represent a path
 void Wave1DSimulator::saveResult(const StateVector &aStateVec,
                                  const fieldptr &aFptr, double aTime) {
   static bool sFirstime = true;
@@ -730,7 +711,6 @@ void Wave1DSimulator::saveResult(const StateVector &aStateVec,
     if (err == 0) {
       Logger::instance()->OutputSuccess(
           std::string{"The file 'EMcNeil1D_Result.txt' was opened"}.data());
-      //  printf("The file 'EMcNeil1D_mod.out' was opened\n");
       m_opened = true;
     } else {
       // printf("The file 'DamBreakIC.out' was not opened\n");
@@ -741,7 +721,6 @@ void Wave1DSimulator::saveResult(const StateVector &aStateVec,
 
   using namespace dbpp;
 
-  // int j; looping variable
   const auto &U1 = aStateVec.first->values();  // A
   const auto &U2 = aStateVec.second->values(); // Q
   const auto &H = aFptr->values();             // H
@@ -842,7 +821,7 @@ void Wave1DSimulator::initializeGuiMode() {
 
   // Initialize simulation before we start
   setH();
-  setIC();
+  // setIC();
   initTime();
 }
 } // namespace dbpp

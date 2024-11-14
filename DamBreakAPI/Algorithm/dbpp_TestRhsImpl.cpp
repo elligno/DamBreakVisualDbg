@@ -102,6 +102,10 @@ void TestRhsImpl::calculate(const StateVector &aU) {
   // Riemann solver to compute the flux at cell face
   w_fluxFaceAlgo.calculFF(w_FF1, w_FF2, w_U1LR, w_U2LR);
 
+  // force reset to zero (valarray)
+  m_swerhs.m_FF1.resize(w_FF1.size());
+  m_swerhs.m_FF2.resize(w_FF2.size());
+
   // for now leave it like that, backward compatibility
   std::copy(w_FF1.cbegin(), w_FF1.cend(), std::begin(m_swerhs.m_FF1));
   std::copy(w_FF2.cbegin(), w_FF2.cend(), std::begin(m_swerhs.m_FF2));
@@ -109,11 +113,13 @@ void TestRhsImpl::calculate(const StateVector &aU) {
   // good practice no memory leak
   std::unique_ptr<BaseNumTreatmemt> w_Bnum(new BaseNumTreatmemt);
   // source term discretization (this is the original signature of the function)
-  std::vector<double> w_S(aU.first->values().size() - 1);
-  w_Bnum->TraitementTermeSource2(w_S, w_vU2, w_vU1, m_vH, // ranges
-                                 w_dbDat.getManning(),
-                                 aU.first->grid().Delta(1),
-                                 m_listSectFlow->size(), w_dbDat.getWidth());
+  std::vector<double> w_S(aU.first->values().size());
+  w_Bnum->TraitementTermeSource2(
+      w_S, w_vU2, w_vU1, m_vH, // ranges
+      w_dbDat.getManning(), aU.first->grid().Delta(1),
+      static_cast<const int>(m_listSectFlow->size()), w_dbDat.getWidth());
+  // force reset to zero (valarray)
+  m_swerhs.m_S.resize(w_S.size());
 
   std::copy(w_S.cbegin(), w_S.cend(), std::begin(m_swerhs.m_S));
 
@@ -189,10 +195,10 @@ void TestRhsImpl::calculate(const StateVector &aU,
   // Will be deprecated in the near future
   std::vector<double> w_S(DIM::value); // computational domain
   // source term discretization (this is the original signature of the function)
-  w_baseTreatment.TraitementTermeSource2(w_S, w_vU2, w_vU1, w_vH, // ranges
-                                         w_dbDat.getManning(), w_dbDat.dx(),
-                                         w_dbDat.nbSections(),
-                                         w_dbDat.getWidth());
+  w_baseTreatment.TraitementTermeSource2(
+      w_S, w_vU2, w_vU1, w_vH, // ranges
+      w_dbDat.getManning(), aU.first->grid().Delta(1), w_dbDat.nbSections(),
+      w_dbDat.getWidth());
 
   // use the new signature by returning valarray (want to check)
   SourceTermsTreatment w_testImpl;

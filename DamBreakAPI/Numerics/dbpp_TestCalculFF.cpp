@@ -66,13 +66,13 @@ void TestCalculFF::calculFF(std::vector<double> &FF1, std::vector<double> &FF2,
     // 				CR = ::sqrt( grav*UR1/HydroUtils::T(B));
     // 				CL = ::sqrt( grav*UL1/HydroUtils::T(B));
     const auto w_grav = PhysicalConstant::sGravity;
-    auto CR = ::sqrt(w_grav * aU1LR[i].second / HydroUtils::T(1.));
-    auto CL = ::sqrt(w_grav * aU1LR[i].first / HydroUtils::T(1.));
+    auto CR = std::sqrt(w_grav * aU1LR[i].second / HydroUtils::T(1.));
+    auto CL = std::sqrt(w_grav * aU1LR[i].first / HydroUtils::T(1.));
     //
-    auto w_CR = ::sqrt(w_grav * aU1LR[i].second / HydroUtils::T(1.));
-    auto w_CL = ::sqrt(w_grav * aU1LR[i].first / HydroUtils::T(1.));
-    assert(CR == w_CR);
-    assert(CL == w_CL);
+    auto w_CR = std::sqrt(w_grav * aU1LR[i].second / HydroUtils::T(1.));
+    auto w_CL = std::sqrt(w_grav * aU1LR[i].first / HydroUtils::T(1.));
+    assert(CR == w_CR); // what is that??
+    assert(CL == w_CL); // ditto
 
     //	Une attention particulière devra être ici portée sur
     //	les signes (+/-) relativement au produit scalaire avec

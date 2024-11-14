@@ -20,10 +20,21 @@ public:
       : m_phi1{10.}, // default value used by E. McNeil
         m_bcType{Gamma::eBCtypes::Hten_Qzero}, m_listSectFlow{aListSectFlow} {}
 
-  // Usage
-  //
-  EMcNeilBCimpl(ListSectFlow *aListSectFlow)
-      : m_bcType{Gamma::eBCtypes::Hten_Qzero}, m_listSectFlow{aListSectFlow} {}
+  // NOTE
+  //    this don't make sense!!! you can't have a ctor with shared
+  //    and one with pointer. What happend here when you call this
+  //    ctor it create a shared_ptr of aListSectFlow. Since ListSectFlow
+  //    was already pass as arg to TestRhsImpl ctor (at creation in createAlgo),
+  //    is an attribute of the WaveSimulator and was created (allocated).
+  //    In the TestEMcNeilVec::advance a call is made to EMcNeilBCimpl(ListSec*)
+  //    and the attribute of the class is declared ad shared_ptr (of the list).
+  //    When it go out of scope it call destructor of the list and empty the
+  //    list!! whenit go out of scope of of the simulator it try to delete the
+  //    list, it throw an exception!! since list is empty. This ctor is no
+  //    sense!!! Pass a shared_ptr not a raw pointer, no point to do this!!
+  //  EMcNeilBCimpl(ListSectFlow *aListSectFlow)
+  //      : m_bcType{Gamma::eBCtypes::Hten_Qzero}, m_listSectFlow{aListSectFlow}
+  //      {}
 
   void setPhi1(double aPhi1) { m_phi1 = aPhi1; }
   double getPhi1() const { return m_phi1; }

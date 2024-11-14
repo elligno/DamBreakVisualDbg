@@ -191,6 +191,5 @@ protected:
 
 private:
   std::string m_name; /*< rhs algorithm name*/
-  // 		IRhsDiscretization* m_rhsDiscr; // ??
 };
 } // namespace dbpp

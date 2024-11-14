@@ -102,6 +102,7 @@ public:
    * class)
    */
   virtual void setInitSln(const StateVector &aU) = 0;
+  virtual void setInitSln(StateVector &&aU) = 0; // just a test
 
 protected:
   /** advance the algorithm step-by-step (default implementation)

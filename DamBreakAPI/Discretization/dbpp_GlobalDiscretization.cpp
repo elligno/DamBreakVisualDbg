@@ -1,4 +1,5 @@
 
+//#include <tuple>
 // stl include
 #include <functional>
 #include <numeric> // adjacent_difference
@@ -67,11 +68,29 @@ GlobalDiscretization::~GlobalDiscretization() {
 
 void GlobalDiscretization::createNodalVal() {
   m_nval.reserve(NbGlobalNode);
-
+  // retrieve mesh parameters
   auto w_grid1D = m_numRep->getState().first->grid();
   auto w_x = w_grid1D.xMin(1);
   m_xmin = w_x;
   m_dx = w_grid1D.Delta(1);
+
+  // set it to E. McNeil for debugging purpose (validate algorithm)
+  DamBreakData w_dbData{DamBreakData::DiscrTypes::emcneil};
+  const auto &w_dbIC = w_dbData.getIC();
+  //  assert(w_dbData.dx() == m_dx);      // sanity check
+  assert(w_dbData.x_min() == m_xmin); // ditto
+  auto w_vecA = w_dbIC.m_U1;          // copy elison??
+  auto w_vecQ = w_dbIC.m_U2;          // ditto
+  auto w_vecH = w_dbIC.m_H;           // ditto
+  // another check just to make we are on the right track
+  // debugging check (sanity check)
+  assert(w_vecA[0] == 10.);
+  assert(w_vecA[1] == 10.);
+  assert(w_vecA[48] == 10.);
+  assert(w_vecA[49] == 10.);
+  assert(w_vecA[50] == 1.);
+  assert((w_vecA[51]) == 1.);
+  assert(w_vecA[100] == 1.);
 
   // loop on the number of sections
   for (int32 i = 0; i < NbGlobalNode; ++i) {
@@ -82,7 +101,9 @@ void GlobalDiscretization::createNodalVal() {
       // m_nval.push_back( new Nodal_Value(
       // std::make_pair(i,X[i]),std::make_tuple(U1[i],U2[i],H[i]),3)); maybe we
       // shall start at index=1
-      m_nval.push_back(new Nodal_Value(std::make_pair(i, w_x), 3, 0, true));
+      m_nval.push_back(new Nodal_Value(
+          std::make_pair(i, w_x), 3,
+          std::make_tuple(w_vecA[i], w_vecQ[i], w_vecH[i]), 0, true));
       w_x += w_grid1D.Delta(1); // ready for next step
     } else if (i == (NbGlobalNode - 1)) {
       m_xmax = w_x;
@@ -94,9 +115,10 @@ void GlobalDiscretization::createNodalVal() {
       // m_nval.push_back( new Nodal_Value(
       // std::make_pair(i,X[i]),std::make_tuple(U1[i],U2[i],H[i]),3)); set last
       // node has tied (ghost node)
-      m_nval.push_back(new Nodal_Value(std::make_pair(i, w_x), 3, 100, true));
+      m_nval.push_back(new Nodal_Value(
+          std::make_pair(i, w_x), 3,
+          std::make_tuple(w_vecA[i], w_vecQ[i], w_vecH[i]), 100, true));
 
-      // just testing
       // auto w_lastNode = m_nval.back(); back return a reference, but reference
       // is stripped away
       auto &w_lastNode = m_nval.back(); // force auto to be a reference
@@ -104,44 +126,32 @@ void GlobalDiscretization::createNodalVal() {
       if (std::is_lvalue_reference_v<decltype(w_lastNode)>) {
         w_lastNode.setAsGhostNode();
       }
-      // else {
-      // auto &w_lastOne = m_nval.back();
-      //}
-      // std::is_lvalue_reference<decltype(w_lastNode)>
-      // auto isTied = w_lastNode.isTiedNode();
     } else {
       // DESIGN NOTE (initialize with IC)
       // m_nval.push_back( new Nodal_Value(
       // std::make_pair(i,X[i]),std::make_tuple(U1[i],U2[i],H[i]),3)); not tied
       // node (interior nodes)
-      m_nval.push_back(new Nodal_Value(std::make_pair(i, w_x), 3,
-                                       std::make_tuple(10., 0., 10.)));
+      m_nval.push_back(
+          new Nodal_Value(std::make_pair(i, w_x), 3,
+                          std::make_tuple(w_vecA[i], w_vecQ[i], w_vecH[i])));
       w_x += w_grid1D.Delta(1); // ready for next step
     }
   } // for-loop
 
   // sanity check (one before last)
   assert(101 == m_nval.size());
-  update();
+
+  std::copy(w_vecA.cbegin(), w_vecA.cend(), &U1[0]);
+  std::copy(w_vecQ.cbegin(), w_vecQ.cend(), &U2[0]);
+  std::copy(w_vecH.cbegin(), w_vecH.cend(), &H[0]);
+
+  Logger::instance()->OutputSuccess(
+      std::string{"Created Nodal Variables successfully"}.data());
+  //  update();
   // last node (ghost node) set to previous one (tied node)
   // NOTE in the update method, we update only computational
   //      domain 0,...,99. The ghost node is not set.
-  m_nval[100] = m_nval[99];
-
-  // Design Note
-  // ------------
-  //   We will use this implementation for the prototyping
-  //   because we want to use E. McNeil initialization code.
-  //   Also, DiscrInfo is deprecated (used byDamBreakInit),
-
-  //  unsigned i = 0;
-  //  // using lambda function
-  //  for_each(m_nval.begin(), m_nval.end(), [=, &i](Nodal_Value &aNval) {
-  //    // set nodal value
-  //    aNval[0] = U1[i];  // A
-  //    aNval[1] = U2[i];  // Q
-  //    aNval[2] = H[i++]; // H
-  //  });
+  // m_nval[100] = m_nval[99];
 }
 
 //
@@ -184,23 +194,6 @@ void GlobalDiscretization::init(const Simulation *aSim) {
                  for (unsigned j = 0; j < NbSections; j++) // wetted area
                    U1[j] = HydroUtils::Evaluation_A_fonction_H(H[j], Z[j],
                                                                1. /*B*/);
-
-//#if 0
-  // debugging purpose (WaveSimulator)
-  //     assert( m_grid->getPoint(1,48) == 470.);
-  //     assert( m_grid->getPoint(1,49) == 480.);
-  //     assert( m_grid->getPoint(1,50) == 490.);
-  //     assert( m_grid->getPoint(1,51) == 500.);
-  //     assert( w_lambda(50) == 10.); //H,x=490.
-  //     assert( w_lambda(51) == 1.);  //H,x=500.
-  // in this case, node index offset by -1
-  assert(X[47] == 470.);
-  assert(X[48] == 480.);
-  assert(X[49] == 490.);
-  assert(X[50] == 500.);
-  assert(X[99] == 990.);
-  assert(H[49] == 10.); // shock location
-  assert(H[50] == 1.);
 #endif
 
   // create global variables
@@ -316,8 +309,8 @@ void GlobalDiscretization::createPairFaces() {
       std::bind(pair_creator<cellFace, cellFace>{}, _1, _2)); // binder
 #endif
 
-  auto w_msg = "Pair of cell faces created";
-  Logger::instance()->OutputSuccess(const_cast<char *>(w_msg));
+  Logger::instance()->OutputSuccess(
+      std::string{"Pair of cell faces created"}.data());
 }
 
 void GlobalDiscretization::update() {
@@ -358,6 +351,9 @@ void GlobalDiscretization::update() {
     w_nval[2] = H[i++]; // H
     w_nvalBeg++;
   }
+
+  Logger::instance()->OutputSuccess(
+      std::string{"GlobalDiscretization update done!"}.data());
 }
 
 void GlobalDiscretization::createOmega() { throw "Not implemented yet\n"; }

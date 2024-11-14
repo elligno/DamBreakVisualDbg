@@ -5,6 +5,7 @@
 #include "SfxTypes/VectorField.h"
 #include "SfxTypes/dbpp_BaseMacros.h"
 #include "SfxTypes/dbpp_ExceptionUtils.h"
+#include "Utility/dbpp_AppConstant.hpp"
 #include "dbpp_TwoStepsIntegrator.h"
 
 namespace dbpp {
@@ -35,10 +36,9 @@ void TwoStepsIntegrator::predictor(SweRhsAlgorithm::SWERHS &&aRhs, double aDt) {
                       std::begin(w_dFF2));
 
 #if _DEBUG
-  SFX_REQUIRE(w_dFF2.size() == w_rhs.m_S.size(),
-              "Scalar field of different size");
-  SFX_REQUIRE(w_valU1.size() == w_rhs.m_S.size(),
-              "Scalar field of different size");
+  SFX_REQUIRE(DIM::value == w_dFF1.size(), "Scalar field of different size");
+  SFX_REQUIRE(DIM::value == w_dFF2.size(), "Scalar field of different size");
+  SFX_REQUIRE(DIM::value == w_rhs.m_S.size(), "Scalar field of different size");
 #endif
 
   // NOTE
@@ -72,6 +72,7 @@ void TwoStepsIntegrator::predictor(SweRhsAlgorithm::SWERHS &&aRhs, double aDt) {
   // put it back
   std::copy(std::begin(w_valU1p), std::end(w_valU1p),
             m_prevState.first->values().getPtr());
+
   std::copy(std::begin(w_valU2p), std::end(w_valU2p),
             m_prevState.second->values().getPtr());
 }

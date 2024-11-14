@@ -8,7 +8,7 @@
 // stl include
 #include <list>
 // boost include
-#include <boost/filesystem.hpp> // boost file system utility
+//#include <boost/filesystem.hpp>  boost file system utility
 // library includes
 #include "NumericalSchemes/dbpp_HLL_RK2_Algo_Vec.h"
 #include "SfxTypes/dbpp_TimePrm.h"
@@ -22,9 +22,7 @@ using TimePrmPtr = std::shared_ptr<dbpp::TimePrm>;
 
 namespace dbpp {
 // forward declaration
-class Observer;
 class ListSectFlow;
-class SemiDiscreteModel;
 } // namespace dbpp
 
 namespace dbpp {
@@ -107,7 +105,7 @@ public:
   /**
    *  Save initial condition to file on disk
    */
-  virtual void saveIC2File();
+  // virtual void saveIC2File();
 
   /**
    *   data store for final result (to be moved to implementation class??)
@@ -134,16 +132,10 @@ public:
    * @return smart pointer on base class
    */
   std::shared_ptr<dbpp::EMcNeil1D> createEMcNeil1DAlgo();
-
-  // i do not know what the hell is that? this whole class need to be
-  // re-factored it's a big mess, i need a serious clean-up namespace jb must be
-  // removed
   /**
    *  Create a list of cross-section for the simulation
    */
   void createListSections();
-
-  // mainly for GUI interaction
   /**
    *  set algorithm name
    *  @param aAlgoName name of the algorithm
@@ -193,23 +185,6 @@ public:
    */
   dbpp::ListSectFlow *getListSectionFlow() const { return m_ListSectFlow; }
 
-  // Design Note: this will be part of the GUI interface (GUI package)
-  // Provides interface (services that client need to implement).
-  // GUI simulator need some information about active algorithm
-  // By default simulator set an algorithm (ctor), GUI let user
-  // set the physical algorithm for the simulation
-  // 		void setActiveAlgorithm( const std::string& aActiveAlgo)
-  // 		{
-  // 			// - check if the algorithm is the same as simulator
-  // default
-  // 			// - if not, the check if the passed algorithm name is
-  // supported
-  // 			// - if yes, then need to create it with the algorithm
-  // factory
-  // 			// - ... to be completed
-  // 		}
-  // 		std::string getActiveAlgorithm() {return m_activeAlgo;}
-
   // directory where to store data
   void setValidationDir(const std::string &aValidationDir) {
     m_validationDir = aValidationDir;
@@ -249,26 +224,6 @@ public:
   /** Courant-Friedrich-Number*/
   void setCFL(const double aCFl) { m_CFL = aCFl; }
   double getCFL() const { return m_CFL; }
-
-  /** computational domain extension*/
-  /**
-   * @param minimum x coordinate
-   */
-  void setXmin(const double aXmin) { m_xmin = aXmin; }
-  /**
-   * @result return minimum x coordinate
-   */
-  double getXmin() const { return m_xmin; }
-  /**
-   * @param maximum x coordinate
-   */
-  void setXmax(const double aXmax) { m_xmax = aXmax; }
-  /**
-   * @result return maximum x coordinate
-   */
-  double getXmax() const { return m_xmax; }
-
-  // dambreak parameters (VS15 can i use constexpr and noexcept?)
   /**
    * @param minimum x coordinate
    */
@@ -298,51 +253,26 @@ public:
   /**
    */
   void initTime();
+  /**  Initial condition*/
+  StateVector getIC();
 
-  // DEPRECATED
-  // temporary fix, this will be removed in the next version
-  // shall be done by the scheduler or something else
-  // virtual real calculateDt();  calculate optimal dt (the timestep)
-
-  StateVector getIC(); /**<  Initial condition*/
 protected:
-  virtual void setIC(); // set initial conditions
-  virtual void setH();  /**< load H into lambda for efficiency*/
-
-  // virtual real calculateDt( /*int func*/);  calculate optimal dt (the
-  // timestep) virtual void plot();  deprecated
-  //	void setListSectFlow( std::shared_ptr<emcil::SemiDiscreteModel>
-  //&w_num_rep);
+  //  virtual void setIC(); /**< set initial conditions*/
+  virtual void setH(); /**< load H into lambda for efficiency*/
 private:
   // DEPRECATED
-  Mesh1D m_grid;    /**< lattice grid here 1D grid */
-  StateVector m_up; /**< solution u at time level l   (U1,U2) -> (A,Q) */
-  StateVector m_u;  /**< solution u at time level l+1 (U1,U2) -> (A,Q) */
+  // StateVector m_up; /**< solution u at time level l   (U1,U2) -> (A,Q) */
+  // StateVector m_u; /**< solution u at time level l+1 (U1,U2) -> (A,Q) */
   // End DEPRECATED
-
   fieldptr m_lambda; /**< variable coefficient (depth) */
   //	fieldptr m_tmp;      /**< variable coefficient (depth) */
-  TimePrmPtr m_tip; /**< time discretization parameters */
-  wavfuncptr m_H;   /**< depth function */
-  wavfuncptr m_I;   /**< initial surface function */
-
-  // i am not sure about this one (still use it? where and what for?)
-  // std::list<dbpp::Observer*> m_listObs; /**< list of observer */
+  TimePrmPtr m_tip;                   /**< time discretization parameters */
+  wavfuncptr m_H;                     /**< depth function */
+  wavfuncptr m_I;                     /**< initial surface function */
   dbpp::ListSectFlow *m_ListSectFlow; /**< list of section flow */
-
-  //	double *Z, *n;  /**< bathymetry and amnning coefficient */
-  // coefficients of mathematical model
-  double /*n1, V0, V1, R1, Y1,*/ Sf1, S0am, S0av; /**< slope function */
-                                                  // not sure about those? why?
-  double m_CFL;  /**< Courant-Friedrich-Levy number */
-  double m_xmin; /**< x minimum coordinate */
-  double m_xmax; /**< x maximum coordinate */
-
-  // maybe i should use the ofstream instead
-  // in the next version, for now we want to validate
-  // 		FILE *FichierDEBUG;
-  // 		char NomFichierDEBUG[256];
-
+  double m_CFL;                       /**< Courant-Friedrich-Levy number */
+  //  double m_xmin;                      /**< x minimum coordinate */
+  // double m_xmax;                      /**< x maximum coordinate */
   FILE *FichierResultat;        /**< depth function */
   char NomFichierResultat[256]; /**< depth function */
   // some variables used in the original version
@@ -353,9 +283,6 @@ private:
   std::shared_ptr<dbpp::EMcNeil1D> m_numRep;
   bool m_saveResult2File; // true as default
   unsigned int m_NumberIterationsMax;
-  //		void createFolderAndFile();
-  //    std::string CreateAlgoFile(const std::string& aCurDirStr = "");
-  //		void updateHFromGDiscr(dbpp::RealNumArray<real>& w_tmpH);
   double m_Phi1;
   double m_Phi0;
   double m_shockLoc;
