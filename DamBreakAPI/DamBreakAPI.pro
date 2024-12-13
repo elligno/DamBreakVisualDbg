@@ -48,6 +48,8 @@ SOURCES += \
     dbpp_Wave1DSimulator.cpp
 
 HEADERS += \
+    Algorithm/dbpp_BaseRhsImpl.h \
+    Algorithm/dbpp_GblRhsImpl.h \
     Algorithm/dbpp_SweRhsAlgorithm.h \
     Algorithm/dbpp_TestRhsImpl.h \
     Discretization/dbpp_BCharacteristicSolver.h \

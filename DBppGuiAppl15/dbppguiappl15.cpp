@@ -114,13 +114,15 @@ DBppGuiAppl15::DBppGuiAppl15(QWidget *parent)
 
   // validating GUI (numerical algorithm)
   ui->numalgo_combo->addItem(QString{"EMcNeil1D_mod"});
-  // ui->numalgo_combo->addItem(QString{"EMcNeil1D_f"});
+  ui->numalgo_combo->addItem(QString{"EMcNeil1D_f"});
   ui->numalgo_combo->addItem(QString{"TestEMcNeilVec"});
   // ui->numalgo_combo->addItem(QString{"TestBcSectF"});
   // ui->numalgo_combo->addItem(QString{"TestNewAlgo"});
 
   ui->reconstr_comboBox->addItem(QString{"MUSCL Slope Limiter"});
   ui->rhsalgo_combo->addItem(QString{"TestRhsImpl"});
+  ui->rhsalgo_combo->addItem(QString{"BaseRhsImpl"});
+  ui->rhsalgo_combo->addItem(QString{"GblRhsImpl"});
   //
   ui->discrdata_combo->addItem(QString{"emcneil"});
   ui->discrdata_combo->addItem(QString{"hudson"});

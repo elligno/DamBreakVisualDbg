@@ -222,8 +222,8 @@ CurvesData2Show DataLoader::readTwoCurveDataFromFiles(QFile &aFile1,
 //   Time: 0.0000 sec.
 //   ====================
 //
-// X         H          U1             U2                 V
-// 0.02    0.02         0.02          0.02              0.02
+// X         H          U1(A)         U2(Q)         V         Fr
+// 0.02    0.02         0.02          0.02         0.02     0.2664
 CurvesData2Show DataLoader::readDataFullResultFromFile(QFile &aFile2read) {
   bool w_bStartReadVal{false}; // initialize
 
@@ -246,8 +246,8 @@ CurvesData2Show DataLoader::readDataFullResultFromFile(QFile &aFile2read) {
       w_fileStream.readLineInto(&line);
       if (w_bStartReadVal) {
         auto w_vecOfTpl = // extract line values (vector of tuple)
-            extractLineValuesTmplt<double, double, double, double, double>(
-                w_fileStream, std::move(line));
+            extractLineValuesTmplt<double, double, double, double, double,
+                                   double>(w_fileStream, std::move(line));
 
         w_bStartReadVal = false; // according to the current format
 

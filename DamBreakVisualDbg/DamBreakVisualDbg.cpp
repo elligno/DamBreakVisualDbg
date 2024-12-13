@@ -4,11 +4,9 @@
 #include <QFileInfo>
 // Boost include
 #include <boost/range/adaptors.hpp>
-// App include
-#include "VisualDbgUtilities.hpp"
 // App includes
-//#include "GraphVisualizer.h"
 #include "DataLoader.h"
+#include "VisualDbgUtilities.hpp"
 // lib API
 #include "Utility/dbpp_AppConstant.hpp"
 
@@ -94,76 +92,98 @@ void DamBreakVisualDbg::extractProfileFromFullRes(int aListIndex) {
 
   // sanity check
   // auto tplSiz = std::tuple_size_v<dbltpl>;
-  assert(5 == std::tuple_size_v<dbltpl>); // 5 columns 0 to 4 format
+  assert(6 == std::tuple_size_v<dbltpl>); // 5 columns 0 to 4 format
 
   // graph format set in loadFromFile()
   // m_vecTimeValues vector of pair (time value, tuple(variable values))
   switch (m_graph2D.m_graphFmt) {
-  case eGraphFmt::XH:
-    // copy values in m_xVar
-    {
-      // Simulation data from full result file format
-      // current version contains 5 colums: X|H|A|Q|V
-      for (auto &val : m_curvData.m_vecTimeValues[aListIndex].second) {
-        // auto tplSiz = std::tuple_size_v<dbltpl>;
-        // if (5 == tplSiz) { // 5 columns 0 to 4 format
-        // re-ordering tuple index, since when parsing file it
-        // returns the line element in reverse order (end to begin)
-        dbltpl w_revertOrder = tuple_inverse_idx_order<dbltpl, 4, 3, 2, 1, 0>(
-            val, std::index_sequence<4, 3, 2, 1, 0>{});
-        // swap tuple element
-        val.swap(w_revertOrder);
-        //}  if
-
-        double x{};
-        double h{};
-        // fill the plot2D data profile container
-        std::tie(x, h, std::ignore, std::ignore, std::ignore) = val;
-        m_curvData.m_xVar1.push_back({x, h});
-        ++i; // next
-      }
-      break;
-    }
-  case eGraphFmt::XQ: {
+  case eGraphFmt::XH: // water level or depth, not sure yet!
+  {
     // Simulation data from full result file format
-    // current version contains 5 colums: X|H|A|Q|V
+    // current version contains 5 colums: X|H|A|Q|V|F
+    for (auto &val : m_curvData.m_vecTimeValues[aListIndex].second) {
+      // auto tplSiz = std::tuple_size_v<dbltpl>;
+      // if (5 == tplSiz) { // 5 columns 0 to 4 format
+      // re-ordering tuple index, since when parsing file it
+      // returns the line element in reverse order (end to begin)
+      dbltpl w_revertOrder = tuple_inverse_idx_order<dbltpl, 5, 4, 3, 2, 1, 0>(
+          val, std::index_sequence<5, 4, 3, 2, 1, 0>{});
+      // swap tuple element
+      val.swap(w_revertOrder);
+      //}  if
+
+      double x{};
+      double h{};
+      // fill the plot2D data profile container
+      std::tie(x, h, std::ignore, std::ignore, std::ignore, std::ignore) = val;
+      m_curvData.m_xVar1.push_back({x, h});
+      ++i; // next
+    }
+    break;
+  }
+  case eGraphFmt::XQ: { // discharge
+    // Simulation data from full result file format
+    // current version contains 5 colums: X|H|A|Q|V|F
     for (auto &val : m_curvData.m_vecTimeValues[aListIndex].second) {
       // re-ordering tuple index, since when parsing file it
       // returns the line element in reverse order (end to begin)
-      dbltpl w_revertOrder = tuple_inverse_idx_order<dbltpl, 4, 3, 2, 1, 0>(
-          val, std::index_sequence<4, 3, 2, 1, 0>{});
+      dbltpl w_revertOrder = tuple_inverse_idx_order<dbltpl, 5, 4, 3, 2, 1, 0>(
+          val, std::index_sequence<5, 4, 3, 2, 1, 0>{});
       // swap tuple element now bring it back from begin to end
       val.swap(w_revertOrder);
 
       double x{};
       double q{};
       // fill the plot2D data profile container
-      std::tie(x, std::ignore, std::ignore, q, std::ignore) = val;
+      std::tie(x, std::ignore, std::ignore, q, std::ignore, std::ignore) = val;
       m_curvData.m_xVar1.push_back({x, q});
       ++i; // next
     }
     break;
   }
-  case eGraphFmt::XV:
+  case eGraphFmt::XV: { // velocity
     // Simulation data from full result file format
-    // current version contains 5 colums: X|H|A|Q|V
+    // current version contains 6 colums: X|H|A|Q|V|F
     for (auto &val : m_curvData.m_vecTimeValues[aListIndex].second) {
       // re-ordering tuple index, since when parsing file it
       // returns the line element in reverse order (end to begin)
-      dbltpl w_revertOrder = tuple_inverse_idx_order<dbltpl, 4, 3, 2, 1, 0>(
-          val, std::index_sequence<4, 3, 2, 1, 0>{});
+      dbltpl w_revertOrder = tuple_inverse_idx_order<dbltpl, 5, 4, 3, 2, 1, 0>(
+          val, std::index_sequence<5, 4, 3, 2, 1, 0>{});
       // swap tuple element now bring it back from begin to end
       val.swap(w_revertOrder);
 
       double x{};
       double v{};
       // fill the plot2D data profile container
-      std::tie(x, std::ignore, std::ignore, std::ignore, v) = val;
+      std::tie(x, std::ignore, std::ignore, std::ignore, v, std::ignore) = val;
       m_curvData.m_xVar1.push_back({x, v});
       ++i; // next
     }
     break;
+  }
+  case eGraphFmt::XF: { // Froude number
+    // Simulation data from full result file format
+    // current version contains 6 colums: X|H|A|Q|V|F
+    for (auto &val : m_curvData.m_vecTimeValues[aListIndex].second) {
+      // re-ordering tuple index, since when parsing file it
+      // returns the line element in reverse order (end to begin)
+      dbltpl w_revertOrder = tuple_inverse_idx_order<dbltpl, 5, 4, 3, 2, 1, 0>(
+          val, std::index_sequence<5, 4, 3, 2, 1, 0>{});
+      // swap tuple element now bring it back from begin to end
+      val.swap(w_revertOrder);
+
+      double x{};
+      double f{};
+      // fill the plot2D data profile container
+      std::tie(x, std::ignore, std::ignore, std::ignore, std::ignore, f) = val;
+      m_curvData.m_xVar1.push_back({x, f});
+      ++i; // next
+    }
+    break;
+  }
   default:
+    std::cerr
+        << "This set of variables is not supported in the current version\n";
     break;
   }
 }
@@ -177,13 +197,16 @@ void DamBreakVisualDbg::plot2dButton() {
     plot2DProfile(m_graph2D.m_graphFmt);
   } else if (eGraphFmt::XH == m_graph2D.m_graphFmt &&
              eFileFormat::full_result == m_graph2D.m_filFmt) {
-    plot2DProfile(m_graph2D.m_graphFmt);
+    plot2DProfile(m_graph2D.m_graphFmt); // water depth
   } else if (eGraphFmt::XQ == m_graph2D.m_graphFmt &&
              eFileFormat::full_result == m_graph2D.m_filFmt) {
-    plot2DProfile(m_graph2D.m_graphFmt);
+    plot2DProfile(m_graph2D.m_graphFmt); // discharge
   } else if (eGraphFmt::XV == m_graph2D.m_graphFmt &&
              eFileFormat::full_result == m_graph2D.m_filFmt) {
-    plot2DProfile(m_graph2D.m_graphFmt);
+    plot2DProfile(m_graph2D.m_graphFmt); // velocity
+  } else if (eGraphFmt::XF == m_graph2D.m_graphFmt &&
+             eFileFormat::full_result == m_graph2D.m_filFmt) {
+    plot2DProfile(m_graph2D.m_graphFmt); // Froude number
   } else if ((eGraphFmt::XQ == m_graph2D.m_graphFmt ||
               eGraphFmt::XH == m_graph2D.m_graphFmt) &&
              eFileFormat::dbgFormat == m_graph2D.m_filFmt) {
@@ -364,9 +387,13 @@ void qplot::DamBreakVisualDbg::loadFinalProfileAndSetFmt() {
   }
 }
 
+// Initial phase: settings some format (slot getGraphFmt())
+// is call when user swith once the app was launched
+// same for the file format
 void qplot::DamBreakVisualDbg::loadFullResultAndSetFmt() {
   auto w_simFileName = QFileDialog::getOpenFileName(
-      this, tr("Open Graph Data"), "",
+      this, tr("Open Graph Data"),
+      R"(E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakVisualDbg\Data)",
       tr("Simulation Result (*.txt);;All Files (*)"));
 
   m_bigEditor->append("You have selected the following file: " + w_simFileName);
@@ -374,9 +401,47 @@ void qplot::DamBreakVisualDbg::loadFullResultAndSetFmt() {
   QFile w_file2Load(w_simFileName);
   std::optional<QFile> w_no2ndFile{std::nullopt};
   DataLoader w_dat2Load;
-  m_curvData = // data to display
+  // data stored in tuple (index in revert order, decreasing)
+  m_curvData = // data to display (m_vecTimeValues)
       w_dat2Load.loadData2Show(w_file2Load, w_no2ndFile,
                                eFileResultFormat::full_result);
+
+#if 0 // debugging purpose
+  auto curTime0 = m_curvData.m_vecTimeValues[1].first;   // time=0.019
+  auto frValues0 = m_curvData.m_vecTimeValues[1].second; // vec values
+  // Automatic Template Argument Type Deduction (Universal Reference)
+  auto &&tpl48{frValues0[48]}; // lvalue reference
+  auto &&tpl49{frValues0[49]}; // ditto
+  auto &&tpl50{frValues0[50]}; // ditto
+  auto &&tpl51{frValues0[51]}; // ditto
+  // mapping of the returned tuple revert index
+  // to new tuple in correct order (index increasing)
+  auto w_reverted48 = tuple_inverse_idx_order<dbltpl, 5, 4, 3, 2, 1, 0>(
+      tpl48, std::index_sequence<5, 4, 3, 2, 1, 0>{});
+  // swap tuple element (revert to standard order)
+  tpl48.swap(w_reverted48);
+
+  auto w_reverted49 = tuple_inverse_idx_order<dbltpl, 5, 4, 3, 2, 1, 0>(
+      tpl49, std::index_sequence<5, 4, 3, 2, 1, 0>{});
+  // swap tuple element
+  tpl49.swap(w_reverted49);
+
+  auto w_reverted50 = tuple_inverse_idx_order<dbltpl, 5, 4, 3, 2, 1, 0>(
+      tpl50, std::index_sequence<5, 4, 3, 2, 1, 0>{});
+  // swap tuple element
+  tpl50.swap(w_reverted50);
+
+  auto w_reverted51 = tuple_inverse_idx_order<dbltpl, 5, 4, 3, 2, 1, 0>(
+      tpl51, std::index_sequence<5, 4, 3, 2, 1, 0>{});
+  // swap tuple element
+  tpl51.swap(w_reverted51);
+
+  std::cout << "Initial time value is " << curTime0 << '\n';
+  auto fr48 = std::get<5>(tpl48);
+  auto fr49 = std::get<5>(tpl49);
+  auto fr51 = std::get<5>(tpl50);
+  auto fr52 = std::get<5>(tpl51);
+#endif
 
   m_simTimesList = m_curvData.getTimesFromTimeValuesVec();
 
@@ -393,6 +458,8 @@ void qplot::DamBreakVisualDbg::loadFullResultAndSetFmt() {
     m_graph2D.m_graphFmt = eGraphFmt::XQ;
   } else if (m_graphFmtItem->currentText() == "X/V") {
     m_graph2D.m_graphFmt = eGraphFmt::XV;
+  } else if (m_graphFmtItem->currentText() == "X/F") {
+    m_graph2D.m_graphFmt = eGraphFmt::XF;
   }
 }
 
@@ -530,6 +597,7 @@ QGridLayout *DamBreakVisualDbg::singleLayout() {
   m_graphFmtItem->addItem(QString{"X/H"});
   m_graphFmtItem->addItem(QString{"X/Q"});
   m_graphFmtItem->addItem(QString{"X/V"});
+  m_graphFmtItem->addItem(QString{"X/F"});
   m_graphFmtItem->setEditable(false); // can't be edited by user
   w_dropDownGraphFmt->addWidget(w_graphFmtLabel);
   w_dropDownGraphFmt->addWidget(m_graphFmtItem);
@@ -678,6 +746,10 @@ std::array<QHBoxLayout *, 5> DamBreakVisualDbg::setAllHboxLayout(
   return w_hboxLayoutArray;
 }
 
+// Design Note
+//  Need to be re-worked, there are many bugs (display with scaling)
+//  also hraph settings must be in a separate class (already done)
+//  but initialized at the starting phase.
 // Plot profile variable
 void DamBreakVisualDbg::plot2DProfile(const eGraphFmt aGraphFmt) {
   // set data (index set 0 by default) shall we call addGraph()??
@@ -708,7 +780,11 @@ void DamBreakVisualDbg::plot2DProfile(const eGraphFmt aGraphFmt) {
       // m_plot2d->xAxis->setLabel("X Coordinate");
       m_plot2d->yAxis->setLabel("V (Velocity)");
       m_plot2d->xAxis->setRange(0.3, 0.7);
-      m_plot2d->yAxis->setRange(0., 0.8);
+      // m_plot2d->yAxis->setRange(0., 0.8);  N=0.
+      // m_plot2d->yAxis->setRange(0., 1.5); // N=0.4
+    } else if (eGraphFmt::XF == aGraphFmt) {
+      m_plot2d->yAxis->setLabel("Fr (Froude Number)");
+      m_plot2d->xAxis->setRange(0.3, 0.7);
     } else {
       m_bigEditor->append("You have selected wrong graph format");
     }
@@ -751,6 +827,9 @@ void DamBreakVisualDbg::plot2DProfile(const eGraphFmt aGraphFmt) {
     // m_plot2d->xAxis->setRange(0., 1.);
     // m_plot2d->yAxis->setRange(0.43, 1.1);
 
+    // assign top/right axes same properties as bottom/left:
+    // not too sure about this one
+    m_plot2d->axisRect()->setupFullAxesBox();
     // ready to plot
     m_plot2d->graph()->rescaleAxes();
     m_plot2d->graph()->setData(w_xCoord, w_varValues);
@@ -865,6 +944,7 @@ void DamBreakVisualDbg::plot2DProfile() // m_plot2d window (SLOT)
   m_plot2d->replot();
 }
 
+// NOTE not connected i don't know why? need to find out!
 void DamBreakVisualDbg::getFileFmt(QString aFileFmt) {
   if (aFileFmt == "Debug") {
     m_graph2D.m_filFmt = eFileFormat::dbgFormat;
@@ -879,6 +959,12 @@ void DamBreakVisualDbg::getFileFmt(QString aFileFmt) {
   }
 }
 
+// NOTE m_stepGraphCounter is use in the step mode
+//      file format 'debug'. When switching from
+//      one graph formta to another we need to re-
+//      initialize the step count.
+//  Not sure about the case Exact/Computed is what for??
+//  Need to find out!!
 void DamBreakVisualDbg::getGraphFmt(QString aGraphFmt) {
   if (aGraphFmt == "X/H") {
     m_graph2D.m_graphFmt = eGraphFmt::XH;
@@ -892,6 +978,14 @@ void DamBreakVisualDbg::getGraphFmt(QString aGraphFmt) {
       m_stepGraphCounter = 0;
   } else if (aGraphFmt == "X/V") {
     m_graph2D.m_graphFmt = eGraphFmt::XV;
+    // re-initialize when graph format changed (initialy set to 0)
+    if (m_stepGraphCounter != 0)
+      m_stepGraphCounter = 0;
+  } else if (aGraphFmt == "X/F") {
+    m_graph2D.m_graphFmt = eGraphFmt::XF;
+    // re-initialize when graph format changed (initialy set to 0)
+    if (m_stepGraphCounter != 0)
+      m_stepGraphCounter = 0;
   } else if (aGraphFmt == "Exact/Computed") {
     //   m_graph2D.m_graphFmt = eFileFormat::exact_computed;
   } else {
@@ -900,12 +994,14 @@ void DamBreakVisualDbg::getGraphFmt(QString aGraphFmt) {
 }
 
 void DamBreakVisualDbg::getProfileTimes(const QString &aTimeVal) {
+  // retrieve corresponding index of the current time string
   auto w_checkTimeIdx = m_simTimesItem->currentIndex();
 
   // QStringListIterator w_timeListIter{m_graph2D.m_simTimesList};
   QStringListIterator w_timeListIter{m_simTimesList};
   while (w_timeListIter.hasNext()) {
     if (w_timeListIter.next() == aTimeVal) {
+      // fill curve data with variable data (for this given time)
       extractProfileFromFullRes(w_checkTimeIdx);
       break;
     }

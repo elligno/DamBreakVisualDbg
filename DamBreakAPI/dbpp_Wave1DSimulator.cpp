@@ -641,7 +641,7 @@ std::shared_ptr<dbpp::EMcNeil1D> Wave1DSimulator::createEMcNeil1DAlgo() {
   } else {
     // log entry
     dbpp::Logger::instance()->OutputError(
-        std::string{"Unrecognised solver name: %s"}.data());
+        std::string{"Unrecognized solver name: %s"}.data());
   }
 
   dbpp::Logger::instance()->OutputSuccess(

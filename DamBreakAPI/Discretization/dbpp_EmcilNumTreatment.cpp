@@ -90,7 +90,7 @@ void BaseNumTreatmemt::TraitementTermeSource2(
 
   for (auto j = 0; j < NbSections - 1; j++) {
     auto Rh = HydroUtils::R(A[j], B);
-    // check this formula, i think its not correct
+    // check this formula, i think its not correct, it is!!
     auto TermeSf = w_grav * A[j] * n[j] * n[j] * Q[j] * fabs(Q[j]) /
                    (A[j] * A[j] * pow(Rh, 4. / 3.));
 
