@@ -34,10 +34,11 @@ QT_END_NAMESPACE
 #include "GraphVisualizer.h"
 
 namespace qplot {
-using dbltpl = std::tuple<double, double, double, double, double>;
+// DEPRECATED
+// using dbltpl = std::tuple<double, double, double, double>;
 // using dbltpl3Col = std::tuple<double, double, double>;
 
-/**
+/** @brief
  */
 class DamBreakVisualDbg : public QMainWindow {
   Q_OBJECT
@@ -50,11 +51,19 @@ public:
     full_result,
     exact_computed
   };
-  enum class eGraphFmt { XH, XQ, XV };
+  /** Support of ...*/
+  enum class eGraphFmt { XH, XQ, XV, XF };
+  /** Support of ...*/
   enum class eDataType { EMcNeil, Hudson };
+  /** Support of ...*/
   enum class eStepMode { stepBy, None }; // default is none
 
 public:
+  // IMPORTANT
+  //  some of these if not all are already defined in "GraphSettingsPrm.h"
+  //  and have been moved to "VisualDbgAliases.hpp", this code is obsolete.
+
+  // DEPRECATED (include "VisualDbgAliases.hpp")
   // useful typedef (actually we don't really need it, just the "auto" keyword)
   using mapValU12 =
       std::map<unsigned, std::pair<std::vector<double>, std::vector<double>>>;
@@ -131,17 +140,14 @@ private:
   /** */
   struct GraphPrm { // this is an aggregate, since C++17, can inherit from
     // Parameter to manage the graph plotting format/reading
-    QString m_graphName;
-    QString m_yaxisLabel;
-    eFileFormat m_filFmt{
-        eFileFormat::dbgFormat}; /* file contain the final profile that user
-                                    want to view*/
-    eGraphFmt m_graphFmt{eGraphFmt::XH};      /* default */
-    eDataType m_dataType{eDataType::EMcNeil}; /* default (temporary, we need to
-                                                 be able to set this field)*/
-    QStringList m_simTimesList;
+    QString m_graphName;                          /**< name ... */
+    QString m_yaxisLabel;                         /**< y-axis label*/
+    eFileFormat m_filFmt{eFileFormat::dbgFormat}; /* file format profile*/
+    eGraphFmt m_graphFmt{eGraphFmt::XH};          /* default */
+    eDataType m_dataType{eDataType::EMcNeil};     /* default (temporary)*/
+    QStringList m_simTimesList;                   /**< simulation time*/
     // inline and a definition since C++17
-    static constexpr int iterationStep = 5;
+    static constexpr int iterationStep = 5; /**< */
 
     // NOTE i do not it's in use, but I keep might need it in the future
     void setYaxisLabel(/*const eGraphFmt aYaxis2Set*/) {

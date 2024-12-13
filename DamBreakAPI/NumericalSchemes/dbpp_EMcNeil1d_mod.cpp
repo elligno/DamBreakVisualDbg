@@ -171,12 +171,14 @@ void EMcNeil1d_mod::predictor(const RhsStruct &aRhs) {
                      aRhs.m_fVec.second.cend());        // range ctor
   const vecdbl w_S(aRhs.m_S.cbegin(), aRhs.m_S.cend()); // range ctor
 
+  const auto w_lambda = dt / dx;
+
   // compute st-Venant model (1D)
   for (int j = 1; j < w_nbGridPts;
        j++) // computational domain [1,100] -> [0,99]
   {         // scalarField -> std::vector
-    w_U1p[j] = w_U1[j] - dt / dx * (w_FF1[j] - w_FF1[j - 1]); // mass equation
-    w_U2p[j] = w_U2[j] - dt / dx * (w_FF2[j] - w_FF2[j - 1]) +
+    w_U1p[j] = w_U1[j] - w_lambda * (w_FF1[j] - w_FF1[j - 1]); // mass equation
+    w_U2p[j] = w_U2[j] - w_lambda * (w_FF2[j] - w_FF2[j - 1]) +
                dt * w_S[j]; // momentum equation
   }
 
@@ -220,13 +222,15 @@ void EMcNeil1d_mod::corrector(const RhsStruct &aRhs) {
   const auto w_nbGridPts = m_U12.first->grid().getDivisions(1);
   const auto dt = dbpp::Simulation::instance()->simulationTimeStep();
 
+  const auto w_lambda = dt / dx;
+
   // Note we are using std vector which are indexed from 0,...,N-1
   // Calcul des valeurs des variables d'état (compute U1, U2)
   for (int j = 1; j < w_nbGridPts;
        j++) // computational node except i=0 which is set by B.C.
   {
-    w_U1[j] = 0.5 * (w_U1[j] + w_U1p[j] - dt / dx * (w_FF1[j] - w_FF1[j - 1]));
-    w_U2[j] = 0.5 * (w_U2[j] + w_U2p[j] - dt / dx * (w_FF2[j] - w_FF2[j - 1]) +
+    w_U1[j] = 0.5 * (w_U1[j] + w_U1p[j] - w_lambda * (w_FF1[j] - w_FF1[j - 1]));
+    w_U2[j] = 0.5 * (w_U2[j] + w_U2p[j] - w_lambda * (w_FF2[j] - w_FF2[j - 1]) +
                      dt * w_S[j]);
   }
 

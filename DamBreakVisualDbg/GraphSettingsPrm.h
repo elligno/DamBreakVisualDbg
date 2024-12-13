@@ -1,6 +1,7 @@
 #pragma once
 
-// C++ include
+// C++ includes
+#include <iostream>
 #include <tuple>
 // Qt includes
 #include <QFile>
@@ -9,31 +10,64 @@
 // App include
 #include "Enumerators.h"
 
+// Design Note
+//   Need a serious clean-up and a refactoring!!!
+//   Hardly understaneable!! Some alias are defined
+//   in this file but could be movec in another file.
+//   Also, need to move some of the struct in a separate
+//   file, doc!!! in the share point
+//   Aliases shall be in a separate file
+//   Move structs in separate file, this file is about
+//   graph settings and nothing else shoould be in this
+//   file.
+
 namespace qplot {
 
-using dbltpl = std::tuple<double, double, double, double, double>;
+/**@brief Mapping with full result format columns
+ * In the process extracting data from file, these
+ * are stored (each line of data) in a tuple, ...
+ * to be completed
+ * Format is
+ *  X  H, A, Q, V, Fr these variables defined as
+ *  x-coord, water depth or level?? (check),
+ *   wetted areea, discharge, velocity and Froude number
+ */
+using dbltpl = std::tuple<double /*X*/, double /*H*/, double /*A*/,
+                          double /*Q*/, double /*V*/, double /*Fr*/>;
+
+using pairtimeline =
+    std::pair<double /*Time*/, QVector<dbltpl> /*line of values*/>;
 
 // alias template
 template <typename... prms> using qvectpl = QVector<std::tuple<prms...>>;
 
 // another way to store data {U1p,U2P} as a pair, read each line and store
 // data also could be profile format {x,val}
-using vecpair = // could be qvectpl<double,double>;
+using qvecpair = // could be qvectpl<double,double>;
     QVector<std::pair<double, double>>;
 
 // useful typedef (actually we don't really need it, just the "auto" keyword)
 using mapValU12 =
     std::map<unsigned, std::pair<std::vector<double>, std::vector<double>>>;
 
-using mapIterUValue = std::map<unsigned, vecpair>;
+// using mapIterUValue = std::map<unsigned, vecpair>;
+
 // using mapIterUValue = std::map<unsigned, std::vector<std::tuple<double,
 // double>>>;
 using pairxVar = std::pair<QVector<double> /*x-coord*/,
                            QVector<double> /*var value to cmp*/>;
 // using twographcmp = std::tuple
-using pairtimeline =
-    std::pair<double /*Time*/, QVector<dbltpl> /*line of values*/>;
 
+// NOTE
+//  Since C++17 can derive from aggregate (need to double check this)
+//  Below define a base aggregate that will serve as top aggregate
+//  for the graph settings, other derive from this one.
+// Not sure, we can use template aggregate? again check N. Josuttis C++17
+//  Definition of an aggregate
+//    no-user defined ctor, no virtual functions, no static or private members
+//    ... to be completed
+//  aggregate intitialization with curly brace {attributes...}
+//
 struct BaseGraphSettingsPrm { // aggregate
   // Parameter to manage the graph plotting format/reading
   // 1-curve data
@@ -41,25 +75,27 @@ struct BaseGraphSettingsPrm { // aggregate
   QString m_xaxisLabel{"x-coordinate"}; /*graph x-axis label*/
   QString m_yaxisLabel;                 /*graph y-axis label*/
   QFile m_file1;                        /*data from file*/
-  vecpair m_xVar1; /* plot variable profile: X/H, X/Q, X/V user select */
+  qvecpair m_xVar1; /* plot variable profile: X/H, X/Q, X/V user select */
 };
 
 struct TwoGraphSettingsPrm
     : BaseGraphSettingsPrm { // C++17 aggregate inheritance
   // plot profile for 2 curce data
-  QFile m_file2;   /*data from file*/
-  vecpair m_xVar2; /* plot variable profile: X/H, X/Q, X/V user select */
+  QFile m_file2;    /*data from file*/
+  qvecpair m_xVar2; /* plot variable profile: X/H, X/Q, X/V user select */
 };
 
+// DESIGN NOTE
+// Move in a separate file (next task: clean and refactor January 2025)
 struct CurvesData2Show {
-  using pairofvec =
+  using pairstdvec =
       std::pair<std::vector<double> /*U1*/, std::vector<double> /*U2*/>;
 
   // x-coordinate ???
   // Variable 1 data
   // Variable 2 data
-  vecpair m_xVar1;      /* plot variable profile: X/H, X/Q, X/V user select */
-  vecpair m_xVar2;      /* plot variable profile: X/Hs, X/Q, X/V user select */
+  qvecpair m_xVar1;     /* plot variable profile: X/H, X/Q, X/V user select */
+  qvecpair m_xVar2;     /* plot variable profile: X/Hs, X/Q, X/V user select */
   mapValU12 m_mapValUp; /*map key is iteration number=1,...,N*/
   mapValU12 m_mapValU;  /*iteration number=1,...,N*/
   std::pair<double, double> m_HudsonXRng{0., 1.};
@@ -68,12 +104,12 @@ struct CurvesData2Show {
   std::pair<double, double> m_EMcNeilYRng{0., 10.};
 
   // return values for iteration number
-  pairofvec getU12pValues(int aIterationNumber) const {
+  pairstdvec getU12pValues(int aIterationNumber) const {
     auto w_mapVal = m_mapValUp.find(aIterationNumber);
     if (w_mapVal != m_mapValUp.end())
       return w_mapVal->second;
 
-    return pairofvec(); // empty
+    return pairstdvec{}; // empty
   }
 
   QVector<double> m_qvecX; /*store values as a pair of X/Value*/
@@ -117,8 +153,8 @@ struct CurvesData2Show {
   QVector<pairtimeline> m_vecTimeValues; /*< store data to be visualized at a
                                             given time (x-coord/value)*/
 
+  /** Extract value from full result according to user profile selection*/
   QStringList getTimesFromTimeValuesVec() const {
-    // extract value from full result according to user profile selection
     auto w_vecValueAtime = m_vecTimeValues[0].first;
     assert(0.000 == w_vecValueAtime);
 
@@ -138,7 +174,7 @@ struct CurvesData2Show {
 
   // need a data store
   eDataTypeFmt m_dataType;
-};
+}; // CurvesData2Show
 
 // Design Note
 //  Could be split into separate struct (aggregate)

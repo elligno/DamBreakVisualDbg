@@ -10,6 +10,10 @@
 // Numerical schemes package
 #include "dbpp_HLL_RK2_Algo_Vec.h"
 
+namespace dbpp { // forward declaration
+class SweRhsAlgorithm;
+}
+
 namespace dbpp {
 /**
  * Brief Implementation that use the scalar field to implement the
@@ -37,23 +41,25 @@ public:
   /**
    * destructor
    */
-  ~EMcNeil1d_f() = default;
+  // ~EMcNeil1d_f() = default;
 
   // copy and assignment not accessible from client
   /**
    *   copy ctor
    */
-  EMcNeil1d_f(const EMcNeil1d_f &) = delete;
+  // EMcNeil1d_f(const EMcNeil1d_f &) = delete;
   /**
    *   assignment ctor
    */
-  EMcNeil1d_f &operator=(const EMcNeil1d_f &) = delete;
+  // EMcNeil1d_f &operator=(const EMcNeil1d_f &) = delete;
 
   // update all nodes
   void mainLoop(const GlobalDiscretization *aGblDiscr,
                 const double aTimeTo) override final {}
+
   void initialize(const GlobalDiscretization *aGblDiscr,
                   double aTime) override final {}
+
   // not sure about this, is that make sense?
   void setInitSln(StateVector &&aU) override final { m_U12 = std::move(aU); }
 
@@ -66,29 +72,28 @@ protected:
   /** @Brief algorithm implementation.
    *
    */
-  void predictor();
+  // void predictor();
   /** @Brief algorithm implementation.
    *
    */
-  void corrector();
+  // void corrector();
 
-  /** @Brief ...
+  /** @Brief ...??? not sure about this one
    *
    */
-  void
-  setInitSln(const StateVector &aU /*, ListSectFlow *aListofSect*/) override;
+  void setInitSln(const StateVector &aU) override;
 
   /** @Brief set boundary node (vector)
 * methods, it's left to the user how to implement
 * the time stepping. That's the purpose of the
 advance() method.*/
-  void setAmont(std::vector<double> &aU1, std::vector<double> &aU2);
-  void setAval(std::vector<double> &aU1, std::vector<double> &aU2);
+  // void setAmont(std::vector<double> &aU1, std::vector<double> &aU2);
+  // void setAval(std::vector<double> &aU1, std::vector<double> &aU2);
 
   /** @Brief Set the boundary condition (deprecated).
    *    Originally
    */
-  void setBC(/*std::vector<double>& aU1,std::vector<double>& aU2*/) {
+  void setBC() {
     GlobalDiscretization *w_EmcNilBC = GlobalDiscretization::instance();
     Gamma &w_bc = w_EmcNilBC->gamma();
 
@@ -97,9 +102,11 @@ advance() method.*/
   }
 
 private:
+  SweRhsAlgorithm *m_sweRhsAlgo;
+
   /** time stepping algorithm based on two-steps*/
-  void predictor(const fluxVector &aFluxVec);
-  void corrector(const fluxVector &aFluxVec);
+  //  void predictor(const fluxVector &aFluxVec);
+  // void corrector(const fluxVector &aFluxVec);
 
   /** B.C. condition*/
   Nodal_Value m_amontBC;
@@ -112,7 +119,7 @@ private:
   //	std::vector<double> m_FF1;  /**< Face flux of first-variable*/
   //	std::vector<double> m_FF2;  /**< Face flux of second-variable*/
   //		size_t m_NbSections;	      /**< Number of cross-sectional*/
-  std::vector<double> m_S; /**< Source term*/
+  // std::vector<double> m_S; /**< Source term*/
 
   //			std::vector<double>  U1, U2; /**< state variables*/
   //		std::vector<double> H;      /**< water level*/

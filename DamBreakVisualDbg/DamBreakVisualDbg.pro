@@ -22,6 +22,7 @@ HEADERS += \
     GenNumber.hpp \
     GraphSettingsPrm.h \
     GraphVisualizer.h \
+    VisualDbgAliases.hpp \
     VisualDbgUtilities.hpp \
     dambreakvisualdbg.h
 

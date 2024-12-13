@@ -1,14 +1,17 @@
 
 #include <numeric> // UpwindScheme1st algorithm
 // package includes
-#include "../Discretization/dbpp_EmcilNumTreatment.h"
+//#include "../Discretization/dbpp_EmcilNumTreatment.h"
 #include "../Discretization/dbpp_GlobalDiscretization.h"
-#include "../Numerics/dbpp_UpwindScheme1st.hpp"
+#include "../Numerics/dbpp_TwoStepsIntegrator.h"
+//#include "../Numerics/dbpp_UpwindScheme1st.hpp"
 #include "dbpp_EMcNeil1d_f.h"
 //#include "TestLogger.h"
 #include "../SfxTypes/dbpp_ListSectFlow.h"
 #include "../SfxTypes/dbpp_Simulation.h"
 // ...
+#include "../Algorithm/dbpp_SweRhsAlgorithm.h"
+#include "../Utility/dbpp_AppConstant.hpp"
 #include "../Utility/dbpp_Hydro1DLogger.h"
 #include "../Utility/dbpp_TestLogger.h"
 
@@ -18,24 +21,27 @@ EMcNeil1d_f::EMcNeil1d_f()
 {
   auto w_msg1 = "EMcNeil1d_f::EMcNeil1d_f() ctor";
   dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg1));
-  auto w_msg2 = "Active RHS Discretization: BaseNumTreatment (EMcNeil)";
-  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg2));
 
-  // create a grid with E. mcNeil discretization
-  auto w_grid = // E McNeil discretization as default
-      std::make_shared<dbpp::gridLattice>(std::string("d=1 [0,1000] [1:100]"));
+  //  auto w_msg2 = "Active RHS Discretization: BaseNumTreatment (EMcNeil)";
+  //  dbpp::Logger::instance()->OutputSuccess(const_cast<char *>(w_msg2));
 
-  // Create scalar field for the A-variable
-  m_U12.first.reset(new dbpp::scalarField(w_grid, std::string("A")));
-  // Create scalar field for the Q-variable
-  m_U12.second.reset(new dbpp::scalarField(w_grid, std::string("Q")));
+  //  // create a grid with E. mcNeil discretization
+  //  auto w_grid = // E McNeil discretization as default
+  //      std::make_shared<dbpp::gridLattice>(std::string("d=1 [0,1000]
+  //      [1:100]"));
 
-  // Create a scalar field for mid-time step
-  m_U12p.first.reset(new dbpp::scalarField(w_grid, std::string("A1p")));
-  m_U12p.second.reset(new dbpp::scalarField(w_grid, std::string("A2p")));
+  //  // Create scalar field for the A-variable
+  //  m_U12.first.reset(new dbpp::scalarField(w_grid, std::string("A")));
+  //  // Create scalar field for the Q-variable
+  //  m_U12.second.reset(new dbpp::scalarField(w_grid, std::string("Q")));
+
+  //  // Create a scalar field for mid-time step
+  //  m_U12p.first.reset(new dbpp::scalarField(w_grid, std::string("A1p")));
+  //  m_U12p.second.reset(new dbpp::scalarField(w_grid, std::string("A2p")));
 }
 
 void EMcNeil1d_f::timeStep() {
+
   using namespace std;
   using namespace std::placeholders;
 
@@ -43,32 +49,74 @@ void EMcNeil1d_f::timeStep() {
       std::string{"EMcNeil1d_f::timeStep() algorithm"}.data());
 
   // set boundary value at both end (downstream and upstream)
-  setBC();
+  //  setBC();
 
   // set boundary value at both end (downstream and upstream)
-  assert(100 == m_listSections->getList().size());
-  assert(100 == m_U12.first->values().size());
+  //  assert(DIM::value == m_listSections->getList().size());
+  //  assert(DIM::value == m_U12.first->values().size());
 
-  m_listSections->getList()[0]->setH(m_amontBC[2]);
-  m_listSections->getList()[m_U12.first->values().size()]->setH(
-      m_avalBC[2]); // ghost node
+  //  m_listSections->getList()[0]->setH(m_amontBC[2]);
+  //  m_listSections->getList()[m_U12.first->values().size()]->setH(
+  //     m_avalBC[2]); // ghost node
 
   //
   // Use a two steps algorithm (more stability when )
   //
 
   // compute intermediate state (n+1/2)
-  predictor();
+  // predictor();
 
   // compute final state (n+1)
-  corrector();
+  // corrector();
 
   // notify all observers (for now list of sections and Global Discretization)
-  setState();
+  // setState();
+
+  // algorithm component based E. McNeil (Physical Algorithm)
+  std::vector<double> w_Avec;
+  w_Avec.reserve(DIM::value);
+  GlobalDiscretization::instance()->to_stdVector(w_Avec); // default
+  std::vector<double> w_Qvec;
+  w_Qvec.reserve(DIM::value);
+  GlobalDiscretization::instance()->to_stdVector(
+      w_Avec, GlobalDiscretization::NodalValComp::Q);
+
+  auto w_discrType = Simulation::instance()->getActiveDiscretization();
+  auto w_dbData = Simulation::instance()->getActiveDBdata();
+
+  std::shared_ptr<scalarField> w_A = std::make_shared<scalarField>(
+      std::make_shared<gridLattice>(w_dbData.toString(w_discrType)), w_Avec,
+      std::string{"A-state var"});
+
+  std::shared_ptr<scalarField> w_Q = std::make_shared<scalarField>(
+      std::make_shared<gridLattice>(w_dbData.toString(w_discrType)), w_Qvec,
+      std::string{"Q-state var"});
+
+  // (rhs numerical treatment of convective flux, source terms)
+  m_sweRhsAlgo->calculate(StateVector{w_A, w_Q});
+
+  // ++++++ half time step (predictor) +++++++++++++
+
+  // Create step integrator (pass RHS as argument)
+  TwoStepsIntegrator w_timeStepper;
+  w_timeStepper.setInitSln(w_Avec, w_Qvec);
+
+  w_timeStepper.setIntegratorStep(
+      TwoStepsIntegrator::eIntegratorStep::predictorStep);
+  // advance one time-step
+  w_timeStepper.step(m_sweRhsAlgo,
+                     Simulation::instance()->simulationTimeStep());
+
+  // step through time (n+1/2) by using Runge-Kutta family integrator
+  auto w_midState = w_timeStepper.getMidState();
+  auto m_U1p = w_midState.first->values().to_stdVector();
+  auto m_U2p = w_midState.second->values().to_stdVector();
 
   // lines above replaced by this line
   auto NbIterations = dbpp::Simulation::instance()->getIterationNumber();
   dbpp::DbgLogger::instance()->write2file(std::string(""), ++NbIterations);
+  dbpp::DbgLogger::instance()->write2file_p(
+      std::make_tuple(static_cast<unsigned>(m_U1p.size()), m_U1p, m_U2p));
 
   // Write to log file for visualizing data
 #if 0 // deprecated (older version)
@@ -85,6 +133,7 @@ void EMcNeil1d_f::timeStep() {
       std::make_tuple(m_U12.first->values().size(), w_U1, w_U2));
 }
 
+#if 0
 void EMcNeil1d_f::predictor(const fluxVector &aFluxVec) {
   // not sure about this line
   const auto w_dt = dbpp::Simulation::instance()->simulationTimeStep();
@@ -335,7 +384,6 @@ void EMcNeil1d_f::setAmont(std::vector<double> &aU1, std::vector<double> &aU2) {
   aU1[0] = m_amontBC[0];
   aU2[0] = m_amontBC[1];
 }
-
 void EMcNeil1d_f::setAval(std::vector<double> &aU1, std::vector<double> &aU2) {
   // GlobalDiscretization::instance()->gamma().applyBC();
 
@@ -347,6 +395,7 @@ void EMcNeil1d_f::setAval(std::vector<double> &aU1, std::vector<double> &aU2) {
   aU1.push_back(m_avalBC[0]);
   aU2.push_back(m_avalBC[1]);
 }
+#endif
 
 // Design Note temporary fix in the refactoring process
 void EMcNeil1d_f::setInitSln(
