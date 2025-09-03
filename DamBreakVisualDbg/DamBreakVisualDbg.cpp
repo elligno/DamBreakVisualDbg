@@ -9,7 +9,7 @@
 #include "VisualDbgUtilities.hpp"
 // lib API
 #include "Utility/dbpp_AppConstant.hpp"
-
+#include <cassert>
 #if 0 // original code
 DamBreakVisualDbg::DamBreakVisualDbg(QWidget *parent)
     : QMainWindow(parent)
@@ -34,7 +34,7 @@ DamBreakVisualDbg::~DamBreakVisualDbg()
 #include <boost/algorithm/string/trim_all.hpp>
 #include <chrono>
 #include <ctime>
-#include <stdio.h>
+//#include <stdio.h>
 #include <thread>
 // Qt includes
 #include <QCheckBox>
@@ -63,6 +63,7 @@ DamBreakVisualDbg::DamBreakVisualDbg(QWidget *parent /*= 0*/)
       m_plot2d{nullptr}, m_centralWidget{new QWidget}, m_bigEditor{nullptr},
       m_fileFmtItem{nullptr}, m_graphFmtItem{nullptr}, m_stepGraphCounter{} {
 
+  // ui->setupUi(this);
   m_centralWidget->setLayout(singleLayout()); // prototyping
   setGeometry(30, 50, 1200, 800);             // layout geometry size
   // set window title of main window
@@ -340,7 +341,8 @@ void DamBreakVisualDbg::saveToFile() {
 
 void qplot::DamBreakVisualDbg::loadDebugAndSetFmt() {
   auto w_simFileName = QFileDialog::getOpenFileName(
-      this, tr("Open Graph Data"), "",
+      this, tr("Open Graph Data"),
+      R"(E:\QtProjects\DamBreakppGUI\DBppGuiDev\DamBreakVisualDbg\Data)",
       tr("Simulation Result (*.txt);;All Files (*)"));
 
   QFile w_file2Load(w_simFileName);

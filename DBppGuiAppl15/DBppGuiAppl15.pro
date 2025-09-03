@@ -2,6 +2,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+TEMPLATE = app
 CONFIG += c++17
 
 # You can make your code fail to compile if it uses deprecated APIs.

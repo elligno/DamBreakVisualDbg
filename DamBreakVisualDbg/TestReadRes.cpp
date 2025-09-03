@@ -1,6 +1,6 @@
 #include <stdlib.h> // getenv_s
 // C++ includes
-#include <filesystem> // boost file system utility
+#include <filesystem> // C++17 file system
 #include <fstream>
 #include <iostream>
 #include <sstream> //istringstream

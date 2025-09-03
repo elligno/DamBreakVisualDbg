@@ -196,6 +196,10 @@ StateVector Wave1DSimulator::getIC() {
         std::string{"Active data discretization for this simulation: %s"}
             .data(),
         std::string("EMcNeil").data());
+
+    // sanity check
+    assert(10. == w_dbData.getPhi1());
+    assert(1. == w_dbData.getPhi0());
   }
 
   // auto w_grid = std::make_shared<gridLattice>( new gridLattice{
@@ -213,6 +217,15 @@ StateVector Wave1DSimulator::getIC() {
   std::fill(w_U2val.getPtr() /*begin range*/,
             w_U2val.getPtr() + w_U2val.size() /*end range*/, 0. /*value*/);
 
+  //
+  std::fill(w_U1val.getPtr() /*begin range*/,
+            w_U1val.getPtr() + w_U1val.size() / 2 /*end range*/,
+            w_dbData.getPhi1() /*value*/);
+
+  std::fill(w_U1val.getPtr() + w_U1val.size() / 2 /*begin range*/,
+            w_U1val.getPtr() + w_U1val.size() /*end range*/,
+            w_dbData.getPhi0() /*value*/);
+
   // sanity check set to zero
   //  if (std::all_of(w_U2val.getPtr() /*begin range*/,
   //                  w_U2val.getPtr() + w_U2val.size() /*end range*/,
@@ -221,17 +234,17 @@ StateVector Wave1DSimulator::getIC() {
   //                            0.)) == true) {
   //  }
 
-  for (auto i = 1; i <= w_U1->grid().getNoPoints(); i++) {
-    // we assume that each section is unit width, this shall be
-    // removed in the future version of the simulator
-    // this is the same as "Evaluation_A_Enfonction_H"
-    // m_I is the bottom topography and we substract water level
-    // from Z that gives water depth
-    // NOTE we have also m_lambda which i am not sure represent
-    // water depth
-    w_U1val(i) = m_H->valuePt(w_grid1D->getPoint(1, i), 0.) -
-                 m_I->valuePt(w_grid1D->getPoint(1, i), 0.);
-  }
+  //  for (auto i = 1; i <= w_U1->grid().getNoPoints(); i++) {
+  // we assume that each section is unit width, this shall be
+  // removed in the future version of the simulator
+  // this is the same as "Evaluation_A_Enfonction_H"
+  // m_I is the bottom topography and we substract water level
+  // from Z that gives water depth
+  // NOTE we have also m_lambda which i am not sure represent
+  // water depth
+  //    w_U1val(i) = m_H->valuePt(w_grid1D->getPoint(1, i), 0.) -
+  //                 m_I->valuePt(w_grid1D->getPoint(1, i), 0.);
+  //  }
 
   dbpp::Logger::instance()->OutputSuccess(
       std::string{"Wave1DSimulator Initial Condition done successfully"}

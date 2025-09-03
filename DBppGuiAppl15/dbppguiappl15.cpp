@@ -307,10 +307,13 @@ void DBppGuiAppl15::initSim() {
   if (w_currDiscrData == QString{"emcneil"}) {
     dbpp::Simulation::instance()->setActiveDiscretization(
         dbpp::DamBreakData::DiscrTypes::emcneil);
+    ui->_msgText->append(QString{"Current algorithm is: "} +
+                         QString{"emcneil"});
   } else // current version support those 2 type of dambreak data
   {
     dbpp::Simulation::instance()->setActiveDiscretization(
         dbpp::DamBreakData::DiscrTypes::hudson);
+    ui->_msgText->append(QString{"Current algorithm is: "} + QString{"hudson"});
   }
 
   // set simulation active numerical method (What for?)
@@ -319,10 +322,15 @@ void DBppGuiAppl15::initSim() {
 
   // debug purpose
   auto algoName = dbpp::Simulation::instance()->getAlgorithmName();
+  ui->_msgText->append(QString{"Current algorithm is: "} +
+                       QString{algoName.data()});
 
   // DESIGN NOTE we need to initialize the simulation bean first
   // Read data from file or from the GUI
   dbpp::Simulation::instance()->setCFL(m_waveSim->getCFL()); // hard coded
+
+  ui->_msgText->append(QString{"CFL number is: "} +
+                       QString::number(m_waveSim->getCFL()));
 
   // initialize the simulator
   m_waveSim->setSimulatorMode(dbpp::Wave1DSimulator::eSimulationMode::guiMode);
@@ -333,8 +341,22 @@ void DBppGuiAppl15::initSim() {
   // log information
   ui->_msgText->append(QString{"Phi0 value is: "} +
                        QString::number(m_waveSim->getPhi0()));
+
   ui->_msgText->append(QString{"Phi1 value is: "} +
                        QString::number(m_waveSim->getPhi0()));
+
+  if (dbpp::Simulation::instance()->useFlatBed()) {
+    ui->_msgText->append(QString{"Current Simulation use flat bed "});
+  } else {
+    ui->_msgText->append(QString{"Current Simulation use variable bed "});
+  }
+
+  if (dbpp::Simulation::instance()->isSectionFlowUnitWidth()) {
+    ui->_msgText->append(QString{"Current Simulation use unit section width "});
+  } else {
+    ui->_msgText->append(
+        QString{"Current Simulation use rectangular section geometry"});
+  }
 
   // basically set water level and state variables init values
   // Also create list of sections and numerical scheme/method
